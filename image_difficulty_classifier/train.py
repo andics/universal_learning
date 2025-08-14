@@ -193,7 +193,7 @@ def main():
         scheduler=scheduler,
         config=config,
         scaler=scaler,
-        logger=logger,
+        logger=logger, 
     )
 
     trainer.maybe_resume(resume=not args.no_resume)
