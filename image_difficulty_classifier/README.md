@@ -18,8 +18,8 @@ pip install -r image_difficulty_classifier/requirements.txt
 ### Train
 
 ```bash
-# Train with default settings (CLIP MLP + ViT-B-32 + OpenAI weights)
-# Output automatically goes to: output_CLIP_MLP_VIT_B_32_openai
+# Train with default settings (ResNet-50 fine-tuned)
+# Output automatically goes to: output_RESNET50_TV_FINETUNE
 python -m image_difficulty_classifier.train
 
 # Train with custom parameters
@@ -69,11 +69,12 @@ Resuming is automatic if a latest checkpoint is present in `--output-dir`. You c
 
 ### Notes
 
-- **Default model**: CLIP MLP with ViT-B-32 backbone (frozen) + trainable MLP head with dropout
-- **Output organization**: Automatically appends model info to output directory (e.g., `output_CLIP_MLP_VIT_B_32_openai`)
-- **Learning rate**: Improved schedule with warmup (10% of training) and cosine decay
+- **Default model**: ResNet-50 with ImageNet pretraining, fine-tuned end-to-end 
+- **Output organization**: Automatically appends model info to output directory (e.g., `output_RESNET50_TV_FINETUNE`)
+- **Learning rate**: Optimized schedule for fine-tuning with gentle warmup and cosine decay (2x peak LR)
+- **Fine-tuning**: Backbone fine-tuning enabled by default (use `--freeze-backbone` to disable)
 - **Splits**: 85% train, 5% val, 10% test (by index with a fixed seed)
 - **Checkpoints**: Include epoch numbers and save every 1/5th of an epoch by default
-- **Backbone fine-tuning**: Set `--unfreeze-backbone` to train the CLIP backbone (not recommended for small datasets)
+- **Alternative models**: CLIP (`--model-name clip_mlp`), ResNet-101 (`--model-name resnet101_tv`), ViT (`--model-name vit_b_16_tv`)
 
  

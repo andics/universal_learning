@@ -79,13 +79,14 @@ def main():
                         required=False, help="Path to imagenet_examples.csv")
     parser.add_argument("--output-dir", default="/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/image_difficulty_classifier/output",
                         required=False, help="Directory to write logs/checkpoints")
-    parser.add_argument("--model-name", default="clip_mlp", choices=list_models())
+    parser.add_argument("--model-name", default="resnet50_tv", choices=list_models())
     parser.add_argument("--clip-backbone", default="ViT-B-32")
     parser.add_argument("--clip-pretrained", default="openai")
-    parser.add_argument("--unfreeze-backbone", action="store_true")
+    parser.add_argument("--unfreeze-backbone", action="store_true", default=True)
+    parser.add_argument("--freeze-backbone", dest="unfreeze_backbone", action="store_false", help="Keep backbone frozen (opposite of --unfreeze-backbone)")
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--epochs", type=int, default=10)
-    parser.add_argument("--lr", type=float, default=3e-4)
+    parser.add_argument("--lr", type=float, default=1e-4)
     parser.add_argument("--weight-decay", type=float, default=0.05)
     parser.add_argument("--num-workers", type=int, default=4)
     parser.add_argument("--image-size", type=int, default=224)
@@ -103,8 +104,9 @@ def main():
         model_suffix = f"_{args.model_name.upper()}_{args.clip_backbone.replace('-', '_')}_{args.clip_pretrained.replace('-', '_')}"
         args.output_dir = base_output_dir + model_suffix
     else:
-        # For other models, just append the model name
-        args.output_dir = base_output_dir + f"_{args.model_name.upper()}"
+        # For other models, append model name and fine-tuning status
+        tuning_status = "FINETUNE" if args.unfreeze_backbone else "FROZEN"
+        args.output_dir = base_output_dir + f"_{args.model_name.upper()}_{tuning_status}"
 
     os.makedirs(args.output_dir, exist_ok=True)
     logger = setup_logging(name="train")
@@ -113,6 +115,7 @@ def main():
     # Log the output directory being used
     logger.info(f"Output directory: {args.output_dir}")
     logger.info(f"Model: {args.model_name}")
+    logger.info(f"Backbone fine-tuning: {'ENABLED' if args.unfreeze_backbone else 'DISABLED (frozen)'}")
     if args.model_name in ["clip_linear", "clip_mlp"]:
         logger.info(f"CLIP backbone: {args.clip_backbone}")
         logger.info(f"CLIP pretrained: {args.clip_pretrained}")
@@ -147,12 +150,12 @@ def main():
 
     def lr_lambda(step: int):
         if step < warmup_steps:
-            # Warmup from 0 to peak LR (which is 3x the base LR)
-            return 3.0 * float(step) / float(max(1, warmup_steps))
-        # Cosine decay from 3x base LR to 0.1x base LR
+            # Gentler warmup from 0 to peak LR (which is 2x the base LR for fine-tuning)
+            return 2.0 * float(step) / float(max(1, warmup_steps))
+        # Cosine decay from 2x base LR to 0.05x base LR (lower minimum for fine-tuning)
         progress = float(step - warmup_steps) / float(max(1, total_steps - warmup_steps))
-        min_lr_ratio = 0.1
-        return min_lr_ratio + (3.0 - min_lr_ratio) * 0.5 * (1.0 + math.cos(math.pi * progress))
+        min_lr_ratio = 0.05
+        return min_lr_ratio + (2.0 - min_lr_ratio) * 0.5 * (1.0 + math.cos(math.pi * progress))
 
     scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lr_lambda)
 
