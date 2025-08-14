@@ -1,5 +1,4 @@
 import argparse
-import csv
 import json
 import math
 import os
@@ -48,8 +47,7 @@ def build_dataloaders(
     num_items = len(all_paths)
     if num_items == 0:
         raise ValueError(
-            "No samples found from CSV. The file may be empty or all paths were filtered/mismatched. "
-            "If you used --path-prefix, ensure it matches the beginning of paths in the CSV."
+            "No samples found from CSV. The file may be empty or the format is unexpected."
         )
 
     train_idx, val_idx, test_idx = split_indices(num_items, seed)
@@ -96,64 +94,14 @@ def main():
     parser.add_argument("--no-resume", action="store_true", help="Do not resume even if a checkpoint exists")
     parser.add_argument("--grad-clip", type=float, default=None)
     parser.add_argument("--root-dir", type=str, default=None, help="Optional root dir to prefix image paths from CSV")
-    parser.add_argument(
-        "--path-prefix",
-        type=str,
-        default="/home/projects/bagon/shared/imagenet512/val",
-        help=(
-            "Optional replacement for the initial prefix '/om2/user/cheungb/datasets/imagenet_validation/val'"
-            " in the CSV paths. If set, a copy of the CSV with the prefix replaced will be written to the"
-            " package folder and used for training."
-        ),
-    )
     args = parser.parse_args()
 
     os.makedirs(args.output_dir, exist_ok=True)
     logger = setup_logging(name="train")
     set_global_seed(args.seed)
 
-    # If a path prefix is provided, create a local copy of the CSV with the prefix replaced
-    csv_path_to_use = args.csv
-    if args.path_prefix:
-        old_prefix = "/om2/user/cheungb/datasets/imagenet_validation/val"
-
-        def _replace_prefix(p: str) -> str:
-            # Replace all occurrences of the old prefix within the string (handles comma-concatenated paths)
-            return p.replace(old_prefix, args.path_prefix)
-
-        module_dir = os.path.dirname(__file__)
-        rewritten_csv_path = os.path.join(module_dir, "imagenet_examples.csv")
-
-        # Read input CSV, detect header, and write output while replacing paths
-        with open(args.csv, "r", newline="", encoding="utf-8") as fin:
-            first_line = fin.readline()
-            fin.seek(0)
-            if "path" in [h.strip() for h in first_line.strip().split(",")]:
-                reader = csv.DictReader(fin)
-                fieldnames = reader.fieldnames or ["path"]
-                with open(rewritten_csv_path, "w", newline="", encoding="utf-8") as fout:
-                    writer = csv.DictWriter(fout, fieldnames=fieldnames)
-                    writer.writeheader()
-                    for row in reader:
-                        if "path" in row and row["path"]:
-                            row["path"] = _replace_prefix(row["path"])  # type: ignore[index]
-                        writer.writerow(row)
-            else:
-                reader2 = csv.reader(fin)
-                with open(rewritten_csv_path, "w", newline="", encoding="utf-8") as fout2:
-                    writer2 = csv.writer(fout2)
-                    for row in reader2:
-                        if not row:
-                            writer2.writerow(row)
-                            continue
-                        row0 = row[0]
-                        row[0] = _replace_prefix(row0)
-                        writer2.writerow(row)
-
-        csv_path_to_use = rewritten_csv_path
-
     train_loader, val_loader, test_loader = build_dataloaders(
-        csv_path=csv_path_to_use,
+        csv_path=args.csv,
         batch_size=args.batch_size,
         num_workers=args.num_workers,
         seed=args.seed,

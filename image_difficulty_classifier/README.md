@@ -68,16 +68,4 @@ Resuming is automatic if a latest checkpoint is present in `--output-dir`. You c
 - Splits: 85% train, 5% val, 10% test (by index with a fixed seed).
 - Checkpoints every 1/5th of an epoch by default; adjustable via `--checkpoint-every-fraction`.
 
-### Optional path prefix replacement
-
-If your `bars/imagenet_examples.csv` contains absolute paths beginning with `/om2/user/cheungb/datasets/imagenet_validation/val`, you can replace this prefix at runtime by passing `--path-prefix <your/new/prefix>`. When provided, the script will write a rewritten copy of the CSV to the package folder as `image_difficulty_classifier/imagenet_examples.csv` with the updated paths and will use it automatically.
-
-Example:
-
-```bash
-python -m image_difficulty_classifier.train \
-  --csv bars/imagenet_examples.csv \
-  --path-prefix "D:/datasets/imagenet/val" \
-  --output-dir image_difficulty_classifier/runs/clip_bin5 \
-  --model-name clip_linear
-```
+ 
