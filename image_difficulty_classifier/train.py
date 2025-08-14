@@ -96,9 +96,26 @@ def main():
     parser.add_argument("--root-dir", type=str, default=None, help="Optional root dir to prefix image paths from CSV")
     args = parser.parse_args()
 
+    # Automatically append model name to output directory for better organization
+    base_output_dir = args.output_dir
+    if args.model_name == "clip_linear" or args.model_name == "clip_mlp":
+        # For CLIP models, include both model type and backbone info
+        model_suffix = f"_{args.model_name.upper()}_{args.clip_backbone.replace('-', '_')}_{args.clip_pretrained.replace('-', '_')}"
+        args.output_dir = base_output_dir + model_suffix
+    else:
+        # For other models, just append the model name
+        args.output_dir = base_output_dir + f"_{args.model_name.upper()}"
+
     os.makedirs(args.output_dir, exist_ok=True)
     logger = setup_logging(name="train")
     set_global_seed(args.seed)
+    
+    # Log the output directory being used
+    logger.info(f"Output directory: {args.output_dir}")
+    logger.info(f"Model: {args.model_name}")
+    if args.model_name in ["clip_linear", "clip_mlp"]:
+        logger.info(f"CLIP backbone: {args.clip_backbone}")
+        logger.info(f"CLIP pretrained: {args.clip_pretrained}")
 
     train_loader, val_loader, test_loader = build_dataloaders(
         csv_path=args.csv,
