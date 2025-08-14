@@ -118,7 +118,8 @@ def main():
         old_prefix = "/om2/user/cheungb/datasets/imagenet_validation/val"
 
         def _replace_prefix(p: str) -> str:
-            return args.path_prefix + p[len(old_prefix):] if p.startswith(old_prefix) else p
+            # Replace all occurrences of the old prefix within the string (handles comma-concatenated paths)
+            return p.replace(old_prefix, args.path_prefix)
 
         module_dir = os.path.dirname(__file__)
         rewritten_csv_path = os.path.join(module_dir, "imagenet_examples.csv")

@@ -1,4 +1,3 @@
-import csv
 from dataclasses import dataclass
 import os
 from typing import Callable, List, Optional, Tuple
@@ -47,22 +46,14 @@ class ImageNetDifficultyBinDataset(Dataset):
 
     @staticmethod
     def _read_csv(csv_path: str) -> List[str]:
-        paths: List[str] = []
-        with open(csv_path, "r", newline="") as f:
-            reader = csv.reader(f)
-            header = next(reader, None)
-            # Accept either [path] single-column or a headered CSV with 'path'
-            if header and ("path" in header or len(header) > 1):
-                idx = header.index("path") if "path" in header else 0
-                for row in reader:
-                    paths.append(row[idx])
-            else:
-                if header and len(header) == 1:
-                    paths.append(header[0])
-                for row in reader:
-                    if len(row) >= 1:
-                        paths.append(row[0])
-        return paths
+        with open(csv_path, "r", encoding="utf-8") as f:
+            text = f.read()
+        text = text.lstrip("\ufeff").strip()
+        if not text:
+            return []
+        if (text.startswith('"') and text.endswith('"')) or (text.startswith("'") and text.endswith("'")):
+            text = text[1:-1]
+        return [p.strip() for p in text.split(",") if p.strip()]
 
     def __len__(self) -> int:
         return len(self.indices)
