@@ -8,11 +8,11 @@ from typing import List, Tuple, Optional
 import torch
 from torch.utils.data import DataLoader
 
-from .data import ImageNetDifficultyBinDataset, default_transforms
-from .engine import Trainer, TrainConfig
-from .models import get_model, list_models
-from .utils.logging import setup_logging
-from .utils.seed import set_global_seed
+from image_difficulty_classifier.data import ImageNetDifficultyBinDataset, default_transforms
+from image_difficulty_classifier.engine import Trainer, TrainConfig
+from image_difficulty_classifier.models import get_model, list_models
+from image_difficulty_classifier.utils.logging import setup_logging
+from image_difficulty_classifier.utils.seed import set_global_seed
 
 
 def split_indices(num_items: int, seed: int) -> Tuple[List[int], List[int], List[int]]:
