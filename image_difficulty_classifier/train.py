@@ -129,13 +129,22 @@ def main():
         root_dir=args.root_dir,
     )
 
-    model = get_model(
-        args.model_name,
-        num_classes=5,
-        clip_backbone=args.clip_backbone,
-        clip_pretrained=args.clip_pretrained,
-        unfreeze_backbone=args.unfreeze_backbone,
-    )
+    # Build model with appropriate arguments based on model type
+    if args.model_name in ["clip_linear", "clip_mlp"]:
+        model = get_model(
+            args.model_name,
+            num_classes=5,
+            clip_backbone=args.clip_backbone,
+            clip_pretrained=args.clip_pretrained,
+            unfreeze_backbone=args.unfreeze_backbone,
+        )
+    else:
+        # For torchvision models (ResNet, ViT), only pass unfreeze_backbone
+        model = get_model(
+            args.model_name,
+            num_classes=5,
+            unfreeze_backbone=args.unfreeze_backbone,
+        )
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model.to(device)
