@@ -16,11 +16,19 @@ from image_difficulty_classifier.utils.seed import set_global_seed
 
 
 def split_indices(num_items: int, seed: int) -> Tuple[List[int], List[int], List[int]]:
+    if num_items <= 0:
+        return [], [], []
     g = torch.Generator()
     g.manual_seed(seed)
     indices = torch.randperm(num_items, generator=g).tolist()
     n_train = math.floor(num_items * 0.85)
     n_val = math.floor(num_items * 0.05)
+    n_test = num_items - n_train - n_val
+    if n_train == 0 and num_items > 0:
+        if n_test > 0:
+            n_train, n_test = 1, n_test - 1
+        elif n_val > 0:
+            n_train, n_val = 1, n_val - 1
     train_idx = indices[:n_train]
     val_idx = indices[n_train : n_train + n_val]
     test_idx = indices[n_train + n_val :]
@@ -38,6 +46,11 @@ def build_dataloaders(
     # Determine total items from CSV using the dataset CSV reader
     all_paths = ImageNetDifficultyBinDataset._read_csv(csv_path)
     num_items = len(all_paths)
+    if num_items == 0:
+        raise ValueError(
+            "No samples found from CSV. The file may be empty or all paths were filtered/mismatched. "
+            "If you used --path-prefix, ensure it matches the beginning of paths in the CSV."
+        )
 
     train_idx, val_idx, test_idx = split_indices(num_items, seed)
     transform = default_transforms(image_size)
@@ -46,10 +59,12 @@ def build_dataloaders(
     val_ds = ImageNetDifficultyBinDataset(csv_path, val_idx, transform, root_dir=root_dir)
     test_ds = ImageNetDifficultyBinDataset(csv_path, test_idx, transform, root_dir=root_dir)
 
+    # Avoid RandomSampler crash on empty training set (shouldn't happen now, but guard anyway)
+    train_shuffle = True if len(train_ds) > 0 else False
     train_loader = DataLoader(
         train_ds,
         batch_size=batch_size,
-        shuffle=True,
+        shuffle=train_shuffle,
         num_workers=num_workers,
         pin_memory=True,
         drop_last=False,
