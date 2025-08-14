@@ -75,7 +75,7 @@ def build_dataloaders(
 
 def main():
     parser = argparse.ArgumentParser(description="Train image difficulty classifier (5 classes)")
-    parser.add_argument("--csv", default="/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/imagenet_examples.csv",
+    parser.add_argument("--csv", default="/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/image_difficulty_classifier/imagenet_examples.csv",
                         required=False, help="Path to imagenet_examples.csv")
     parser.add_argument("--output-dir", default="/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/image_difficulty_classifier/output",
                         required=False, help="Directory to write logs/checkpoints")
