@@ -18,16 +18,21 @@ pip install -r image_difficulty_classifier/requirements.txt
 ### Train
 
 ```bash
+# Train with default settings (CLIP MLP + ViT-B-32 + OpenAI weights)
+# Output automatically goes to: output_CLIP_MLP_VIT_B_32_openai
+python -m image_difficulty_classifier.train
+
+# Train with custom parameters
 python -m image_difficulty_classifier.train \
   --csv bars/imagenet_examples.csv \
-  --output-dir image_difficulty_classifier/runs/clip_bin5 \
-  --model-name clip_linear \
+  --output-dir image_difficulty_classifier/runs/custom_run \
+  --model-name clip_mlp \
   --clip-backbone "ViT-B-32" \
   --clip-pretrained "openai" \
-  --batch-size 128 \
-  --epochs 10 \
-  --lr 5e-4 \
-  --weight-decay 0.01 \
+  --batch-size 64 \
+  --epochs 20 \
+  --lr 3e-4 \
+  --weight-decay 0.05 \
   --num-workers 4 \
   --seed 42 \
   --checkpoint-every-fraction 0.2
@@ -64,8 +69,11 @@ Resuming is automatic if a latest checkpoint is present in `--output-dir`. You c
 
 ### Notes
 
-- Uses CLIP (image tower) frozen by default, with a trainable linear head. You can set `--unfreeze-backbone` to fine-tune the backbone.
-- Splits: 85% train, 5% val, 10% test (by index with a fixed seed).
-- Checkpoints every 1/5th of an epoch by default; adjustable via `--checkpoint-every-fraction`.
+- **Default model**: CLIP MLP with ViT-B-32 backbone (frozen) + trainable MLP head with dropout
+- **Output organization**: Automatically appends model info to output directory (e.g., `output_CLIP_MLP_VIT_B_32_openai`)
+- **Learning rate**: Improved schedule with warmup (10% of training) and cosine decay
+- **Splits**: 85% train, 5% val, 10% test (by index with a fixed seed)
+- **Checkpoints**: Include epoch numbers and save every 1/5th of an epoch by default
+- **Backbone fine-tuning**: Set `--unfreeze-backbone` to train the CLIP backbone (not recommended for small datasets)
 
  

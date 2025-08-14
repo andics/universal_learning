@@ -22,8 +22,11 @@ class CLIPLinearHead(nn.Module):
     ) -> None:
         super().__init__()
         # Returns (model, preprocess_train, preprocess_val); we keep only the model here.
-        model, _, _ = open_clip.create_model_and_transforms(backbone, pretrained=pretrained)
-        self.clip_model = model
+        try:
+            model, _, _ = open_clip.create_model_and_transforms(backbone, pretrained=pretrained)
+            self.clip_model = model
+        except Exception as e:
+            raise RuntimeError(f"Failed to load CLIP model '{backbone}' with pretrained weights '{pretrained}': {e}")
 
         # Freeze backbone unless explicitly requested otherwise
         if not unfreeze_backbone:
@@ -35,12 +38,17 @@ class CLIPLinearHead(nn.Module):
 
     def forward(self, images: torch.Tensor) -> torch.Tensor:
         # open_clip expects normalized tensors; upstream dataset transforms handle normalization.
-        with torch.autocast(device_type=images.device.type, enabled=False):
-            # disable autocast inside encode_image if needed; outer context in trainer manages amp
-            pass
-        features = self.clip_model.encode_image(images)
-        logits = self.classifier(features)
-        return logits
+        try:
+            with torch.autocast(device_type=images.device.type, enabled=False):
+                # disable autocast inside encode_image if needed; outer context in trainer manages amp
+                pass
+            features = self.clip_model.encode_image(images)
+            logits = self.classifier(features)
+            return logits
+        except RuntimeError as e:
+            if "size" in str(e).lower() and "tensor" in str(e).lower():
+                raise RuntimeError(f"Input size mismatch for CLIP model. Expected input compatible with {self.clip_model.__class__.__name__}. Error: {e}")
+            raise
 
 
 class CLIPMLPHead(nn.Module):
@@ -55,8 +63,11 @@ class CLIPMLPHead(nn.Module):
     ) -> None:
         super().__init__()
         # Returns (model, preprocess_train, preprocess_val); we keep only the model here.
-        model, _, _ = open_clip.create_model_and_transforms(backbone, pretrained=pretrained)
-        self.clip_model = model
+        try:
+            model, _, _ = open_clip.create_model_and_transforms(backbone, pretrained=pretrained)
+            self.clip_model = model
+        except Exception as e:
+            raise RuntimeError(f"Failed to load CLIP model '{backbone}' with pretrained weights '{pretrained}': {e}")
 
         # Freeze backbone unless explicitly requested otherwise
         if not unfreeze_backbone:
@@ -76,12 +87,17 @@ class CLIPMLPHead(nn.Module):
 
     def forward(self, images: torch.Tensor) -> torch.Tensor:
         # open_clip expects normalized tensors; upstream dataset transforms handle normalization.
-        with torch.autocast(device_type=images.device.type, enabled=False):
-            # disable autocast inside encode_image if needed; outer context in trainer manages amp
-            pass
-        features = self.clip_model.encode_image(images)
-        logits = self.classifier(features)
-        return logits
+        try:
+            with torch.autocast(device_type=images.device.type, enabled=False):
+                # disable autocast inside encode_image if needed; outer context in trainer manages amp
+                pass
+            features = self.clip_model.encode_image(images)
+            logits = self.classifier(features)
+            return logits
+        except RuntimeError as e:
+            if "size" in str(e).lower() and "tensor" in str(e).lower():
+                raise RuntimeError(f"Input size mismatch for CLIP model. Expected input compatible with {self.clip_model.__class__.__name__}. Error: {e}")
+            raise
 
 
 def build_clip_linear_head(
