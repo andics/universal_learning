@@ -136,7 +136,8 @@ def main():
 
     scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lr_lambda)
 
-    scaler = torch.cuda.amp.GradScaler() if torch.cuda.is_available() else None
+    # Use new torch.amp API to avoid deprecation warnings
+    scaler = torch.amp.GradScaler('cuda') if torch.cuda.is_available() else None
 
     config = TrainConfig(
         output_dir=args.output_dir,

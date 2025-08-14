@@ -50,9 +50,31 @@ def restore_rng_states(state: Optional[dict]) -> None:
         random.setstate(state["python"])
     if "numpy" in state:
         np.random.set_state(state["numpy"])  # type: ignore[arg-type]
+    # Convert arbitrary containers to torch.ByteTensor where needed
+    def _to_byte_tensor(x) -> torch.ByteTensor:
+        if isinstance(x, torch.Tensor):
+            if x.dtype != torch.uint8:
+                x = x.to(dtype=torch.uint8)
+            return x  # type: ignore[return-value]
+        try:
+            return torch.tensor(x, dtype=torch.uint8)  # type: ignore[return-value]
+        except Exception:
+            # Fallback: create empty state to avoid crash
+            return torch.empty(0, dtype=torch.uint8)  # type: ignore[return-value]
+
     if "torch_cpu" in state:
-        torch.set_rng_state(state["torch_cpu"])  # type: ignore[arg-type]
+        cpu_state = _to_byte_tensor(state["torch_cpu"])  # type: ignore[arg-type]
+        if cpu_state.numel() > 0:
+            torch.set_rng_state(cpu_state)
     if torch.cuda.is_available() and "torch_cuda_all" in state:
-        torch.cuda.set_rng_state_all(state["torch_cuda_all"])  # type: ignore[arg-type]
+        cuda_states = state["torch_cuda_all"]
+        if isinstance(cuda_states, (list, tuple)):
+            cuda_states_bt = [_to_byte_tensor(s) for s in cuda_states]
+            torch.cuda.set_rng_state_all(cuda_states_bt)  # type: ignore[arg-type]
+        else:
+            # Older formats may store a single state; broadcast to all devices
+            bt = _to_byte_tensor(cuda_states)
+            if bt.numel() > 0:
+                torch.cuda.set_rng_state_all([bt for _ in range(torch.cuda.device_count())])  # type: ignore[list-item]
 
 

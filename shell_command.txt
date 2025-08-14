@@ -1,4 +1,4 @@
-bsub -env LSB_CONTAINER_IMAGE="ops:5000/lavis_torch_2.4:8" -app docker-gpu-interactive -gpu num=1:j_exclusive=yes -Is -R rusage[mem=64000] -R select[hname!=ibdgx010] -q waic-long /bin/bash
+bsub -env LSB_CONTAINER_IMAGE="ops:5000/universal_learning_2.4:1" -app docker-gpu-interactive -gpu num=1:j_exclusive=yes -Is -R rusage[mem=64000] -R select[hname!=ibdgx010] -q waic-long /bin/bash
 
 export DISPLAY=132.76.83.75:1
 
