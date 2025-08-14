@@ -92,7 +92,7 @@ class Trainer:
             "rng_state": capture_rng_states(),
             "config": asdict(self.config),
         }
-        path = save_checkpoint(self.checkpoints_dir, self.global_step, state)
+        path = save_checkpoint(self.checkpoints_dir, self.global_step, state, epoch=epoch)
         if self.logger:
             self.logger.info(f"Saved checkpoint: {path}")
 

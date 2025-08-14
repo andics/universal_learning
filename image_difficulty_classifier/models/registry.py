@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional
 import torch
 import torch.nn as nn
 
-from .vision_clip import build_clip_linear_head
+from .vision_clip import build_clip_linear_head, build_clip_mlp_head
 from .vision_torchvision import build_resnet50_tv, build_resnet101_tv, build_vit_b_16_tv
 from .vision_hf import build_clip_hf_linear
 
@@ -21,6 +21,11 @@ def register(name: str):
 @register("clip_linear")
 def _build_clip_linear(num_classes: int, **kwargs) -> nn.Module:
     return build_clip_linear_head(num_classes=num_classes, **kwargs)
+
+
+@register("clip_mlp")
+def _build_clip_mlp(num_classes: int, **kwargs) -> nn.Module:
+    return build_clip_mlp_head(num_classes=num_classes, **kwargs)
 
 
 @register("clip_hf_linear")

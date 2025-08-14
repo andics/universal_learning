@@ -10,9 +10,16 @@ def ensure_dir(path: str) -> None:
 
 
 def _extract_step(filename: str) -> int:
-    # filename like checkpoint_step123.pt
+    # filename like checkpoint_epoch3_step123.pt or checkpoint_step123.pt
     base = os.path.basename(filename)
     try:
+        if "checkpoint_epoch" in base:
+            # New format: extract step number from epoch_step format
+            parts = base.split("_step")
+            if len(parts) >= 2:
+                num = parts[-1].split(".pt")[0]
+                return int(num)
+        # Old format: checkpoint_step123.pt
         num = base.split("checkpoint_step")[-1].split(".pt")[0]
         return int(num)
     except Exception:
@@ -20,8 +27,14 @@ def _extract_step(filename: str) -> int:
 
 
 def get_latest_checkpoint(checkpoints_dir: str) -> Optional[str]:
-    pattern = os.path.join(checkpoints_dir, "checkpoint_step*.pt")
-    candidates = glob.glob(pattern)
+    # Match both old and new formats
+    patterns = [
+        os.path.join(checkpoints_dir, "checkpoint_epoch*_step*.pt"),
+        os.path.join(checkpoints_dir, "checkpoint_step*.pt")
+    ]
+    candidates = []
+    for pattern in patterns:
+        candidates.extend(glob.glob(pattern))
     if not candidates:
         return None
     candidates.sort(key=_extract_step)
@@ -32,9 +45,13 @@ def save_checkpoint(
     checkpoints_dir: str,
     step: int,
     state: Dict[str, Any],
+    epoch: Optional[int] = None,
 ) -> str:
     ensure_dir(checkpoints_dir)
-    ckpt_path = os.path.join(checkpoints_dir, f"checkpoint_step{step}.pt")
+    if epoch is not None:
+        ckpt_path = os.path.join(checkpoints_dir, f"checkpoint_epoch{epoch}_step{step}.pt")
+    else:
+        ckpt_path = os.path.join(checkpoints_dir, f"checkpoint_step{step}.pt")
     torch.save(state, ckpt_path)
     latest_symlink = os.path.join(checkpoints_dir, "latest.pt")
     try:

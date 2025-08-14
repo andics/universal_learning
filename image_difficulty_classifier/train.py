@@ -79,16 +79,16 @@ def main():
                         required=False, help="Path to imagenet_examples.csv")
     parser.add_argument("--output-dir", default="/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/image_difficulty_classifier/output",
                         required=False, help="Directory to write logs/checkpoints")
-    parser.add_argument("--model-name", default="clip_linear", choices=list_models())
-    parser.add_argument("--clip-backbone", default="ViT-B-32")
-    parser.add_argument("--clip-pretrained", default="openai")
+    parser.add_argument("--model-name", default="clip_mlp", choices=list_models())
+    parser.add_argument("--clip-backbone", default="ViT-L-14")
+    parser.add_argument("--clip-pretrained", default="laion2b_s32b_b82k")
     parser.add_argument("--unfreeze-backbone", action="store_true")
-    parser.add_argument("--batch-size", type=int, default=128)
+    parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--epochs", type=int, default=10)
-    parser.add_argument("--lr", type=float, default=5e-4)
-    parser.add_argument("--weight-decay", type=float, default=0.01)
+    parser.add_argument("--lr", type=float, default=3e-4)
+    parser.add_argument("--weight-decay", type=float, default=0.05)
     parser.add_argument("--num-workers", type=int, default=4)
-    parser.add_argument("--image-size", type=int, default=224)
+    parser.add_argument("--image-size", type=int, default=336)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--checkpoint-every-fraction", type=float, default=0.2)
     parser.add_argument("--no-resume", action="store_true", help="Do not resume even if a checkpoint exists")
@@ -124,15 +124,18 @@ def main():
         filter(lambda p: p.requires_grad, model.parameters()), lr=args.lr, weight_decay=args.weight_decay
     )
 
-    # Cosine schedule with warmup (5% of total steps)
+    # Improved cosine schedule with warmup (10% of total steps) starting from higher LR
     total_steps = args.epochs * math.ceil(len(train_loader.dataset) / args.batch_size)
-    warmup_steps = max(1, int(0.05 * total_steps))
+    warmup_steps = max(1, int(0.1 * total_steps))
 
     def lr_lambda(step: int):
         if step < warmup_steps:
-            return float(step) / float(max(1, warmup_steps))
+            # Warmup from 0 to peak LR (which is 3x the base LR)
+            return 3.0 * float(step) / float(max(1, warmup_steps))
+        # Cosine decay from 3x base LR to 0.1x base LR
         progress = float(step - warmup_steps) / float(max(1, total_steps - warmup_steps))
-        return 0.5 * (1.0 + math.cos(math.pi * progress))
+        min_lr_ratio = 0.1
+        return min_lr_ratio + (3.0 - min_lr_ratio) * 0.5 * (1.0 + math.cos(math.pi * progress))
 
     scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lr_lambda)
 
