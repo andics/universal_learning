@@ -1,0 +1,159 @@
+import argparse
+import json
+import math
+import os
+from typing import List, Tuple, Optional
+
+import torch
+from torch.utils.data import DataLoader
+
+from .data import ImageNetDifficultyBinDataset, default_transforms
+from .engine import Trainer, TrainConfig
+from .models import get_model, list_models
+from .utils.logging import setup_logging
+from .utils.seed import set_global_seed
+
+
+def split_indices(num_items: int, seed: int) -> Tuple[List[int], List[int], List[int]]:
+    g = torch.Generator()
+    g.manual_seed(seed)
+    indices = torch.randperm(num_items, generator=g).tolist()
+    n_train = math.floor(num_items * 0.85)
+    n_val = math.floor(num_items * 0.05)
+    train_idx = indices[:n_train]
+    val_idx = indices[n_train : n_train + n_val]
+    test_idx = indices[n_train + n_val :]
+    return train_idx, val_idx, test_idx
+
+
+def build_dataloaders(
+    csv_path: str,
+    batch_size: int,
+    num_workers: int,
+    seed: int,
+    image_size: int,
+    root_dir: Optional[str] = None,
+):
+    # Determine total items from CSV using the dataset CSV reader
+    all_paths = ImageNetDifficultyBinDataset._read_csv(csv_path)
+    num_items = len(all_paths)
+
+    train_idx, val_idx, test_idx = split_indices(num_items, seed)
+    transform = default_transforms(image_size)
+
+    train_ds = ImageNetDifficultyBinDataset(csv_path, train_idx, transform, root_dir=root_dir)
+    val_ds = ImageNetDifficultyBinDataset(csv_path, val_idx, transform, root_dir=root_dir)
+    test_ds = ImageNetDifficultyBinDataset(csv_path, test_idx, transform, root_dir=root_dir)
+
+    train_loader = DataLoader(
+        train_ds,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=num_workers,
+        pin_memory=True,
+        drop_last=False,
+    )
+    eval_loader_kwargs = dict(batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True)
+    val_loader = DataLoader(val_ds, **eval_loader_kwargs)
+    test_loader = DataLoader(test_ds, **eval_loader_kwargs)
+    return train_loader, val_loader, test_loader
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Train image difficulty classifier (5 classes)")
+    parser.add_argument("--csv", required=True, help="Path to imagenet_examples.csv")
+    parser.add_argument("--output-dir", required=True, help="Directory to write logs/checkpoints")
+    parser.add_argument("--model-name", default="clip_linear", choices=list_models())
+    parser.add_argument("--clip-backbone", default="ViT-B-32")
+    parser.add_argument("--clip-pretrained", default="openai")
+    parser.add_argument("--unfreeze-backbone", action="store_true")
+    parser.add_argument("--batch-size", type=int, default=128)
+    parser.add_argument("--epochs", type=int, default=10)
+    parser.add_argument("--lr", type=float, default=5e-4)
+    parser.add_argument("--weight-decay", type=float, default=0.01)
+    parser.add_argument("--num-workers", type=int, default=4)
+    parser.add_argument("--image-size", type=int, default=224)
+    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--checkpoint-every-fraction", type=float, default=0.2)
+    parser.add_argument("--no-resume", action="store_true", help="Do not resume even if a checkpoint exists")
+    parser.add_argument("--grad-clip", type=float, default=None)
+    parser.add_argument("--root-dir", type=str, default=None, help="Optional root dir to prefix image paths from CSV")
+    args = parser.parse_args()
+
+    os.makedirs(args.output_dir, exist_ok=True)
+    logger = setup_logging(name="train")
+    set_global_seed(args.seed)
+
+    train_loader, val_loader, test_loader = build_dataloaders(
+        csv_path=args.csv,
+        batch_size=args.batch_size,
+        num_workers=args.num_workers,
+        seed=args.seed,
+        image_size=args.image_size,
+        root_dir=args.root_dir,
+    )
+
+    model = get_model(
+        args.model_name,
+        num_classes=5,
+        clip_backbone=args.clip_backbone,
+        clip_pretrained=args.clip_pretrained,
+        unfreeze_backbone=args.unfreeze_backbone,
+    )
+
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model.to(device)
+
+    optimizer = torch.optim.AdamW(
+        filter(lambda p: p.requires_grad, model.parameters()), lr=args.lr, weight_decay=args.weight_decay
+    )
+
+    # Cosine schedule with warmup (5% of total steps)
+    total_steps = args.epochs * math.ceil(len(train_loader.dataset) / args.batch_size)
+    warmup_steps = max(1, int(0.05 * total_steps))
+
+    def lr_lambda(step: int):
+        if step < warmup_steps:
+            return float(step) / float(max(1, warmup_steps))
+        progress = float(step - warmup_steps) / float(max(1, total_steps - warmup_steps))
+        return 0.5 * (1.0 + math.cos(math.pi * progress))
+
+    scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lr_lambda)
+
+    scaler = torch.cuda.amp.GradScaler() if torch.cuda.is_available() else None
+
+    config = TrainConfig(
+        output_dir=args.output_dir,
+        epochs=args.epochs,
+        batch_size=args.batch_size,
+        lr=args.lr,
+        weight_decay=args.weight_decay,
+        num_workers=args.num_workers,
+        device=device,
+        checkpoint_every_fraction=args.checkpoint_every_fraction,
+        gradient_clip_norm=args.grad_clip,
+    )
+
+    trainer = Trainer(
+        model=model,
+        train_loader=train_loader,
+        val_loader=val_loader,
+        test_loader=test_loader,
+        optimizer=optimizer,
+        scheduler=scheduler,
+        config=config,
+        scaler=scaler,
+        logger=logger,
+    )
+
+    trainer.maybe_resume(resume=not args.no_resume)
+    test_metrics = trainer.fit()
+
+    with open(os.path.join(args.output_dir, "test_metrics.json"), "w", encoding="utf-8") as f:
+        json.dump(test_metrics, f, indent=2)
+
+
+if __name__ == "__main__":
+    main()
+
+
