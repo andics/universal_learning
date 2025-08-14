@@ -1,4 +1,5 @@
 import math
+import time
 import os
 from dataclasses import dataclass, asdict
 from typing import Any, Dict, Optional
@@ -96,8 +97,10 @@ class Trainer:
         metrics = EpochMetrics()
         num_steps_per_epoch = math.ceil(len(self.train_loader.dataset) / self.config.batch_size)
         checkpoint_interval = max(1, int(num_steps_per_epoch * self.config.checkpoint_every_fraction))
+        epoch_start_time = time.time()
 
         for step, (images, targets) in enumerate(self.train_loader, start=1):
+            step_start_time = time.time()
             images = images.to(self.config.device, non_blocking=True)
             targets = targets.to(self.config.device, non_blocking=True)
 
@@ -126,6 +129,20 @@ class Trainer:
             metrics.update(float(loss.detach().item()), logits.detach(), targets)
             self.global_step += 1
 
+            # Per-step logging
+            if self.logger:
+                with torch.no_grad():
+                    preds = torch.argmax(logits, dim=1)
+                    batch_acc = float((preds == targets).sum().item()) / max(int(targets.numel()), 1)
+                lr = self.optimizer.param_groups[0]["lr"] if self.optimizer.param_groups else 0.0
+                step_time = time.time() - step_start_time
+                imgs_per_sec = int(images.size(0) / max(step_time, 1e-8))
+                self.logger.info(
+                    f"epoch={epoch+1} step={step}/{num_steps_per_epoch} global_step={self.global_step} "
+                    f"loss={float(loss.detach().item()):.4f} batch_acc={batch_acc:.4f} lr={lr:.6g} "
+                    f"time={step_time:.3f}s ips={imgs_per_sec}/s"
+                )
+
             if step % checkpoint_interval == 0:
                 self._save(epoch)
 
@@ -135,26 +152,40 @@ class Trainer:
     def _evaluate(self, loader: DataLoader) -> Dict[str, float]:
         self.model.eval()
         metrics = EpochMetrics()
+        start_time = time.time()
         for images, targets in loader:
             images = images.to(self.config.device, non_blocking=True)
             targets = targets.to(self.config.device, non_blocking=True)
             logits = self.model(images)
             loss = self.criterion(logits, targets)
             metrics.update(float(loss.detach().item()), logits.detach(), targets)
-        return metrics.results()
+        results = metrics.results()
+        results["time_sec"] = float(time.time() - start_time)
+        return results
 
     def fit(self) -> Dict[str, float]:
         for epoch in range(self.start_epoch, self.config.epochs):
             if self.logger:
                 self.logger.info(f"Epoch {epoch+1}/{self.config.epochs}")
+            train_start = time.time()
             train_metrics = self._run_epoch(epoch)
+            train_metrics["time_sec"] = float(time.time() - train_start)
             val_metrics = self._evaluate(self.val_loader)
             if self.logger:
-                self.logger.info(f"Train: {train_metrics} | Val: {val_metrics}")
+                self.logger.info(
+                    f"Train: loss={train_metrics['loss']:.4f} acc={train_metrics['accuracy']:.4f} "
+                    f"samples={int(train_metrics['num_samples'])} steps={int(train_metrics['num_steps'])} "
+                    f"time={train_metrics['time_sec']:.2f}s | "
+                    f"Val: loss={val_metrics['loss']:.4f} acc={val_metrics['accuracy']:.4f} "
+                    f"samples={int(val_metrics['num_samples'])} time={val_metrics['time_sec']:.2f}s"
+                )
             self._save(epoch)
         test_metrics = self._evaluate(self.test_loader)
         if self.logger:
-            self.logger.info(f"Test: {test_metrics}")
+            self.logger.info(
+                f"Test: loss={test_metrics['loss']:.4f} acc={test_metrics['accuracy']:.4f} "
+                f"samples={int(test_metrics['num_samples'])} time={test_metrics['time_sec']:.2f}s"
+            )
         return test_metrics
 
 
