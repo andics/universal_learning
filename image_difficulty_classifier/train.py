@@ -62,8 +62,10 @@ def build_dataloaders(
 
 def main():
     parser = argparse.ArgumentParser(description="Train image difficulty classifier (5 classes)")
-    parser.add_argument("--csv", required=True, help="Path to imagenet_examples.csv")
-    parser.add_argument("--output-dir", required=True, help="Directory to write logs/checkpoints")
+    parser.add_argument("--csv", default="/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/imagenet_examples.csv",
+                        required=True, help="Path to imagenet_examples.csv")
+    parser.add_argument("--output-dir", default="/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/image_difficulty_classifier/output",
+                        required=True, help="Directory to write logs/checkpoints")
     parser.add_argument("--model-name", default="clip_linear", choices=list_models())
     parser.add_argument("--clip-backbone", default="ViT-B-32")
     parser.add_argument("--clip-pretrained", default="openai")
@@ -82,7 +84,7 @@ def main():
     parser.add_argument(
         "--path-prefix",
         type=str,
-        default=None,
+        default="/home/projects/bagon/shared/imagenet512/val",
         help=(
             "Optional replacement for the initial prefix '/om2/user/cheungb/datasets/imagenet_validation/val'"
             " in the CSV paths. If set, a copy of the CSV with the prefix replaced will be written to the"
