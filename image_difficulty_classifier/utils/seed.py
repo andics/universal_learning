@@ -51,30 +51,43 @@ def restore_rng_states(state: Optional[dict]) -> None:
     if "numpy" in state:
         np.random.set_state(state["numpy"])  # type: ignore[arg-type]
     # Convert arbitrary containers to torch.ByteTensor where needed
-    def _to_byte_tensor(x) -> torch.ByteTensor:
+    def _to_byte_tensor_cpu(x) -> torch.ByteTensor:
         if isinstance(x, torch.Tensor):
-            if x.dtype != torch.uint8:
-                x = x.to(dtype=torch.uint8)
-            return x  # type: ignore[return-value]
+            return x.detach().to(device="cpu", dtype=torch.uint8)  # type: ignore[return-value]
         try:
-            return torch.tensor(x, dtype=torch.uint8)  # type: ignore[return-value]
+            return torch.tensor(x, device="cpu", dtype=torch.uint8)  # type: ignore[return-value]
         except Exception:
-            # Fallback: create empty state to avoid crash
-            return torch.empty(0, dtype=torch.uint8)  # type: ignore[return-value]
+            return torch.empty(0, device="cpu", dtype=torch.uint8)  # type: ignore[return-value]
+
+    def _to_byte_tensor_cuda(x, device_index: int) -> torch.ByteTensor:
+        device = f"cuda:{device_index}"
+        if isinstance(x, torch.Tensor):
+            return x.detach().to(device=device, dtype=torch.uint8)  # type: ignore[return-value]
+        try:
+            return torch.tensor(x, device=device, dtype=torch.uint8)  # type: ignore[return-value]
+        except Exception:
+            return torch.empty(0, device=device, dtype=torch.uint8)  # type: ignore[return-value]
 
     if "torch_cpu" in state:
-        cpu_state = _to_byte_tensor(state["torch_cpu"])  # type: ignore[arg-type]
+        cpu_state = _to_byte_tensor_cpu(state["torch_cpu"])  # type: ignore[arg-type]
         if cpu_state.numel() > 0:
             torch.set_rng_state(cpu_state)
     if torch.cuda.is_available() and "torch_cuda_all" in state:
         cuda_states = state["torch_cuda_all"]
         if isinstance(cuda_states, (list, tuple)):
-            cuda_states_bt = [_to_byte_tensor(s) for s in cuda_states]
+            device_count = torch.cuda.device_count()
+            n = min(len(cuda_states), device_count)
+            cuda_states_bt = [_to_byte_tensor_cuda(cuda_states[i], i) for i in range(n)]
+            # If fewer states than devices, repeat the last state
+            if n < device_count and n > 0:
+                last = cuda_states_bt[-1]
+                cuda_states_bt.extend([last] * (device_count - n))
             torch.cuda.set_rng_state_all(cuda_states_bt)  # type: ignore[arg-type]
         else:
             # Older formats may store a single state; broadcast to all devices
-            bt = _to_byte_tensor(cuda_states)
-            if bt.numel() > 0:
-                torch.cuda.set_rng_state_all([bt for _ in range(torch.cuda.device_count())])  # type: ignore[list-item]
+            device_count = torch.cuda.device_count()
+            if device_count > 0:
+                bt_list = [_to_byte_tensor_cuda(cuda_states, i) for i in range(device_count)]
+                torch.cuda.set_rng_state_all(bt_list)  # type: ignore[arg-type]
 
 

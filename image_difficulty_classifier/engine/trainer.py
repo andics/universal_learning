@@ -73,7 +73,11 @@ class Trainer:
             self.scaler.load_state_dict(payload["scaler_state"])  # type: ignore[attr-defined]
         self.global_step = int(payload.get("global_step", 0))
         self.start_epoch = int(payload.get("epoch", 0))
-        restore_rng_states(payload.get("rng_state"))
+        try:
+            restore_rng_states(payload.get("rng_state"))
+        except Exception as e:
+            if self.logger:
+                self.logger.warning(f"Skipping RNG state restore due to error: {e}")
         if self.logger:
             self.logger.info(f"Resumed from {latest} at epoch {self.start_epoch}, step {self.global_step}")
 
