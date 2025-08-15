@@ -2,12 +2,12 @@ import argparse
 import json
 import math
 import os
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Dict
 
 import torch
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, WeightedRandomSampler
 
-from image_difficulty_classifier.data import ImageNetDifficultyBinDataset, default_transforms
+from image_difficulty_classifier.data import ImageNetDifficultyBinDataset, default_transforms, indices_to_bins
 from image_difficulty_classifier.engine import Trainer, TrainConfig
 from image_difficulty_classifier.models import get_model, list_models
 from image_difficulty_classifier.utils.logging import setup_logging
@@ -41,6 +41,8 @@ def build_dataloaders(
     seed: int,
     image_size: int,
     root_dir: Optional[str] = None,
+    num_bins: int = 5,
+    min_images_common: Optional[int] = None,
 ):
     # Determine total items from CSV using the dataset CSV reader
     all_paths = ImageNetDifficultyBinDataset._read_csv(csv_path)
@@ -50,19 +52,111 @@ def build_dataloaders(
             "No samples found from CSV. The file may be empty or the format is unexpected."
         )
 
-    train_idx, val_idx, test_idx = split_indices(num_items, seed)
+    # Helper: extract ImageNet class id from path
+    import re
+
+    def extract_class_id(path: str) -> str:
+        m = re.search(r"/(n\d{8})/", path)
+        return m.group(1) if m else "unknown"
+
+    # Helper: bin assignment by index
+    half_point = num_items // 2
+
+    def assign_bin(index: int) -> int:
+        if num_bins == 2:
+            return 0 if index < half_point else 1
+        # 5-bin default via shared helper
+        return indices_to_bins(index)
+
+    # Optionally filter to classes with minimum images per bin >= threshold
+    # Build class -> bin counts
+    if min_images_common is not None and min_images_common > 0:
+        class_to_counts: Dict[str, List[int]] = {}
+        for idx, path in enumerate(all_paths):
+            cls = extract_class_id(path)
+            if cls not in class_to_counts:
+                class_to_counts[cls] = [0] * num_bins
+            class_to_counts[cls][assign_bin(idx)] += 1
+
+        # Keep only classes present with at least min_images_common in every bin
+        kept_classes = {c for c, counts in class_to_counts.items() if len(counts) == num_bins and min(counts) >= min_images_common}
+
+        # If nothing left, fall back to no filtering
+        if len(kept_classes) == 0:
+            kept_classes = None  # no filtering
+        else:
+            # Build filtered index list
+            filtered_indices = [i for i, p in enumerate(all_paths) if extract_class_id(p) in kept_classes]
+            # Overwrite num_items for splitting scope
+            num_items_filtered = len(filtered_indices)
+            if num_items_filtered == 0:
+                train_idx, val_idx, test_idx = split_indices(num_items, seed)
+            else:
+                # Shuffle filtered indices and split
+                g = torch.Generator()
+                g.manual_seed(seed)
+                perm = torch.randperm(num_items_filtered, generator=g).tolist()
+                filtered_indices = [filtered_indices[i] for i in perm]
+                n_train = math.floor(num_items_filtered * 0.85)
+                n_val = math.floor(num_items_filtered * 0.05)
+                n_test = num_items_filtered - n_train - n_val
+                train_idx = filtered_indices[:n_train]
+                val_idx = filtered_indices[n_train : n_train + n_val]
+                test_idx = filtered_indices[n_train + n_val :]
+        
+        if 'train_idx' not in locals():
+            train_idx, val_idx, test_idx = split_indices(num_items, seed)
+    else:
+        train_idx, val_idx, test_idx = split_indices(num_items, seed)
     transform = default_transforms(image_size)
 
     train_ds = ImageNetDifficultyBinDataset(csv_path, train_idx, transform, root_dir=root_dir)
     val_ds = ImageNetDifficultyBinDataset(csv_path, val_idx, transform, root_dir=root_dir)
     test_ds = ImageNetDifficultyBinDataset(csv_path, test_idx, transform, root_dir=root_dir)
 
+    # If using 2-bin mode, wrap datasets to relabel based on equal halves
+    if num_bins == 2:
+        class TwoBinLabelWrapper(torch.utils.data.Dataset):
+            def __init__(self, base_ds: ImageNetDifficultyBinDataset, total_items: int):
+                self.base = base_ds
+                self.total = total_items
+                self.half = total_items // 2
+
+            def __len__(self) -> int:
+                return len(self.base)
+
+            def __getitem__(self, i: int):
+                x, _ = self.base[i]
+                original_index = self.base.indices[i]
+                y2 = 0 if original_index < self.half else 1
+                return x, y2
+
+        train_ds = TwoBinLabelWrapper(train_ds, num_items)
+        val_ds = TwoBinLabelWrapper(val_ds, num_items)
+        test_ds = TwoBinLabelWrapper(test_ds, num_items)
+
     # Avoid RandomSampler crash on empty training set (shouldn't happen now, but guard anyway)
-    train_shuffle = True if len(train_ds) > 0 else False
+    # Build a balanced sampler across bins within the selected classes
+    if len(train_ds) > 0:
+        # collect labels for train set without loading images
+        labels = []
+        if num_bins == 2:
+            for idx in train_idx:
+                labels.append(0 if idx < half_point else 1)
+        else:
+            for idx in train_idx:
+                labels.append(indices_to_bins(idx))
+        bin_counts = [max(1, labels.count(b)) for b in range(num_bins)]
+        weights = [1.0 / bin_counts[y] for y in labels]
+        sampler = WeightedRandomSampler(weights, num_samples=len(labels), replacement=True)
+    else:
+        sampler = None
+
     train_loader = DataLoader(
         train_ds,
         batch_size=batch_size,
-        shuffle=train_shuffle,
+        shuffle=False if sampler is not None else False,
+        sampler=sampler,
         num_workers=num_workers,
         pin_memory=True,
         drop_last=False,
@@ -95,6 +189,9 @@ def main():
     parser.add_argument("--no-resume", action="store_true", help="Do not resume even if a checkpoint exists")
     parser.add_argument("--grad-clip", type=float, default=None)
     parser.add_argument("--root-dir", type=str, default=None, help="Optional root dir to prefix image paths from CSV")
+    # New options
+    parser.add_argument("--num-bins", type=int, default=2, choices=[2,5], help="Number of difficulty bins to classify (2 = equal halves by index, 5 = original bins)")
+    parser.add_argument("--minimum-images-common", type=int, default=19, help="Keep only classes whose per-bin minimum image count is >= this number")
     args = parser.parse_args()
 
     # Automatically append model name to output directory for better organization
@@ -127,6 +224,8 @@ def main():
         seed=args.seed,
         image_size=args.image_size,
         root_dir=args.root_dir,
+        num_bins=args.num_bins,
+        min_images_common=args.minimum_images_common,
     )
 
     # Build model with appropriate arguments based on model type
