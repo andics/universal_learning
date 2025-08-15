@@ -7,7 +7,7 @@ from typing import List, Tuple, Optional, Dict
 import torch
 from torch.utils.data import DataLoader, WeightedRandomSampler
 
-from image_difficulty_classifier.data import ImageNetDifficultyBinDataset, default_transforms, indices_to_bins
+from image_difficulty_classifier.data import ImageNetDifficultyBinDataset, default_transforms, indices_to_bins, train_transforms
 from image_difficulty_classifier.engine import Trainer, TrainConfig
 from image_difficulty_classifier.models import get_model, list_models
 from image_difficulty_classifier.utils.logging import setup_logging
@@ -108,11 +108,13 @@ def build_dataloaders(
             train_idx, val_idx, test_idx = split_indices(num_items, seed)
     else:
         train_idx, val_idx, test_idx = split_indices(num_items, seed)
-    transform = default_transforms(image_size)
+    # Use training augmentations only for train split; eval transforms for val/test
+    transform_train = train_transforms(image_size)
+    transform_eval = default_transforms(image_size)
 
-    train_ds = ImageNetDifficultyBinDataset(csv_path, train_idx, transform, root_dir=root_dir)
-    val_ds = ImageNetDifficultyBinDataset(csv_path, val_idx, transform, root_dir=root_dir)
-    test_ds = ImageNetDifficultyBinDataset(csv_path, test_idx, transform, root_dir=root_dir)
+    train_ds = ImageNetDifficultyBinDataset(csv_path, train_idx, transform_train, root_dir=root_dir)
+    val_ds = ImageNetDifficultyBinDataset(csv_path, val_idx, transform_eval, root_dir=root_dir)
+    test_ds = ImageNetDifficultyBinDataset(csv_path, test_idx, transform_eval, root_dir=root_dir)
 
     # If using 2-bin mode, wrap datasets to relabel based on equal halves
     if num_bins == 2:
@@ -173,15 +175,16 @@ def main():
                         required=False, help="Path to imagenet_examples.csv")
     parser.add_argument("--output-dir", default="/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/image_difficulty_classifier/output",
                         required=False, help="Directory to write logs/checkpoints")
-    parser.add_argument("--model-name", default="resnet50_tv", choices=list_models())
+    # Default to frozen CLIP linear head
+    parser.add_argument("--model-name", default="clip_linear", choices=list_models())
     parser.add_argument("--clip-backbone", default="ViT-B-32")
     parser.add_argument("--clip-pretrained", default="openai")
-    parser.add_argument("--unfreeze-backbone", action="store_true", default=True)
+    parser.add_argument("--unfreeze-backbone", action="store_true", default=False)
     parser.add_argument("--freeze-backbone", dest="unfreeze_backbone", action="store_false", help="Keep backbone frozen (opposite of --unfreeze-backbone)")
-    parser.add_argument("--batch-size", type=int, default=64)
-    parser.add_argument("--epochs", type=int, default=10)
-    parser.add_argument("--lr", type=float, default=1e-4)
-    parser.add_argument("--weight-decay", type=float, default=0.05)
+    parser.add_argument("--batch-size", type=int, default=128)
+    parser.add_argument("--epochs", type=int, default=20)
+    parser.add_argument("--lr", type=float, default=5e-4)
+    parser.add_argument("--weight-decay", type=float, default=0.01)
     parser.add_argument("--num-workers", type=int, default=4)
     parser.add_argument("--image-size", type=int, default=224)
     parser.add_argument("--seed", type=int, default=42)

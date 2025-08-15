@@ -6,6 +6,7 @@ from PIL import Image
 from torch.utils.data import Dataset
 import torch
 import torchvision.transforms as T
+import random
 
 
 @dataclass
@@ -21,10 +22,33 @@ def indices_to_bins(index: int) -> int:
 
 
 def default_transforms(image_size: int = 224) -> T.Compose:
+    # Evaluation transforms (deterministic)
     return T.Compose(
         [
             T.Resize(image_size, interpolation=T.InterpolationMode.BICUBIC),
             T.CenterCrop(image_size),
+            T.ToTensor(),
+            T.Normalize(mean=[0.48145466, 0.4578275, 0.40821073], std=[0.26862954, 0.26130258, 0.27577711]),
+        ]
+    )
+
+
+def train_transforms(image_size: int = 224) -> T.Compose:
+    # Training transforms with light augmentation to reduce overfitting
+    # Use RandomResizedCrop, HorizontalFlip, optional RandAugment/AutoAugment, then CLIP normalization
+    aug: List[T.transforms] = []  # type: ignore
+    try:
+        aug.append(T.RandAugment())
+    except Exception:
+        try:
+            aug.append(T.AutoAugment(T.AutoAugmentPolicy.IMAGENET))
+        except Exception:
+            pass
+    return T.Compose(
+        [
+            T.RandomResizedCrop(image_size, scale=(0.7, 1.0), interpolation=T.InterpolationMode.BICUBIC),
+            T.RandomHorizontalFlip(p=0.5),
+            *aug,
             T.ToTensor(),
             T.Normalize(mean=[0.48145466, 0.4578275, 0.40821073], std=[0.26862954, 0.26130258, 0.27577711]),
         ]
@@ -41,6 +65,7 @@ class ImageNetDifficultyBinDataset(Dataset):
     ) -> None:
         self.image_paths: List[str] = self._read_csv(csv_path)
         self.indices: List[int] = indices
+        # Add light default augmentation during training-like usage; deterministic callers can pass their own
         self.transform = transform or default_transforms()
         self.root_dir = root_dir
 
