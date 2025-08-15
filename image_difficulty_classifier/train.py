@@ -206,7 +206,8 @@ def main():
         args.output_dir = base_output_dir + f"_{args.model_name.upper()}_{tuning_status}"
 
     os.makedirs(args.output_dir, exist_ok=True)
-    logger = setup_logging(name="train")
+    # Save logs in the model directory with absolute epoch timestamp
+    logger = setup_logging(name="train", log_dir=args.output_dir)
     set_global_seed(args.seed)
     
     # Log the output directory being used
