@@ -2,6 +2,7 @@ import argparse
 import json
 import math
 import os
+import time
 from typing import List, Tuple, Optional, Dict
 
 import torch
@@ -211,14 +212,40 @@ def main():
     # Save logs in the model directory with absolute epoch timestamp
     logger = setup_logging(name="train", log_dir=args.output_dir)
     set_global_seed(args.seed)
-    
-    # Log the output directory being used
-    logger.info(f"Output directory: {args.output_dir}")
-    logger.info(f"Model: {args.model_name}")
-    logger.info(f"Backbone fine-tuning: {'ENABLED' if args.unfreeze_backbone else 'DISABLED (frozen)'}")
-    if args.model_name in ["clip_linear", "clip_mlp"]:
-        logger.info(f"CLIP backbone: {args.clip_backbone}")
-        logger.info(f"CLIP pretrained: {args.clip_pretrained}")
+
+    # Detailed run summary at the very beginning of the log
+    run_summary = {
+        "timestamp_epoch": int(time.time()),
+        "output_dir": args.output_dir,
+        "csv": args.csv,
+        "root_dir": args.root_dir,
+        "data": {
+            "image_size": args.image_size,
+            "num_workers": args.num_workers,
+            "num_bins": args.num_bins,
+            "minimum_images_common": args.minimum_images_common,
+        },
+        "model": {
+            "model_name": args.model_name,
+            "clip_backbone": args.clip_backbone,
+            "clip_pretrained": args.clip_pretrained,
+            "unfreeze_backbone": bool(args.unfreeze_backbone),
+            "num_classes": args.num_bins,
+        },
+        "train": {
+            "batch_size": args.batch_size,
+            "epochs": args.epochs,
+            "lr": args.lr,
+            "weight_decay": args.weight_decay,
+            "grad_clip": args.grad_clip,
+            "checkpoint_every_fraction": args.checkpoint_every_fraction,
+            "optimizer": "AdamW",
+            "scheduler": "LambdaLR(cosine warmup 10%)",
+            "amp": bool(torch.cuda.is_available()),
+            "seed": args.seed,
+        },
+    }
+    logger.info("RUN CONFIG:\n" + json.dumps(run_summary, indent=2))
 
     train_loader, val_loader, test_loader = build_dataloaders(
         csv_path=args.csv,
