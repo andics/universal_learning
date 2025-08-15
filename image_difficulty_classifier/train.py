@@ -7,7 +7,7 @@ from typing import List, Tuple, Optional, Dict
 import torch
 from torch.utils.data import DataLoader, WeightedRandomSampler
 
-from image_difficulty_classifier.data import ImageNetDifficultyBinDataset, default_transforms, indices_to_bins, train_transforms
+from image_difficulty_classifier.data import ImageNetDifficultyBinDataset, default_transforms, indices_to_bins
 from image_difficulty_classifier.engine import Trainer, TrainConfig
 from image_difficulty_classifier.models import get_model, list_models
 from image_difficulty_classifier.utils.logging import setup_logging
@@ -108,11 +108,10 @@ def build_dataloaders(
             train_idx, val_idx, test_idx = split_indices(num_items, seed)
     else:
         train_idx, val_idx, test_idx = split_indices(num_items, seed)
-    # Use training augmentations only for train split; eval transforms for val/test
-    transform_train = train_transforms(image_size)
+    # Use the same deterministic transforms for all splits (no augmentation)
     transform_eval = default_transforms(image_size)
 
-    train_ds = ImageNetDifficultyBinDataset(csv_path, train_idx, transform_train, root_dir=root_dir)
+    train_ds = ImageNetDifficultyBinDataset(csv_path, train_idx, transform_eval, root_dir=root_dir)
     val_ds = ImageNetDifficultyBinDataset(csv_path, val_idx, transform_eval, root_dir=root_dir)
     test_ds = ImageNetDifficultyBinDataset(csv_path, test_idx, transform_eval, root_dir=root_dir)
 
