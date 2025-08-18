@@ -208,6 +208,19 @@ def main():
         tuning_status = "FINETUNE" if args.unfreeze_backbone else "FROZEN"
         args.output_dir = base_output_dir + f"_{args.model_name.upper()}_{tuning_status}"
 
+    # Ensure unique output directory by appending _1, _2, ... if needed
+    def _make_unique_dir(path: str) -> str:
+        if not os.path.exists(path):
+            return path
+        base = path
+        suffix = 1
+        while True:
+            candidate = f"{base}_{suffix}"
+            if not os.path.exists(candidate):
+                return candidate
+            suffix += 1
+
+    args.output_dir = _make_unique_dir(args.output_dir)
     os.makedirs(args.output_dir, exist_ok=True)
     # Save logs in the model directory with absolute epoch timestamp
     logger = setup_logging(name="train", log_dir=args.output_dir)
