@@ -4,8 +4,12 @@ import shlex
 from datetime import datetime
 
 
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROG_ROOT = os.path.normpath(os.path.join(ROOT_DIR, ".."))  # .../Programming
+
 BASE_TRAIN_PY = "/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/image_difficulty_classifier/train.py"
-SEQ_ARR = "../shared/seq_arr.sh"
+# Resolve seq_arr.sh relative to this file's location to avoid CWD issues
+SEQ_ARR = os.path.normpath(os.path.join(ROOT_DIR, "..", "shared", "seq_arr.sh"))  # If not found, submit with bsub directly
 LSF_LOG_OUT = "/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Cluster_runtime/model_training/useCase_out_from_%J.log"
 LSF_LOG_ERR = "/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Cluster_runtime/model_training/useCase_err_from_%J.log"
 CSV_PATH = "/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/image_difficulty_classifier/imagenet_examples.csv"
@@ -24,7 +28,10 @@ def build_lsf_command(train_args: str, array_count: int = 1) -> str:
         f'-q {queue} {resources} -o {LSF_LOG_OUT} -e {LSF_LOG_ERR} -J "{job_name}" -H '
         f'python3 {BASE_TRAIN_PY} {train_args}'
     )
-    return f'{SEQ_ARR} -c "{base}" -e 1 -d ended'
+    # If seq_arr wrapper exists, use it; otherwise call bsub directly
+    if os.path.exists(SEQ_ARR):
+        return f'{SEQ_ARR} -c "{base}" -e 1 -d ended'
+    return base
 
 
 def spawn_job(args_dict):
@@ -38,8 +45,8 @@ def spawn_job(args_dict):
             parts.append(f"--{k} {shlex.quote(str(v))}")
     train_args = " ".join(parts)
     cmd = build_lsf_command(train_args)
-    print(f"Submitting: {cmd}")
-    subprocess.run(cmd, shell=True, check=False)
+    print(f"Submitting (cwd={PROG_ROOT}): {cmd}")
+    subprocess.run(cmd, shell=True, check=False, cwd=PROG_ROOT)
 
 
 def main():
