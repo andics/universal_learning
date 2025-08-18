@@ -4,12 +4,12 @@ import shlex
 from datetime import datetime
 
 
-BASE_TRAIN_PY = "/home/projects/bagon/andreyg/Projects/BMM_school/Programming/image_difficulty_classifier/train.py"
+BASE_TRAIN_PY = "/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/image_difficulty_classifier/train.py"
 SEQ_ARR = "../shared/seq_arr.sh"
-LSF_LOG_OUT = "/home/projects/bagon/andreyg/Projects/BMM_school/Cluster_runtime/model_training/useCase_out_from_%J.log"
-LSF_LOG_ERR = "/home/projects/bagon/andreyg/Projects/BMM_school/Cluster_runtime/model_training/useCase_err_from_%J.log"
-CSV_PATH = "/home/projects/bagon/andreyg/Projects/BMM_school/Programming/image_difficulty_classifier/imagenet_examples.csv"
-BASE_OUTPUT_DIR = "/home/projects/bagon/andreyg/Projects/BMM_school/Programming/image_difficulty_classifier/output"
+LSF_LOG_OUT = "/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Cluster_runtime/model_training/useCase_out_from_%J.log"
+LSF_LOG_ERR = "/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Cluster_runtime/model_training/useCase_err_from_%J.log"
+CSV_PATH = "/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/image_difficulty_classifier/imagenet_examples.csv"
+BASE_OUTPUT_DIR = "/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/image_difficulty_classifier/output"
 
 
 def build_lsf_command(train_args: str, array_count: int = 1) -> str:
