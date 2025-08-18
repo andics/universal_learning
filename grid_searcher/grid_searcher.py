@@ -29,10 +29,8 @@ def build_lsf_command(train_args: str, array_count: int = 1) -> str:
         f'-q {queue} {resources} -o {LSF_LOG_OUT} -e {LSF_LOG_ERR} -J "{job_name}" -H '
         f'python3 {BASE_TRAIN_PY} {train_args}'
     )
-    # If seq_arr wrapper exists, use it; otherwise call bsub directly
-    if os.path.exists(SEQ_ARR):
-        return f'{SEQ_ARR} -c "{base}" -e 1 -d ended'
-    return base
+    # Always submit via seq array wrapper
+    return f'{SEQ_ARR} -c "{base}" -e 1 -d ended'
 
 
 def spawn_job(args_dict):
