@@ -1,6 +1,7 @@
 import os
 import subprocess
 import shlex
+import time
 from datetime import datetime
 
 
@@ -89,6 +90,8 @@ def main():
             'seed': 42,
         }
         spawn_job(cfg)
+        # Pause 5 seconds between submissions
+        time.sleep(5)
 
 
 if __name__ == "__main__":
