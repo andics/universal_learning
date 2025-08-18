@@ -3,6 +3,23 @@ import json
 import math
 import os
 import time
+import sys
+from pathlib import Path
+
+# Ensure working directory and sys.path point to the Programming root so package imports resolve
+try:
+    path_main = str(Path(os.path.dirname(os.path.realpath(__file__))).parents[0])
+    # Optional: remove paths that might conflict in some environments
+    try:
+        sys.path.remove('/workspace/object_detection')
+    except Exception:
+        pass
+    if path_main not in sys.path:
+        sys.path.append(path_main)
+    os.chdir(path_main)
+    print(f"Set working directory and sys.path to: {path_main}")
+except Exception as _e:
+    print("Warning: Failed to adjust working directory/sys.path:", _e)
 from typing import List, Tuple, Optional, Dict
 
 import torch
