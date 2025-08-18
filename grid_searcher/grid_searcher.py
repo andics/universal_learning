@@ -6,7 +6,8 @@ from datetime import datetime
 
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-PROG_ROOT = os.path.normpath(os.path.join(ROOT_DIR, ".."))  # .../Programming
+# Force submissions to use this working directory as requested
+PROG_ROOT = "/home/projects/bagon/andreyg"
 
 BASE_TRAIN_PY = "/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/image_difficulty_classifier/train.py"
 # Always use the literal relative path form expected by the environment

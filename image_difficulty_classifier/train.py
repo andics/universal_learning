@@ -208,6 +208,20 @@ def main():
         tuning_status = "FINETUNE" if args.unfreeze_backbone else "FROZEN"
         args.output_dir = base_output_dir + f"_{args.model_name.upper()}_{tuning_status}"
 
+    # Append key hyperparameters to make runs self-describing
+    hyper_suffix = (
+        f"_bs{args.batch_size}"
+        f"_ep{args.epochs}"
+        f"_lr{args.lr}"
+        f"_wd{args.weight_decay}"
+        f"_nb{args.num_bins}"
+        f"_min{args.minimum_images_common}"
+        f"_is{args.image_size}"
+        f"_nw{args.num_workers}"
+        f"_seed{args.seed}"
+    )
+    args.output_dir = args.output_dir + hyper_suffix
+
     # Ensure unique output directory by appending _1, _2, ... if needed
     def _make_unique_dir(path: str) -> str:
         if not os.path.exists(path):
