@@ -35,7 +35,8 @@ def _read_first_correct(model_csv: str) -> List[Tuple[str, int]]:
 					step = int(step_str)
 				except Exception:
 					continue
-				if step >= 0:
+				# keep only examples that became correct at some step > 0
+				if step > 0:
 					rows.append((path, step))
 			return rows
 		# Else assume example_statistics.csv: (step, path, correct)
@@ -58,7 +59,7 @@ def _read_first_correct(model_csv: str) -> List[Tuple[str, int]]:
 				first_seen[path] = step
 	# Convert to list
 	for p, s in first_seen.items():
-		if s >= 0:
+		if s > 0:
 			rows.append((p, s))
 	return rows
 
@@ -79,39 +80,35 @@ def analyze_and_plot(model_csv: str, imagenet_csv: str) -> None:
 	if not first_correct:
 		print("No examples with first_correct_step >= 0. Skipping analysis plot.")
 		return
-	# Rank by first-correct step ascending (lower step = earlier learned)
-	first_correct.sort(key=lambda x: x[1])
-	learn_order_paths_all = [p for p, _ in first_correct]
+	# Build mapping: model path -> first_correct_step (>0 only)
+	model_steps: Dict[str, int] = {p: s for p, s in first_correct}
 
 	# Universal order (0 easiest -> larger index harder)
 	imagenet_paths_all = _read_imagenet_rank(imagenet_csv)
+	universal_index: Dict[str, int] = {p: i for i, p in enumerate(imagenet_paths_all)}
 
-	# Compute overlap set only of images that eventually became correct AND exist in universal list
-	set_universal = set(imagenet_paths_all)
-	overlap_paths = [p for p in learn_order_paths_all if p in set_universal]
+	# Overlap: paths present in both and with valid first-correct step
+	overlap_paths = [p for p in model_steps.keys() if p in universal_index]
 	if len(overlap_paths) < 2:
 		print("Not enough overlapping images to plot.")
 		return
 
-	# Local ranks among overlap only
-	# Learn-order local rank (0..N-1 in the order of earliest learned first)
-	learn_local_rank: Dict[str, int] = {p: i for i, p in enumerate(overlap_paths)}
-	# Universal-order local rank: take universal list and filter to overlap, preserving universal order
-	universal_overlap_order = [p for p in imagenet_paths_all if p in set(overlap_paths)]
-	universal_local_rank: Dict[str, int] = {p: i for i, p in enumerate(universal_overlap_order)}
+	# Compute ranks (1..M) independently for model and universal on the overlap
+	# Model ranks: sort by step ascending
+	sorted_by_model = sorted(overlap_paths, key=lambda p: model_steps[p])
+	model_rank: Dict[str, int] = {p: i + 1 for i, p in enumerate(sorted_by_model)}
+	# Universal ranks: sort by universal index ascending among overlap
+	sorted_by_universal = sorted(overlap_paths, key=lambda p: universal_index[p])
+	universal_rank: Dict[str, int] = {p: i + 1 for i, p in enumerate(sorted_by_universal)}
 
-	# Build aligned arrays (in learn-order sequence)
-	X = np.array([learn_local_rank[p] for p in overlap_paths], dtype=float)
-	Y = np.array([universal_local_rank[p] for p in overlap_paths], dtype=float)
-
-	# Normalize ranks to 0..1 so scales are comparable
-	den = max(float(len(overlap_paths) - 1), 1.0)
-	Xn = X / den
-	Yn = Y / den
+	# Build aligned arrays in model-rank order
+	M = len(overlap_paths)
+	X = np.array([model_rank[p] for p in sorted_by_model], dtype=float)
+	Y = np.array([universal_rank[p] for p in sorted_by_model], dtype=float)
 
 	# Correlation
-	if Xn.std() > 0 and Yn.std() > 0:
-		corr = float(np.corrcoef(Xn, Yn)[0, 1])
+	if X.std() > 0 and Y.std() > 0:
+		corr = float(np.corrcoef(X, Y)[0, 1])
 	else:
 		corr = float('nan')
 
@@ -119,10 +116,12 @@ def analyze_and_plot(model_csv: str, imagenet_csv: str) -> None:
 	plot_path = os.path.join(out_dir, "order_correlation.png")
 
 	plt.figure(figsize=(7, 6))
-	plt.scatter(Xn, Yn, s=8, alpha=0.5)
-	plt.xlabel("Normalized learn-order among overlap (0=earliest, 1=latest)")
-	plt.ylabel("Normalized universal-order among overlap (0=easiest, 1=hardest)")
-	plt.title(f"Overlap size={len(overlap_paths)}  |  Pearson r={corr:.4f}")
+	plt.scatter(X, Y, s=8, alpha=0.5)
+	plt.xlabel("Model rank among overlap (1=earliest learned)")
+	plt.ylabel("Universal rank among overlap (1=easiest)")
+	plt.title(f"Overlap size={M}  |  Pearson r={corr:.4f}")
+	plt.xlim(1, M)
+	plt.ylim(1, M)
 	plt.tight_layout()
 	plt.savefig(plot_path, dpi=150)
 	plt.close()
