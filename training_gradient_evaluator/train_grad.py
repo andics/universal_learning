@@ -1,7 +1,23 @@
 import argparse
 import csv
-import os
+import os, sys
 from typing import Dict, List, Tuple
+from pathlib import Path
+
+# Ensure working directory and sys.path point to the Programming root so package imports resolve
+try:
+    path_main = str(Path(os.path.dirname(os.path.realpath(__file__))).parents[0])
+    # Optional: remove paths that might conflict in some environments
+    try:
+        sys.path.remove('/workspace/object_detection')
+    except Exception:
+        pass
+    if path_main not in sys.path:
+        sys.path.append(path_main)
+    os.chdir(path_main)
+    print(f"Set working directory and sys.path to: {path_main}")
+except Exception as _e:
+    print("Warning: Failed to adjust working directory/sys.path:", _e)
 
 import numpy as np
 from PIL import Image
@@ -13,7 +29,7 @@ from torch.utils.data import DataLoader
 import timm
 from timm.data import resolve_model_data_config, create_transform
 
-from .data import ImageNetWrongExamplesDataset, read_imagenet_paths, read_synset_to_index
+from training_gradient_evaluator.data import ImageNetWrongExamplesDataset, read_imagenet_paths, read_synset_to_index
 
 
 def filter_existing_indices(paths: List[str], indices: List[int], root_dir: str | None) -> List[int]:
