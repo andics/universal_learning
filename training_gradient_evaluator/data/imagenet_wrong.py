@@ -45,7 +45,7 @@ def extract_synset_from_path(path: str) -> Optional[str]:
 	return None
 
 
-def gbuild_transforms(image_size: int, is_train: bool) -> T.Compose:
+def build_transforms(image_size: int, is_train: bool) -> T.Compose:
 	if is_train:
 		aug: List[T.transforms] = []  # type: ignore
 		try:
