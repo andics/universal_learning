@@ -40,7 +40,7 @@ def filter_existing_indices(paths: List[str], indices: List[int], root_dir: str 
 
 def main() -> None:
 	parser = argparse.ArgumentParser(description="Modular trainer on wrong ImageNet examples from bars/imagenet.npy")
-	parser.add_argument("--model_name", type=str, default="mobilenetv3_small_050_224_lamb_imagenet_1k")
+	parser.add_argument("--model_name", type=str, default="mobilenetv3_small_050.lamb_in1k")
 	parser.add_argument("--bars_npy", type=str, default=os.path.join("bars", "imagenet.npy"))
 	parser.add_argument("--examples_csv", type=str, default=os.path.join("image_difficulty_classifier", "imagenet_examples.csv"))
 	parser.add_argument("--mapping_txt", type=str, default=os.path.join("image_difficulty_classifier", "imagenet_class_name_mapping.txt"))
