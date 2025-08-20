@@ -4,6 +4,7 @@ import os, sys
 from typing import Dict, List, Tuple
 from pathlib import Path
 import time
+import json
 
 # Ensure working directory and sys.path point to the Programming root so package imports resolve
 try:
@@ -62,6 +63,9 @@ def main() -> None:
     args = parser.parse_args()
 
     os.makedirs(args.output_dir, exist_ok=True)
+    safe_model_name = args.model_name.replace('/', '_')
+    model_out_dir = os.path.join(args.output_dir, safe_model_name)
+    os.makedirs(model_out_dir, exist_ok=True)
     device = torch.device(args.device)
 
     # Paths and labels
@@ -108,10 +112,18 @@ def main() -> None:
 
     train_paths_full = [resolve_full(paths[i]) for i in wrong_indices]
     first_correct_step: Dict[str, int] = {p: -1 for p in train_paths_full}
-    stats_csv = os.path.join(args.output_dir, "example_statistics.csv")
+    stats_csv = os.path.join(model_out_dir, "example_statistics.csv")
     with open(stats_csv, "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(["step", "path", "correct"])  # per-step per-sample logging
+
+    # Save hyperparameters for reproducibility
+    hparams_path = os.path.join(model_out_dir, "hparams.json")
+    try:
+        with open(hparams_path, "w", encoding="utf-8") as jf:
+            json.dump(vars(args), jf, indent=2)
+    except Exception:
+        pass
 
     global_step = 0
     num_steps_per_epoch = len(train_loader)
@@ -180,12 +192,19 @@ def main() -> None:
     remaining = sum(1 for v in first_correct_step.values() if v == -1)
     print(f"Training done. Examples never correct: {remaining}")
 
-    summary_csv = os.path.join(args.output_dir, "first_correct_summary.csv")
+    summary_csv = os.path.join(model_out_dir, "first_correct_summary.csv")
     with open(summary_csv, "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(["path", "first_correct_step"])  # -1 means never correct during training
         for p, step in first_correct_step.items():
             w.writerow([p, step])
+
+    # Run post-training analysis/plot for rank comparison
+    try:
+        from training_gradient_evaluator.order_analysis import analyze_and_plot
+        analyze_and_plot(summary_csv, imagenet_csv=args.examples_csv)
+    except Exception as e:
+        print(f"Warning: analysis step failed: {e}")
 
 
 if __name__ == "__main__":
