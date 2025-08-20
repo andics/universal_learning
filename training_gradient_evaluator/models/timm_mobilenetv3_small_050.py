@@ -9,4 +9,3 @@ def create_default_model(model_name: Optional[str] = None, num_classes: int = 10
 	model = timm.create_model(name, pretrained=True, num_classes=num_classes)
 	return model
 
-
