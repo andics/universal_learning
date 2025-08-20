@@ -7,14 +7,8 @@ from PIL import Image
 
 import torch
 from torch.utils.data import Dataset, DataLoader
-
-import timm
-
-try:
-    from timm.data import resolve_model_data_config, create_transform
-except Exception:  # older timm fallback
-    resolve_model_data_config = None  # type: ignore
-    create_transform = None  # type: ignore
+import torchvision.transforms as T
+from torchvision.models import resnet18, ResNet18_Weights
 
 from .data import read_imagenet_paths, read_synset_to_index, extract_synset_from_path
 
@@ -47,38 +41,34 @@ class ImageNetEvalDataset(Dataset):
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Evaluate a pretrained timm model on ImageNet validation and save per-image correctness mask in CSV order.")
-    parser.add_argument("--model_name", type=str, default="resnet_18_160_classification_imagenet_1k")
+    parser = argparse.ArgumentParser(description="Evaluate a torchvision ResNet18 on ImageNet validation and save per-image correctness mask in CSV order.")
     parser.add_argument("--examples_csv", type=str, default=os.path.join("training_gradient_evaluator", "imagenet_examples.csv"))
     parser.add_argument("--mapping_txt", type=str, default=os.path.join("image_difficulty_classifier", "imagenet_class_name_mapping.txt"))
     parser.add_argument("--root_dir", type=str, default=None, help="Optional root dir to prepend to relative paths in CSV")
     parser.add_argument("--batch_size", type=int, default=128)
     parser.add_argument("--num_workers", type=int, default=4)
     parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu")
-    parser.add_argument("--image_size", type=int, default=160, help="Fallback image size if timm data config is unavailable")
-    parser.add_argument("--true_means_correct", action="store_true", help="If set, output True for correct (default). If not set, still True=correct; flag kept for symmetry.")
+    parser.add_argument("--image_size", type=int, default=160)
     args = parser.parse_args()
 
     device = torch.device(args.device)
 
-    # Load model
-    model = timm.create_model(args.model_name, pretrained=True, num_classes=1000)
+    # Load torchvision resnet18 with pretrained weights
+    weights = ResNet18_Weights.IMAGENET1K_V1
+    model = resnet18(weights=weights)
     model.eval().to(device)
 
-    # Resolve transforms from timm when available
-    if resolve_model_data_config and create_transform:
-        data_cfg = resolve_model_data_config(model)
-        transform = create_transform(**data_cfg, is_training=False)
-    else:
-        import torchvision.transforms as T
-        transform = T.Compose(
-            [
-                T.Resize(args.image_size, interpolation=T.InterpolationMode.BICUBIC),
-                T.CenterCrop(args.image_size),
-                T.ToTensor(),
-                T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-            ]
-        )
+    # Transforms similar to image_difficulty_classifier (using weights' mean/std), but with requested size
+    mean = weights.meta["mean"]
+    std = weights.meta["std"]
+    transform = T.Compose(
+        [
+            T.Resize(args.image_size, interpolation=T.InterpolationMode.BICUBIC),
+            T.CenterCrop(args.image_size),
+            T.ToTensor(),
+            T.Normalize(mean=mean, std=std),
+        ]
+    )
 
     # Read data
     paths = read_imagenet_paths(args.examples_csv)
@@ -94,12 +84,22 @@ def main() -> None:
     correct_total = 0
 
     with torch.no_grad():
-        for images, targets, idxs, _ in loader:
+        for images, targets, idxs, batch_paths in loader:
             images = images.to(device, non_blocking=True)
             targets = targets.to(device, non_blocking=True)
             logits = model(images)
             preds = torch.argmax(logits, dim=1)
-            correct = (preds == targets).cpu().numpy().astype(bool)
+            correct_mask = (preds == targets)
+
+            # Per-batch verbose logging of RIGHT/WRONG full paths
+            right_paths = [p for p, c in zip(batch_paths, correct_mask.cpu().tolist()) if c]
+            wrong_paths = [p for p, c in zip(batch_paths, correct_mask.cpu().tolist()) if not c]
+            if right_paths:
+                print("RIGHT: " + " | ".join(right_paths))
+            if wrong_paths:
+                print("WRONG: " + " | ".join(wrong_paths))
+
+            correct = correct_mask.cpu().numpy().astype(bool)
             idxs_np = idxs.numpy()
             results[idxs_np] = correct
             total += int(targets.numel())
@@ -107,7 +107,7 @@ def main() -> None:
 
     acc = correct_total / max(total, 1)
     out_dir = os.path.dirname(os.path.abspath(args.examples_csv))
-    out_path = os.path.join(out_dir, f"{args.model_name}.npy")
+    out_path = os.path.join(out_dir, "resnet_18_160_classification_imagenet_1k.npy")
     np.save(out_path, results)
     print(f"Saved correctness mask (True=correct) to {out_path}. Acc={acc:.4f} ({correct_total}/{total})")
 
