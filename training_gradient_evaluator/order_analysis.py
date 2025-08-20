@@ -79,30 +79,39 @@ def analyze_and_plot(model_csv: str, imagenet_csv: str) -> None:
 	if not first_correct:
 		print("No examples with first_correct_step >= 0. Skipping analysis plot.")
 		return
-	# Rank by first-correct step ascending (lower step = easier to learn)
+	# Rank by first-correct step ascending (lower step = earlier learned)
 	first_correct.sort(key=lambda x: x[1])
-	learn_order_paths = [p for p, _ in first_correct]
-	learn_order_ranks = {p: i for i, p in enumerate(learn_order_paths)}
+	learn_order_paths_all = [p for p, _ in first_correct]
 
-	imagenet_paths = _read_imagenet_rank(imagenet_csv)
-	imagenet_ranks = {p: i for i, p in enumerate(imagenet_paths)}
+	# Universal order (0 easiest -> larger index harder)
+	imagenet_paths_all = _read_imagenet_rank(imagenet_csv)
 
-	# Intersect keys
-	common = sorted(set(learn_order_ranks.keys()) & set(imagenet_ranks.keys()), key=lambda p: learn_order_ranks[p])
-	if len(common) < 2:
+	# Compute overlap set only of images that eventually became correct AND exist in universal list
+	set_universal = set(imagenet_paths_all)
+	overlap_paths = [p for p in learn_order_paths_all if p in set_universal]
+	if len(overlap_paths) < 2:
 		print("Not enough overlapping images to plot.")
 		return
 
-	X = np.array([learn_order_ranks[p] for p in common], dtype=float)
-	Y = np.array([imagenet_ranks[p] for p in common], dtype=float)
+	# Local ranks among overlap only
+	# Learn-order local rank (0..N-1 in the order of earliest learned first)
+	learn_local_rank: Dict[str, int] = {p: i for i, p in enumerate(overlap_paths)}
+	# Universal-order local rank: take universal list and filter to overlap, preserving universal order
+	universal_overlap_order = [p for p in imagenet_paths_all if p in set(overlap_paths)]
+	universal_local_rank: Dict[str, int] = {p: i for i, p in enumerate(universal_overlap_order)}
 
-	# Normalize to 0..1 for nicer scale (optional)
-	# Xn = X / max(X) if X.max() > 0 else X
-	# Yn = Y / max(Y) if Y.max() > 0 else Y
+	# Build aligned arrays (in learn-order sequence)
+	X = np.array([learn_local_rank[p] for p in overlap_paths], dtype=float)
+	Y = np.array([universal_local_rank[p] for p in overlap_paths], dtype=float)
+
+	# Normalize ranks to 0..1 so scales are comparable
+	den = max(float(len(overlap_paths) - 1), 1.0)
+	Xn = X / den
+	Yn = Y / den
 
 	# Correlation
-	if X.std() > 0 and Y.std() > 0:
-		corr = float(np.corrcoef(X, Y)[0, 1])
+	if Xn.std() > 0 and Yn.std() > 0:
+		corr = float(np.corrcoef(Xn, Yn)[0, 1])
 	else:
 		corr = float('nan')
 
@@ -110,10 +119,10 @@ def analyze_and_plot(model_csv: str, imagenet_csv: str) -> None:
 	plot_path = os.path.join(out_dir, "order_correlation.png")
 
 	plt.figure(figsize=(7, 6))
-	plt.scatter(X, Y, s=8, alpha=0.5)
-	plt.xlabel("Order by training first-correct step (lower = earlier)")
-	plt.ylabel("Order by difficulty from imagenet_examples_ammended.csv (lower = easier)")
-	plt.title(f"Overlap size={len(common)}  |  Pearson r={corr:.4f}")
+	plt.scatter(Xn, Yn, s=8, alpha=0.5)
+	plt.xlabel("Normalized learn-order among overlap (0=earliest, 1=latest)")
+	plt.ylabel("Normalized universal-order among overlap (0=easiest, 1=hardest)")
+	plt.title(f"Overlap size={len(overlap_paths)}  |  Pearson r={corr:.4f}")
 	plt.tight_layout()
 	plt.savefig(plot_path, dpi=150)
 	plt.close()
