@@ -1,16 +1,31 @@
 import argparse
-import os
+import os, sys
 from typing import List
-
+from pathlib import Path
 import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-from .data import ImageNetWrongExamplesDataset, build_transforms, read_imagenet_paths, read_synset_to_index
-from .engine import TrainConfig, Trainer
-from .models import create_default_model
-from .utils import create_logger
+# Ensure working directory and sys.path point to the Programming root so package imports resolve
+try:
+    path_main = str(Path(os.path.dirname(os.path.realpath(__file__))).parents[0])
+    # Optional: remove paths that might conflict in some environments
+    try:
+        sys.path.remove('/workspace/object_detection')
+    except Exception:
+        pass
+    if path_main not in sys.path:
+        sys.path.append(path_main)
+    os.chdir(path_main)
+    print(f"Set working directory and sys.path to: {path_main}")
+except Exception as _e:
+    print("Warning: Failed to adjust working directory/sys.path:", _e)
+
+from training_gradient_evaluator.data import ImageNetWrongExamplesDataset, build_transforms, read_imagenet_paths, read_synset_to_index
+from training_gradient_evaluator.engine import TrainConfig, Trainer
+from training_gradient_evaluator.models import create_default_model
+from training_gradient_evaluator.utils import create_logger
 
 
 def filter_existing_indices(paths: List[str], indices: List[int], root_dir: str | None) -> List[int]:
@@ -30,7 +45,7 @@ def main() -> None:
 	parser.add_argument("--examples_csv", type=str, default=os.path.join("image_difficulty_classifier", "imagenet_examples.csv"))
 	parser.add_argument("--mapping_txt", type=str, default=os.path.join("image_difficulty_classifier", "imagenet_class_name_mapping.txt"))
 	parser.add_argument("--root_dir", type=str, default=None)
-	parser.add_argument("--mask_row_index", type=int, default=1023, help="Worst model row is 1023 (reverse-ordered)")
+	parser.add_argument("--mask_row_index", type=int, default=1022, help="Worst model row is 1022 (reverse-ordered)")
 	parser.add_argument("--mask_true_means_wrong", action="store_true")
 	parser.add_argument("--epochs", type=int, default=10)
 	parser.add_argument("--batch_size", type=int, default=64)

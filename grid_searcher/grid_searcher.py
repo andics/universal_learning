@@ -9,7 +9,7 @@ ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 # Force submissions to use this working directory as requested
 PROG_ROOT = "/home/projects/bagon/andreyg"
 
-BASE_TRAIN_PY = "/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/image_difficulty_classifier/train.py"
+BASE_TRAIN_PY = "/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/image_difficulty_classifier/train_grad.py"
 # Always use the literal relative path form expected by the environment
 SEQ_ARR = "../shared/seq_arr.sh"
 LSF_LOG_OUT = "/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Cluster_runtime/model_training/useCase_out_from_%J.log"
