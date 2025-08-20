@@ -3,6 +3,7 @@ import csv
 import os, sys
 from typing import Dict, List, Tuple
 from pathlib import Path
+import time
 
 # Ensure working directory and sys.path point to the Programming root so package imports resolve
 try:
@@ -113,10 +114,12 @@ def main() -> None:
         w.writerow(["step", "path", "correct"])  # per-step per-sample logging
 
     global_step = 0
+    num_steps_per_epoch = len(train_loader)
     for epoch in range(1, args.epochs + 1):
         print(f"Epoch {epoch}/{args.epochs}")
         model.train()
-        for images, targets, batch_paths in train_loader:
+        for step, (images, targets, batch_paths) in enumerate(train_loader, start=1):
+            step_start = time.time()
             global_step += 1
             images = images.to(device, non_blocking=True)
             targets = targets.to(device, non_blocking=True)
@@ -138,6 +141,18 @@ def main() -> None:
             with torch.no_grad():
                 preds = torch.argmax(logits, dim=1)
                 correct_mask_batch = (preds == targets).cpu().tolist()
+                batch_acc = float(sum(correct_mask_batch)) / max(1, len(correct_mask_batch))
+
+            # Per-step scalar logging similar to image_difficulty_classifier
+            lr = optimizer.param_groups[0]["lr"] if optimizer.param_groups else 0.0
+            step_time = time.time() - step_start
+            imgs_per_sec = int(images.size(0) / max(step_time, 1e-8))
+            print(
+                f"epoch={epoch} step={step}/{num_steps_per_epoch} global_step={global_step} "
+                f"loss={float(loss.detach().item()):.4f} batch_acc={batch_acc:.4f} lr={lr:.6g} "
+                f"time={step_time:.3f}s ips={imgs_per_sec}/s",
+                flush=True,
+            )
 
             # Per-step RIGHT/WRONG full-path logging
             right_paths = [p for p, c in zip(batch_paths, correct_mask_batch) if c]
