@@ -51,6 +51,7 @@ def main() -> None:
 	parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu")
 	parser.add_argument("--output_dir", type=str, default=os.path.join("training_gradient_evaluator", "outputs"))
 	parser.add_argument("--no_amp", action="store_true")
+	parser.add_argument("--streak_epochs", type=int, default=10, help="Consecutive epochs required for an example to be considered first-correct")
 	args = parser.parse_args()
 
 	os.makedirs(args.output_dir, exist_ok=True)
@@ -103,7 +104,7 @@ def main() -> None:
 		return os.path.join(args.root_dir, p) if args.root_dir and not os.path.isabs(p) else p
 
 	train_paths_full = [resolve_full(paths[i]) for i in wrong_indices]
-	# Track per-example consecutive epoch correctness and the step when it first reached 10 epochs in a row
+	# Track per-example consecutive epoch correctness and the step when it first reached the streak threshold
 	consecutive_epoch_correct: Dict[str, int] = {p: 0 for p in train_paths_full}
 	tenth_epoch_streak_step: Dict[str, int] = {p: -1 for p in train_paths_full}
 	stats_csv = os.path.join(model_out_dir, "example_statistics.csv")
@@ -221,7 +222,7 @@ def main() -> None:
 				with open(stats_csv, "a", newline="", encoding="utf-8") as f:
 					w = csv.writer(f)
 					for p, is_corr in zip(batch_paths, correct_mask_batch):
-						# For v2 (10-epoch streak), we still log per-step correctness only
+						# For v2 (streak threshold), we still log per-step correctness only
 						w.writerow([global_step, p, int(is_corr)])
 			except Exception:
 				pass
@@ -229,13 +230,13 @@ def main() -> None:
 			# Save checkpoint after each step
 			save_checkpoint(epoch, global_step)
 
-		# End of epoch: update consecutive epoch correctness and record 10-epoch streak step
+		# End of epoch: update consecutive epoch correctness and record streak step
 		for p, was_correct in epoch_correct_this_epoch.items():
 			if was_correct:
 				consecutive_epoch_correct[p] += 1
 			else:
 				consecutive_epoch_correct[p] = 0
-			if consecutive_epoch_correct[p] >= 10 and tenth_epoch_streak_step[p] == -1:
+			if consecutive_epoch_correct[p] >= args.streak_epochs and tenth_epoch_streak_step[p] == -1:
 				tenth_epoch_streak_step[p] = global_step
 
 		# Epoch summary
@@ -250,7 +251,7 @@ def main() -> None:
 	summary_csv = os.path.join(model_out_dir, "first_correct_summary.csv")
 	with open(summary_csv, "w", newline="", encoding="utf-8") as f:
 		w = csv.writer(f)
-		w.writerow(["path", "first_correct_step"])  # Here: step when 10-epoch streak was first reached; -1 if never
+		w.writerow(["path", "first_correct_step"])  # Here: step when streak threshold was first reached; -1 if never
 		for p, step in tenth_epoch_streak_step.items():
 			w.writerow([p, step])
 
