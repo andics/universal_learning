@@ -9,10 +9,10 @@ import glob
 
 # Ensure working directory and sys.path point to the Programming root so package imports resolve
 try:
-	path_main = str(Path(os.path.dirname(os.path.realpath(__file__))).parents[0])
-	if path_main not in sys.path:
-		sys.path.append(path_main)
-	os.chdir(path_main)
+    path_main = str(Path(os.path.dirname(os.path.realpath(__file__))).parents[0])
+    if path_main not in sys.path:
+        sys.path.append(path_main)
+    os.chdir(path_main)
 except Exception:
 	pass
 
@@ -20,8 +20,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
-
-from transformers import AutoModel
 
 from training_gradient_evaluator.data import ImageNetWrongExamplesDataset, read_imagenet_paths, read_synset_to_index, build_transforms
 
@@ -82,15 +80,29 @@ def main() -> None:
 		raise RuntimeError("No existing images among wrong examples.")
 	print(f"Training on {len(wrong_indices)} originally-wrong examples.")
 
-	# Build model (timm) and torchvision transforms (V2 requirement)
+	# Build model (TIMM) and torchvision transforms
 	import timm
-	model = AutoModel.from_pretrained(args.model_name)
+	model = timm.create_model(args.model_name, pretrained=True)
+	# Log pretrained source information and cache locations
+	try:
+		pcfg = getattr(model, 'pretrained_cfg', {}) or {}
+		url = pcfg.get('url', None)
+		hf_id = pcfg.get('hf_hub_id', None)
+		print(f"Loaded TIMM pretrained weights for {args.model_name}")
+		print(f"pretrained_cfg.url={url} hf_hub_id={hf_id}")
+		print(f"torch.hub cache dir: {torch.hub.get_dir()}")
+		from pathlib import Path as _P
+		print("HF caches:", os.getenv("HF_HOME"), os.getenv("HUGGINGFACE_HUB_CACHE"), str(_P.home() / ".cache/huggingface/hub"))
+	except Exception as _e:
+		print(f"Note: could not display pretrained cfg details: {_e}")
+
+	# Ensure model on device; keep classification head as-is for fine-tuning
 	model = model.to(device)
 	if torch.cuda.device_count() > 1 and device.type == "cuda":
 		model = nn.DataParallel(model)
 
 	train_tfms = build_transforms(args.image_size, is_train=True)
-	# eval_tfms = build_transforms(args.image_size, is_train=False)  # not used in this minimal V2 loop
+	# eval_tfms = build_transforms(args.image_size, is_train=False)
 
 	# Dataset and loaders
 	train_ds = ImageNetWrongExamplesDataset(paths, wrong_indices, synset_to_index, transform=train_tfms, root_dir=args.root_dir)
