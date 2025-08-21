@@ -5,6 +5,7 @@ from typing import Dict, List
 from pathlib import Path
 import time
 import json
+import glob
 
 # Ensure working directory and sys.path point to the Programming root so package imports resolve
 try:
@@ -56,6 +57,8 @@ def main() -> None:
 	safe_model_name = args.model_name.replace('/', '_')
 	model_out_dir = os.path.join(args.output_dir, safe_model_name)
 	os.makedirs(model_out_dir, exist_ok=True)
+	ckpt_dir = os.path.join(model_out_dir, "checkpoints")
+	os.makedirs(ckpt_dir, exist_ok=True)
 	device = torch.device(args.device)
 
 	# Paths and labels
@@ -116,9 +119,51 @@ def main() -> None:
 	except Exception:
 		pass
 
+	# Checkpoint helpers
+	def latest_checkpoint_path():
+		latest = os.path.join(ckpt_dir, "latest.pt")
+		if os.path.exists(latest):
+			return latest
+		cands = sorted(glob.glob(os.path.join(ckpt_dir, "ckpt_step_*.pt")))
+		return cands[-1] if cands else None
+
+	def save_checkpoint(epoch_val: int, global_step_val: int) -> None:
+		state = {
+			"epoch": epoch_val,
+			"global_step": global_step_val,
+			"model": model.state_dict(),
+			"optimizer": optimizer.state_dict(),
+			"scaler": (scaler.state_dict() if scaler is not None else None),
+			"consecutive_epoch_correct": consecutive_epoch_correct,
+			"tenth_epoch_streak_step": tenth_epoch_streak_step,
+		}
+		step_path = os.path.join(ckpt_dir, f"ckpt_step_{global_step_val}.pt")
+		torch.save(state, step_path)
+		torch.save(state, os.path.join(ckpt_dir, "latest.pt"))
+
+	# Try resume
+	start_epoch = 1
 	global_step = 0
+	latest = latest_checkpoint_path()
+	if latest:
+		try:
+			payload = torch.load(latest, map_location=device)
+			model.load_state_dict(payload["model"])  # type: ignore[index]
+			optimizer.load_state_dict(payload["optimizer"])  # type: ignore[index]
+			if scaler is not None and payload.get("scaler") is not None:  # type: ignore[call-arg]
+				scaler.load_state_dict(payload["scaler"])  # type: ignore[index]
+			start_epoch = int(payload.get("epoch", 0)) + 1
+			global_step = int(payload.get("global_step", 0))
+			if "consecutive_epoch_correct" in payload:
+				consecutive_epoch_correct.update(payload["consecutive_epoch_correct"])  # type: ignore[index]
+			if "tenth_epoch_streak_step" in payload:
+				tenth_epoch_streak_step.update(payload["tenth_epoch_streak_step"])  # type: ignore[index]
+			print(f"Resumed from {latest} at epoch {start_epoch} global_step {global_step}")
+		except Exception as e:
+			print(f"Warning: failed to resume from {latest}: {e}")
+
 	num_steps_per_epoch = len(train_loader)
-	for epoch in range(1, args.epochs + 1):
+	for epoch in range(start_epoch, args.epochs + 1):
 		print(f"Epoch {epoch}/{args.epochs}")
 		model.train()
 		# Track if an example was correct at least once during this epoch
@@ -181,6 +226,9 @@ def main() -> None:
 			except Exception:
 				pass
 
+			# Save checkpoint after each step
+			save_checkpoint(epoch, global_step)
+
 		# End of epoch: update consecutive epoch correctness and record 10-epoch streak step
 		for p, was_correct in epoch_correct_this_epoch.items():
 			if was_correct:
@@ -192,6 +240,8 @@ def main() -> None:
 
 		# Epoch summary
 		print(f"  epoch_end_loss={float(loss.detach().item()):.4f}")
+		# Save checkpoint at epoch end as well
+		save_checkpoint(epoch, global_step)
 
 	# Final summary
 	remaining = sum(1 for v in tenth_epoch_streak_step.values() if v == -1)

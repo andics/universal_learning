@@ -113,7 +113,7 @@ def analyze_and_plot(model_csv: str, imagenet_csv: str) -> None:
 		corr = float('nan')
 
 	out_dir = os.path.dirname(os.path.abspath(model_csv))
-	plot_path = os.path.join(out_dir, "order_correlation.png")
+	plot_path1 = os.path.join(out_dir, "order_correlation.png")
 
 	plt.figure(figsize=(7, 6))
 	plt.scatter(X, Y, s=8, alpha=0.5)
@@ -123,9 +123,27 @@ def analyze_and_plot(model_csv: str, imagenet_csv: str) -> None:
 	plt.xlim(1, M)
 	plt.ylim(1, M)
 	plt.tight_layout()
-	plt.savefig(plot_path, dpi=150)
+	plt.savefig(plot_path1, dpi=150)
 	plt.close()
-	print(f"Saved order correlation plot to {plot_path}")
+	print(f"Saved order correlation plot to {plot_path1}")
+
+	# Second plot: x = first-correct step (raw), y = universal global index (raw)
+	X2 = np.array([model_steps[p] for p in sorted_by_model], dtype=float)
+	Y2 = np.array([universal_index[p] for p in sorted_by_model], dtype=float)
+	if X2.std() > 0 and Y2.std() > 0:
+		corr2 = float(np.corrcoef(X2, Y2)[0, 1])
+	else:
+		corr2 = float('nan')
+	plot_path2 = os.path.join(out_dir, "order_steps_vs_universal.png")
+	plt.figure(figsize=(7, 6))
+	plt.scatter(X2, Y2, s=8, alpha=0.5)
+	plt.xlabel("First-correct step (raw)")
+	plt.ylabel("Universal order index (raw, 0=easiest)")
+	plt.title(f"Overlap size={M}  |  Pearson r={corr2:.4f}")
+	plt.tight_layout()
+	plt.savefig(plot_path2, dpi=150)
+	plt.close()
+	print(f"Saved steps-vs-universal plot to {plot_path2}")
 
 
 def _default_paths() -> Tuple[str, str]:
