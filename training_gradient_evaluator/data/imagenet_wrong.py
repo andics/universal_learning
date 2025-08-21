@@ -112,5 +112,3 @@ class ImageNetWrongExamplesDataset(Dataset):
 
 	def __getitem__(self, i: int) -> Tuple[torch.Tensor, int, str]:
 		return self.get_item_with_path(i)
-
-
