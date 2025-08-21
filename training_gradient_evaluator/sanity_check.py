@@ -9,10 +9,10 @@ from PIL import Image
 import torch
 from torch.utils.data import Dataset, DataLoader
 import matplotlib.pyplot as plt
+import json
 
 from training_gradient_evaluator.data import (
 	read_imagenet_paths,
-	read_synset_to_index,
 	extract_synset_from_path,
 	build_transforms,
 )
@@ -28,28 +28,20 @@ except Exception:
 	pass
 
 
-def load_timm_class_map(model):
-	from timm.data import class_map as _cm
-	cm = _cm.load_class_map(getattr(model, 'pretrained_cfg', {}))
-	class_to_idx = None
-	if isinstance(cm, dict):
-		class_to_idx = cm
-	elif isinstance(cm, (list, tuple)) and len(cm) >= 1 and isinstance(cm[0], dict):
-		class_to_idx = cm[0]
-	elif hasattr(cm, 'class_to_idx'):
-		class_to_idx = getattr(cm, 'class_to_idx')
-	if not class_to_idx:
-		return None, None
-	# Build wnid->idx if wnids exist
-	wnid_keys = [k for k in class_to_idx.keys() if isinstance(k, str) and len(k) == 9 and k.startswith('n') and k[1:].isdigit()]
-	if wnid_keys:
-		synset_to_idx = {k: int(class_to_idx[k]) for k in wnid_keys}
-		idx_to_synset = {v: k for k, v in synset_to_idx.items()}
-		return synset_to_idx, idx_to_synset
-	# Else fallback: stringify keys
-	synset_to_idx = {str(k): int(v) for k, v in class_to_idx.items() if isinstance(v, (int, np.integer))}
-	idx_to_synset = {v: k for k, v in synset_to_idx.items()}
-	return synset_to_idx, idx_to_synset
+def load_wnid_to_index_from_torchvision():
+	import torchvision
+	idx_json = os.path.join(os.path.dirname(torchvision.__file__), 'datasets', 'imagenet_class_index.json')
+	with open(idx_json, 'r', encoding='utf-8') as f:
+		data = json.load(f)
+	wnid_to_idx = {}
+	for k, v in data.items():
+		try:
+			i = int(k)
+			wnid = str(v[0])
+			wnid_to_idx[wnid] = i
+		except Exception:
+			continue
+	return wnid_to_idx
 
 
 class ImageNetEvalDataset(Dataset):
@@ -107,12 +99,12 @@ def main() -> None:
 	if not paths:
 		raise RuntimeError(f"No image paths found in {args.examples_csv}")
 
-	# Model and class map from TIMM
+	# Model and wnid->index mapping
 	import timm
 	model = timm.create_model(args.model_name, pretrained=True)
-	synset_to_idx, idx_to_synset = load_timm_class_map(model)
+	synset_to_idx = load_wnid_to_index_from_torchvision()
 	if synset_to_idx is None:
-		raise RuntimeError("Could not obtain class map from TIMM for this model; cannot reliably map logits to classes.")
+		raise RuntimeError("Could not load torchvision ImageNet class index mapping.")
 	model.eval().to(device)
 
 	# For display of GT/pred names, parse mapping_txt only for human-readable names
@@ -176,7 +168,7 @@ def main() -> None:
 	np.save(out_path, correct_mask)
 	print(f"Saved sanity mask to {out_path}")
 
-	# Visualize a random subset of 10 samples with Pred (top) and GT (bottom) using TIMM class mapping
+	# Visualize a random subset of 10 samples with Pred (top) and GT (bottom)
 	try:
 		rng = np.random.default_rng(42)
 		N = len(paths)
@@ -194,9 +186,9 @@ def main() -> None:
 				ax.axis('off')
 				pred_idx = int(preds_all[i])
 				tgt_idx = int(targets_all[i])
-				# Map pred/gt indices to class names via synset mapping -> readable mapping
-				pred_syn = idx_to_synset.get(pred_idx, str(pred_idx)) if idx_to_synset else str(pred_idx)
-				# For GT name display, try mapping file numeric index if available, else synset
+				# Build reverse wnid map on the fly
+				rev = {v: k for k, v in synset_to_idx.items()}
+				pred_syn = rev.get(pred_idx, str(pred_idx))
 				gt_name = index_to_name.get(tgt_idx, str(tgt_idx))
 				ax.set_title(f"Pred: {pred_syn}", fontsize=9)
 				ax.text(0.5, -0.12, f"GT: {gt_name}", fontsize=9, ha='center', va='top', transform=ax.transAxes)

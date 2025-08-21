@@ -34,24 +34,22 @@ def filter_existing_indices(paths: List[str], indices: List[int], root_dir: str 
 	return kept
 
 
-def build_timm_synset_to_idx(model) -> Dict[str, int] | None:
-	"""Attempt to obtain synset (wnid) -> logit index mapping from TIMM's class map."""
+def load_wnid_to_index_from_torchvision() -> Dict[str, int] | None:
+	"""Load the standard ImageNet-1k index mapping via torchvision's imagenet_class_index.json."""
 	try:
-		from timm.data import class_map as _cm
-		cm = _cm.load_class_map(getattr(model, 'pretrained_cfg', {}))
-		class_to_idx = None
-		if isinstance(cm, dict):
-			class_to_idx = cm
-		elif isinstance(cm, (list, tuple)) and len(cm) >= 1 and isinstance(cm[0], dict):
-			class_to_idx = cm[0]
-		elif hasattr(cm, 'class_to_idx'):
-			class_to_idx = getattr(cm, 'class_to_idx')
-		if not class_to_idx:
-			return None
-		wnid_keys = [k for k in class_to_idx.keys() if isinstance(k, str) and len(k) == 9 and k.startswith('n') and k[1:].isdigit()]
-		if wnid_keys:
-			return {k: int(class_to_idx[k]) for k in wnid_keys}
-		return {str(k): int(v) for k, v in class_to_idx.items() if isinstance(v, (int, np.integer))}
+		import torchvision
+		idx_json = os.path.join(os.path.dirname(torchvision.__file__), 'datasets', 'imagenet_class_index.json')
+		with open(idx_json, 'r', encoding='utf-8') as f:
+			data = json.load(f)  # keys are str indices, values [wnid, classname]
+		wnid_to_idx: Dict[str, int] = {}
+		for k, v in data.items():
+			try:
+				i = int(k)
+				wnid = str(v[0])
+				wnid_to_idx[wnid] = i
+			except Exception:
+				continue
+		return wnid_to_idx
 	except Exception:
 		return None
 
@@ -107,12 +105,11 @@ def main() -> None:
 	if torch.cuda.device_count() > 1 and device.type == "cuda":
 		model = nn.DataParallel(model)
 
-	# Prefer TIMM-provided class map for label indexing
-	synset_to_idx = build_timm_synset_to_idx(model)
+	# Build wnid->index mapping using torchvision standard mapping
+	synset_to_idx = load_wnid_to_index_from_torchvision()
 	if synset_to_idx is None:
-		print("Warning: TIMM class map unavailable; falling back to imagenet_class_name_mapping.txt numeric order.")
-		from training_gradient_evaluator.data import read_synset_to_index as _fallback
-		synset_to_idx = _fallback(args.mapping_txt)
+		print("Error: Could not load torchvision ImageNet class index mapping.")
+		return
 
 	train_tfms = build_transforms(args.image_size, is_train=True)
 
@@ -128,7 +125,7 @@ def main() -> None:
 		raise RuntimeError("No existing images among wrong examples.")
 	print(f"Training on {len(wrong_indices)} originally-wrong examples.")
 
-	# Dataset & loader with TIMM-based label indices
+	# Dataset & loader with wnid-based label indices
 	train_ds = ImageNetWrongExamplesDataset(paths, wrong_indices, synset_to_idx, transform=train_tfms, root_dir=args.root_dir)
 	train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=True, drop_last=False)
 
@@ -157,7 +154,7 @@ def main() -> None:
 	except Exception:
 		pass
 
-	# Checkpoint helpers (unchanged)
+	# Checkpoint helpers
 	def latest_checkpoint_path():
 		latest = os.path.join(ckpt_dir, "latest.pt")
 		if os.path.exists(latest):
