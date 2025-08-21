@@ -56,7 +56,7 @@ class ImageNetEvalDataset(Dataset):
 
 def main() -> None:
 	parser = argparse.ArgumentParser(description="Sanity check a pretrained timm model on ImageNet validation and compare with bars/imagenet.npy row mask.")
-	parser.add_argument("--model_name", type=str, default="timm/resnet18.a3_in1k")
+	parser.add_argument("--model_name", type=str, default="resnet18.a3_in1k")
 	parser.add_argument("--examples_csv", type=str, default=os.path.join("bars", "imagenet_examples_ammended.csv"))
 	parser.add_argument("--mapping_txt", type=str, default=os.path.join("image_difficulty_classifier", "imagenet_class_name_mapping.txt"))
 	parser.add_argument("--bars_npy", type=str, default=os.path.join("bars", "imagenet.npy"))
