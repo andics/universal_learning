@@ -77,29 +77,29 @@ def build_wnid_to_logit_index(
     wnid_to_name: Dict[str, str],
     logit_class_list: List[str],
 ) -> Tuple[Dict[str, int], Dict[int, str]]:
-    """Build mapping from wnid to index in model logit order using exact string matching.
+    """Build mapping from wnid to index in model logit order using case-insensitive string matching.
 
     Returns:
       - wnid_to_index: wnid -> index in logits
       - index_to_name: index -> original class name string from logit list
     """
     index_to_name: Dict[int, str] = {i: name for i, name in enumerate(logit_class_list)}
-    name_to_index: Dict[str, int] = { name.strip(): i for i, name in enumerate(logit_class_list) }
+    name_to_index: Dict[str, int] = { name.strip().casefold(): i for i, name in enumerate(logit_class_list) }
 
     wnid_to_index: Dict[str, int] = {}
     for wnid, raw_name in wnid_to_name.items():
-        key = raw_name.strip()
+        key = raw_name.strip().casefold()
         if key in name_to_index:
             wnid_to_index[wnid] = name_to_index[key]
         else:
             raise ValueError(
-                f"Could not map wnid {wnid} ('{raw_name}') to any logit class by exact match"
+                f"Could not map wnid {wnid} ('{raw_name}') to any logit class by case-insensitive match"
             )
 
     return wnid_to_index, index_to_name
 
 
 def is_exact_match(a: str, b: str) -> bool:
-    return a.strip() == b.strip()
+    return a.strip().casefold() == b.strip().casefold()
 
 
