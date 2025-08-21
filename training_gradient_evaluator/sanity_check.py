@@ -84,7 +84,7 @@ def main() -> None:
 		raise RuntimeError(f"No image paths found in {args.examples_csv}")
 	synset_to_index = read_synset_to_index(args.mapping_txt)
 
-	# Also build index->name mapping for display (0-based index => human-readable name)
+	# Also build index->name mapping for display (0-based index => label as written in file)
 	index_to_name = {}
 	with open(args.mapping_txt, "r", encoding="utf-8") as f:
 		for line in f:
@@ -97,7 +97,8 @@ def main() -> None:
 					idx0 = int(parts[1]) - 1
 				except Exception:
 					continue
-				name = " ".join(parts[2:]).replace("_", " ")
+				# Keep underscores as-is (exactly as written in the mapping file)
+				name = " ".join(parts[2:])
 				index_to_name[idx0] = name
 	transform = build_transforms(args.image_size, is_train=False)
 
@@ -170,11 +171,13 @@ def main() -> None:
 				tgt_idx = int(targets_all[i])
 				pred_name = index_to_name.get(pred_idx, str(pred_idx))
 				tgt_name = index_to_name.get(tgt_idx, str(tgt_idx))
+				# Top: predicted label; Bottom: ground-truth label (as in mapping file)
 				ax.set_title(f"Pred: {pred_name}", fontsize=9)
-				ax.set_xlabel(f"GT: {tgt_name}", fontsize=9)
+				ax.text(0.5, -0.12, f"GT: {tgt_name}", fontsize=9, ha='center', va='top', transform=ax.transAxes)
 			except Exception:
 				ax.axis('off')
 		plt.tight_layout()
+		plt.subplots_adjust(bottom=0.12)
 		plot_path = os.path.join(model_out_dir, "sanity_random_10.png")
 		plt.savefig(plot_path, dpi=150)
 		plt.close()
@@ -185,5 +188,4 @@ def main() -> None:
 
 if __name__ == "__main__":
 	main()
-
 
