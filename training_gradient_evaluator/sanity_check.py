@@ -16,6 +16,12 @@ from training_gradient_evaluator.data import (
 	extract_synset_from_path,
 	build_transforms,
 )
+from training_gradient_evaluator.utils.label_mapping import (
+	load_logit_class_list,
+	load_wnid_to_name_txt,
+	build_wnid_to_logit_index,
+	is_exact_match,
+)
 
 
 # Align cwd and sys.path with the project root like train_grad.py
@@ -28,21 +34,10 @@ except Exception:
 	pass
 
 
-def load_wnid_to_index_from_torchvision():
-	import torchvision
-	idx_json = os.path.join(os.path.dirname(os.path.dirname(__file__)),
-							'image_difficulty_classifier',
-							'imagenet_logit_to_class_mapping.json')
-	with open(idx_json, 'r', encoding='utf-8') as f:
-		data = json.load(f)
-	wnid_to_idx = {}
-	for k, v in enumerate(data):
-		try:
-			i = int(k)
-			wnid_to_idx[i] = v
-		except Exception:
-			continue
-	return wnid_to_idx
+def _default_logit_json_path() -> str:
+	return os.path.join(os.path.dirname(os.path.dirname(__file__)),
+						'image_difficulty_classifier',
+						'imagenet_logit_to_class_mapping.json')
 
 
 class ImageNetEvalDataset(Dataset):
@@ -77,6 +72,7 @@ def main() -> None:
 	parser.add_argument("--model_name", type=str, default="resnet18.a3_in1k")
 	parser.add_argument("--examples_csv", type=str, default=os.path.join("bars", "imagenet_examples_ammended.csv"))
 	parser.add_argument("--mapping_txt", type=str, default=os.path.join("image_difficulty_classifier", "imagenet_class_name_mapping.txt"))
+	parser.add_argument("--logit_classes_json", type=str, default=_default_logit_json_path(), help="JSON list of class names in model logit order")
 	parser.add_argument("--bars_npy", type=str, default=os.path.join("bars", "imagenet.npy"))
 	parser.add_argument("--mask_row_index", type=int, default=1015)
 	parser.add_argument("--root_dir", type=str, default=None)
@@ -100,29 +96,16 @@ def main() -> None:
 	if not paths:
 		raise RuntimeError(f"No image paths found in {args.examples_csv}")
 
-	# Model and wnid->index mapping
+	# Model and label mappings
 	import timm
 	model = timm.create_model(args.model_name, pretrained=True)
-	synset_to_idx = load_wnid_to_index_from_torchvision()
-	if synset_to_idx is None:
-		raise RuntimeError("Could not load torchvision ImageNet class index mapping.")
+	# Load mappings
+	wnid_to_name = load_wnid_to_name_txt(args.mapping_txt)
+	logit_classes = load_logit_class_list(args.logit_classes_json)
+	synset_to_idx, index_to_name = build_wnid_to_logit_index(wnid_to_name, logit_classes)
 	model.eval().to(device)
 
-	# For display of GT/pred names, parse mapping_txt only for human-readable names
-	index_to_name = {}
-	with open(args.mapping_txt, "r", encoding="utf-8") as f:
-		for line in f:
-			line = line.strip()
-			if not line:
-				continue
-			parts = line.split()
-			if len(parts) >= 3:
-				try:
-					idx0 = int(parts[1]) - 1
-				except Exception:
-					continue
-				name = " ".join(parts[2:])
-				index_to_name[idx0] = name
+	# index_to_name already from logit list mapping builder
 
 	transform = build_transforms(args.image_size, is_train=False)
 	ds = ImageNetEvalDataset(paths, synset_to_idx, args.root_dir, transform)
@@ -140,13 +123,26 @@ def main() -> None:
 			targets = targets.to(device, non_blocking=True)
 			logits = model(images)
 			preds = torch.argmax(logits, dim=1)
-			correct = (preds == targets).cpu().numpy().astype(bool)
 			idxs_np = idxs.numpy()
+			preds_np = preds.cpu().numpy()
+			targets_np = targets.cpu().numpy()
+			batch_correct = []
+			for i, pred_idx in enumerate(preds_np):
+				global_idx = int(idxs_np[i])
+				path = paths[global_idx]
+				if args.root_dir and not os.path.isabs(path):
+					path = os.path.join(args.root_dir, path)
+				wnid = extract_synset_from_path(path)
+				gt_name = wnid_to_name.get(wnid, str(wnid)) if wnid is not None else ""
+				pred_name = index_to_name.get(int(pred_idx), str(pred_idx))
+				ok = is_exact_match(pred_name, gt_name)
+				batch_correct.append(ok)
+			correct = np.array(batch_correct, dtype=bool)
 			correct_mask[idxs_np] = correct
-			preds_all[idxs_np] = preds.cpu().numpy()
-			targets_all[idxs_np] = targets.cpu().numpy()
+			preds_all[idxs_np] = preds_np
+			targets_all[idxs_np] = targets_np
 			correct_total += int(correct.sum())
-			total += int(targets.numel())
+			total += int(len(batch_correct))
 
 	acc = correct_total / max(total, 1)
 	print(f"Sanity accuracy: {acc:.4f} ({correct_total}/{total})")
@@ -186,12 +182,10 @@ def main() -> None:
 				ax.imshow(im)
 				ax.axis('off')
 				pred_idx = int(preds_all[i])
-				tgt_idx = int(targets_all[i])
-				# Build reverse wnid map on the fly
-				rev = {v: k for k, v in synset_to_idx.items()}
-				pred_syn = rev.get(pred_idx, str(pred_idx))
-				gt_name = index_to_name.get(tgt_idx, str(tgt_idx))
-				ax.set_title(f"Pred: {pred_syn}", fontsize=9)
+				wnid = extract_synset_from_path(img_path)
+				pred_name = index_to_name.get(pred_idx, str(pred_idx))
+				gt_name = wnid_to_name.get(wnid, str(wnid)) if wnid is not None else ""
+				ax.set_title(f"Pred: {pred_name}", fontsize=9)
 				ax.text(0.5, -0.12, f"GT: {gt_name}", fontsize=9, ha='center', va='top', transform=ax.transAxes)
 			except Exception:
 				ax.axis('off')

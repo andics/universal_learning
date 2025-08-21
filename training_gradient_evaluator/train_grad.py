@@ -21,7 +21,13 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-from training_gradient_evaluator.data import ImageNetWrongExamplesDataset, read_imagenet_paths, read_synset_to_index, build_transforms
+from training_gradient_evaluator.data import ImageNetWrongExamplesDataset, read_imagenet_paths, build_transforms, extract_synset_from_path
+from training_gradient_evaluator.utils.label_mapping import (
+	load_logit_class_list,
+	load_wnid_to_name_txt,
+	build_wnid_to_logit_index,
+	is_exact_match,
+)
 
 
 def filter_existing_indices(paths: List[str], indices: List[int], root_dir: str | None) -> List[int]:
@@ -54,6 +60,10 @@ def load_wnid_to_index_from_torchvision() -> Dict[str, int] | None:
 		return None
 
 
+def _default_logit_json_path() -> str:
+	return os.path.join(os.path.dirname(os.path.dirname(__file__)), 'image_difficulty_classifier', 'imagenet_logit_to_class_mapping.json')
+
+
 def main() -> None:
 	parser = argparse.ArgumentParser(description="V2: Train model on only the images it originally got wrong; torchvision transforms.")
 	parser.add_argument("--model_name", type=str, default="resnet18.a3_in1k")
@@ -72,6 +82,7 @@ def main() -> None:
 	parser.add_argument("--output_dir", type=str, default=os.path.join("training_gradient_evaluator", "outputs"))
 	parser.add_argument("--no_amp", action="store_true")
 	parser.add_argument("--streak_epochs", type=int, default=10, help="Consecutive epochs required for an example to be considered first-correct")
+	parser.add_argument("--logit_classes_json", type=str, default=_default_logit_json_path(), help="Path to JSON mapping logits to class names.")
 	args = parser.parse_args()
 
 	os.makedirs(args.output_dir, exist_ok=True)
@@ -105,11 +116,10 @@ def main() -> None:
 	if torch.cuda.device_count() > 1 and device.type == "cuda":
 		model = nn.DataParallel(model)
 
-	# Build wnid->index mapping using torchvision standard mapping
-	synset_to_idx = load_wnid_to_index_from_torchvision()
-	if synset_to_idx is None:
-		print("Error: Could not load torchvision ImageNet class index mapping.")
-		return
+	# Build wnid->index mapping using provided class lists and fuzzy matching
+	wnid_to_name = load_wnid_to_name_txt(args.mapping_txt)
+	logit_classes = load_logit_class_list(args.logit_classes_json)
+	synset_to_idx, index_to_name = build_wnid_to_logit_index(wnid_to_name, logit_classes)
 
 	train_tfms = build_transforms(args.image_size, is_train=True)
 
@@ -223,11 +233,17 @@ def main() -> None:
 
 			with torch.no_grad():
 				preds = torch.argmax(logits, dim=1)
-				correct_mask_batch = (preds == targets).cpu().tolist()
-				batch_acc = float(sum(correct_mask_batch)) / max(1, len(correct_mask_batch))
-				for p, is_corr in zip(batch_paths, correct_mask_batch):
-					if is_corr:
+				# Exact correctness per sample based on string labels
+				correct_mask_batch: List[bool] = []
+				for p, pred_idx in zip(batch_paths, preds.cpu().tolist()):
+					wnid = extract_synset_from_path(p)
+					gt_name = wnid_to_name.get(wnid, str(wnid)) if wnid is not None else ""
+					pred_name = index_to_name.get(int(pred_idx), str(pred_idx))
+					ok = is_exact_match(pred_name, gt_name)
+					correct_mask_batch.append(ok)
+					if ok:
 						epoch_correct_this_epoch[p] = True
+				batch_acc = float(sum(correct_mask_batch)) / max(1, len(correct_mask_batch))
 
 			lr = optimizer.param_groups[0]["lr"] if optimizer.param_groups else 0.0
 			step_time = time.time() - step_start
