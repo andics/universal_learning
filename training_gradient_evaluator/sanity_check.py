@@ -8,6 +8,7 @@ from PIL import Image
 
 import torch
 from torch.utils.data import Dataset, DataLoader
+import matplotlib.pyplot as plt
 
 from training_gradient_evaluator.data import (
 	read_imagenet_paths,
@@ -82,6 +83,22 @@ def main() -> None:
 	if not paths:
 		raise RuntimeError(f"No image paths found in {args.examples_csv}")
 	synset_to_index = read_synset_to_index(args.mapping_txt)
+
+	# Also build index->name mapping for display (0-based index => human-readable name)
+	index_to_name = {}
+	with open(args.mapping_txt, "r", encoding="utf-8") as f:
+		for line in f:
+			line = line.strip()
+			if not line:
+				continue
+			parts = line.split()
+			if len(parts) >= 3:
+				try:
+					idx0 = int(parts[1]) - 1
+				except Exception:
+					continue
+				name = " ".join(parts[2:]).replace("_", " ")
+				index_to_name[idx0] = name
 	transform = build_transforms(args.image_size, is_train=False)
 
 	ds = ImageNetEvalDataset(paths, synset_to_index, args.root_dir, transform)
@@ -94,6 +111,8 @@ def main() -> None:
 
 	# Inference
 	correct_mask = np.zeros(len(paths), dtype=bool)
+	preds_all = -np.ones(len(paths), dtype=np.int64)
+	targets_all = -np.ones(len(paths), dtype=np.int64)
 	correct_total = 0
 	total = 0
 	with torch.no_grad():
@@ -105,6 +124,8 @@ def main() -> None:
 			correct = (preds == targets).cpu().numpy().astype(bool)
 			idxs_np = idxs.numpy()
 			correct_mask[idxs_np] = correct
+			preds_all[idxs_np] = preds.cpu().numpy()
+			targets_all[idxs_np] = targets.cpu().numpy()
 			correct_total += int(correct.sum())
 			total += int(targets.numel())
 
@@ -128,6 +149,38 @@ def main() -> None:
 	out_path = os.path.join(model_out_dir, f"sanity_{safe_model}_correct_mask.npy")
 	np.save(out_path, correct_mask)
 	print(f"Saved sanity mask to {out_path}")
+
+	# Visualize a random subset of 10 samples with Pred (top) and GT (bottom)
+	try:
+		rng = np.random.default_rng(42)
+		N = len(paths)
+		k = min(10, N)
+		idx_subset = rng.choice(np.arange(N), size=k, replace=False)
+		fig, axes = plt.subplots(2, 5, figsize=(16, 7))
+		axes = axes.flatten()
+		for ax, i in zip(axes, idx_subset):
+			img_path = paths[i]
+			if args.root_dir and not os.path.isabs(img_path):
+				img_path = os.path.join(args.root_dir, img_path)
+			try:
+				im = Image.open(img_path).convert("RGB")
+				ax.imshow(im)
+				ax.axis('off')
+				pred_idx = int(preds_all[i])
+				tgt_idx = int(targets_all[i])
+				pred_name = index_to_name.get(pred_idx, str(pred_idx))
+				tgt_name = index_to_name.get(tgt_idx, str(tgt_idx))
+				ax.set_title(f"Pred: {pred_name}", fontsize=9)
+				ax.set_xlabel(f"GT: {tgt_name}", fontsize=9)
+			except Exception:
+				ax.axis('off')
+		plt.tight_layout()
+		plot_path = os.path.join(model_out_dir, "sanity_random_10.png")
+		plt.savefig(plot_path, dpi=150)
+		plt.close()
+		print(f"Saved random 10-sample visualization to {plot_path}")
+	except Exception as e:
+		print(f"Warning: failed to render sample visualization: {e}")
 
 
 if __name__ == "__main__":
