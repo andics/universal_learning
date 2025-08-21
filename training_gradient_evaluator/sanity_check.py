@@ -30,15 +30,16 @@ except Exception:
 
 def load_wnid_to_index_from_torchvision():
 	import torchvision
-	idx_json = os.path.join(os.path.dirname(torchvision.__file__), 'datasets', 'imagenet_class_index.json')
+	idx_json = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+							'image_difficulty_classifier',
+							'imagenet_logit_to_class_mapping.json')
 	with open(idx_json, 'r', encoding='utf-8') as f:
 		data = json.load(f)
 	wnid_to_idx = {}
-	for k, v in data.items():
+	for k, v in enumerate(data):
 		try:
 			i = int(k)
-			wnid = str(v[0])
-			wnid_to_idx[wnid] = i
+			wnid_to_idx[i] = v
 		except Exception:
 			continue
 	return wnid_to_idx
