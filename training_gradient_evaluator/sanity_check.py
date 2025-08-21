@@ -28,10 +28,34 @@ except Exception:
 	pass
 
 
+def load_timm_class_map(model):
+	from timm.data import class_map as _cm
+	cm = _cm.load_class_map(getattr(model, 'pretrained_cfg', {}))
+	class_to_idx = None
+	if isinstance(cm, dict):
+		class_to_idx = cm
+	elif isinstance(cm, (list, tuple)) and len(cm) >= 1 and isinstance(cm[0], dict):
+		class_to_idx = cm[0]
+	elif hasattr(cm, 'class_to_idx'):
+		class_to_idx = getattr(cm, 'class_to_idx')
+	if not class_to_idx:
+		return None, None
+	# Build wnid->idx if wnids exist
+	wnid_keys = [k for k in class_to_idx.keys() if isinstance(k, str) and len(k) == 9 and k.startswith('n') and k[1:].isdigit()]
+	if wnid_keys:
+		synset_to_idx = {k: int(class_to_idx[k]) for k in wnid_keys}
+		idx_to_synset = {v: k for k, v in synset_to_idx.items()}
+		return synset_to_idx, idx_to_synset
+	# Else fallback: stringify keys
+	synset_to_idx = {str(k): int(v) for k, v in class_to_idx.items() if isinstance(v, (int, np.integer))}
+	idx_to_synset = {v: k for k, v in synset_to_idx.items()}
+	return synset_to_idx, idx_to_synset
+
+
 class ImageNetEvalDataset(Dataset):
-	def __init__(self, image_paths: List[str], synset_to_index: dict, root_dir: str | None, transform) -> None:
+	def __init__(self, image_paths: List[str], synset_to_model_idx: dict, root_dir: str | None, transform) -> None:
 		self.image_paths = image_paths
-		self.synset_to_index = synset_to_index
+		self.synset_to_model_idx = synset_to_model_idx
 		self.root_dir = root_dir
 		self.transform = transform
 
@@ -49,9 +73,9 @@ class ImageNetEvalDataset(Dataset):
 		image = Image.open(path).convert("RGB")
 		x = self.transform(image)
 		synset = extract_synset_from_path(path)
-		if synset is None or synset not in self.synset_to_index:
-			raise RuntimeError(f"Could not determine synset/class for path: {path}")
-		y = self.synset_to_index[synset]
+		if synset is None or synset not in self.synset_to_model_idx:
+			raise RuntimeError(f"Could not map synset to model index for path: {path}")
+		y = self.synset_to_model_idx[synset]
 		return x, y, idx
 
 
@@ -82,9 +106,16 @@ def main() -> None:
 	paths = read_imagenet_paths(args.examples_csv)
 	if not paths:
 		raise RuntimeError(f"No image paths found in {args.examples_csv}")
-	synset_to_index = read_synset_to_index(args.mapping_txt)
 
-	# Also build index->name mapping for display (0-based index => label as written in file)
+	# Model and class map from TIMM
+	import timm
+	model = timm.create_model(args.model_name, pretrained=True)
+	synset_to_idx, idx_to_synset = load_timm_class_map(model)
+	if synset_to_idx is None:
+		raise RuntimeError("Could not obtain class map from TIMM for this model; cannot reliably map logits to classes.")
+	model.eval().to(device)
+
+	# For display of GT/pred names, parse mapping_txt only for human-readable names
 	index_to_name = {}
 	with open(args.mapping_txt, "r", encoding="utf-8") as f:
 		for line in f:
@@ -97,18 +128,12 @@ def main() -> None:
 					idx0 = int(parts[1]) - 1
 				except Exception:
 					continue
-				# Keep underscores as-is (exactly as written in the mapping file)
 				name = " ".join(parts[2:])
 				index_to_name[idx0] = name
+
 	transform = build_transforms(args.image_size, is_train=False)
-
-	ds = ImageNetEvalDataset(paths, synset_to_index, args.root_dir, transform)
+	ds = ImageNetEvalDataset(paths, synset_to_idx, args.root_dir, transform)
 	loader = DataLoader(ds, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
-
-	# Model
-	import timm
-	model = timm.create_model(args.model_name, pretrained=True)
-	model.eval().to(device)
 
 	# Inference
 	correct_mask = np.zeros(len(paths), dtype=bool)
@@ -151,7 +176,7 @@ def main() -> None:
 	np.save(out_path, correct_mask)
 	print(f"Saved sanity mask to {out_path}")
 
-	# Visualize a random subset of 10 samples with Pred (top) and GT (bottom)
+	# Visualize a random subset of 10 samples with Pred (top) and GT (bottom) using TIMM class mapping
 	try:
 		rng = np.random.default_rng(42)
 		N = len(paths)
@@ -169,11 +194,12 @@ def main() -> None:
 				ax.axis('off')
 				pred_idx = int(preds_all[i])
 				tgt_idx = int(targets_all[i])
-				pred_name = index_to_name.get(pred_idx, str(pred_idx))
-				tgt_name = index_to_name.get(tgt_idx, str(tgt_idx))
-				# Top: predicted label; Bottom: ground-truth label (as in mapping file)
-				ax.set_title(f"Pred: {pred_name}", fontsize=9)
-				ax.text(0.5, -0.12, f"GT: {tgt_name}", fontsize=9, ha='center', va='top', transform=ax.transAxes)
+				# Map pred/gt indices to class names via synset mapping -> readable mapping
+				pred_syn = idx_to_synset.get(pred_idx, str(pred_idx)) if idx_to_synset else str(pred_idx)
+				# For GT name display, try mapping file numeric index if available, else synset
+				gt_name = index_to_name.get(tgt_idx, str(tgt_idx))
+				ax.set_title(f"Pred: {pred_syn}", fontsize=9)
+				ax.text(0.5, -0.12, f"GT: {gt_name}", fontsize=9, ha='center', va='top', transform=ax.transAxes)
 			except Exception:
 				ax.axis('off')
 		plt.tight_layout()

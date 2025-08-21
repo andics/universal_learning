@@ -34,6 +34,28 @@ def filter_existing_indices(paths: List[str], indices: List[int], root_dir: str 
 	return kept
 
 
+def build_timm_synset_to_idx(model) -> Dict[str, int] | None:
+	"""Attempt to obtain synset (wnid) -> logit index mapping from TIMM's class map."""
+	try:
+		from timm.data import class_map as _cm
+		cm = _cm.load_class_map(getattr(model, 'pretrained_cfg', {}))
+		class_to_idx = None
+		if isinstance(cm, dict):
+			class_to_idx = cm
+		elif isinstance(cm, (list, tuple)) and len(cm) >= 1 and isinstance(cm[0], dict):
+			class_to_idx = cm[0]
+		elif hasattr(cm, 'class_to_idx'):
+			class_to_idx = getattr(cm, 'class_to_idx')
+		if not class_to_idx:
+			return None
+		wnid_keys = [k for k in class_to_idx.keys() if isinstance(k, str) and len(k) == 9 and k.startswith('n') and k[1:].isdigit()]
+		if wnid_keys:
+			return {k: int(class_to_idx[k]) for k in wnid_keys}
+		return {str(k): int(v) for k, v in class_to_idx.items() if isinstance(v, (int, np.integer))}
+	except Exception:
+		return None
+
+
 def main() -> None:
 	parser = argparse.ArgumentParser(description="V2: Train model on only the images it originally got wrong; torchvision transforms.")
 	parser.add_argument("--model_name", type=str, default="resnet18.a3_in1k")
@@ -62,28 +84,14 @@ def main() -> None:
 	os.makedirs(ckpt_dir, exist_ok=True)
 	device = torch.device(args.device)
 
-	# Paths and labels
+	# Paths
 	paths = read_imagenet_paths(args.examples_csv)
 	if not paths:
 		raise RuntimeError(f"No image paths found in {args.examples_csv}")
-	synset_to_index = read_synset_to_index(args.mapping_txt)
 
-	# Load original correctness mask and select wrong examples for the specified model row
-	mask = np.load(args.bars_npy)
-	if mask.ndim != 2 or args.mask_row_index < 0 or args.mask_row_index >= mask.shape[0]:
-		raise ValueError(f"Unexpected mask shape {mask.shape} or bad row {args.mask_row_index}")
-	correct_mask = mask[args.mask_row_index].astype(bool)  # True means originally correct
-	wrong_mask = ~correct_mask
-	wrong_indices = np.nonzero(wrong_mask)[0].tolist()
-	wrong_indices = filter_existing_indices(paths, wrong_indices, args.root_dir)
-	if not wrong_indices:
-		raise RuntimeError("No existing images among wrong examples.")
-	print(f"Training on {len(wrong_indices)} originally-wrong examples.")
-
-	# Build model (TIMM) and torchvision transforms
+	# Build model (TIMM) and transforms
 	import timm
 	model = timm.create_model(args.model_name, pretrained=True)
-	# Log pretrained source information and cache locations
 	try:
 		pcfg = getattr(model, 'pretrained_cfg', {}) or {}
 		url = pcfg.get('url', None)
@@ -95,17 +103,33 @@ def main() -> None:
 		print("HF caches:", os.getenv("HF_HOME"), os.getenv("HUGGINGFACE_HUB_CACHE"), str(_P.home() / ".cache/huggingface/hub"))
 	except Exception as _e:
 		print(f"Note: could not display pretrained cfg details: {_e}")
-
-	# Ensure model on device; keep classification head as-is for fine-tuning
 	model = model.to(device)
 	if torch.cuda.device_count() > 1 and device.type == "cuda":
 		model = nn.DataParallel(model)
 
-	train_tfms = build_transforms(args.image_size, is_train=True)
-	# eval_tfms = build_transforms(args.image_size, is_train=False)
+	# Prefer TIMM-provided class map for label indexing
+	synset_to_idx = build_timm_synset_to_idx(model)
+	if synset_to_idx is None:
+		print("Warning: TIMM class map unavailable; falling back to imagenet_class_name_mapping.txt numeric order.")
+		from training_gradient_evaluator.data import read_synset_to_index as _fallback
+		synset_to_idx = _fallback(args.mapping_txt)
 
-	# Dataset and loaders
-	train_ds = ImageNetWrongExamplesDataset(paths, wrong_indices, synset_to_index, transform=train_tfms, root_dir=args.root_dir)
+	train_tfms = build_transforms(args.image_size, is_train=True)
+
+	# Mask & wrong indices
+	mask = np.load(args.bars_npy)
+	if mask.ndim != 2 or args.mask_row_index < 0 or args.mask_row_index >= mask.shape[0]:
+		raise ValueError(f"Unexpected mask shape {mask.shape} or bad row {args.mask_row_index}")
+	correct_mask = mask[args.mask_row_index].astype(bool)
+	wrong_mask = ~correct_mask
+	wrong_indices = np.nonzero(wrong_mask)[0].tolist()
+	wrong_indices = filter_existing_indices(paths, wrong_indices, args.root_dir)
+	if not wrong_indices:
+		raise RuntimeError("No existing images among wrong examples.")
+	print(f"Training on {len(wrong_indices)} originally-wrong examples.")
+
+	# Dataset & loader with TIMM-based label indices
+	train_ds = ImageNetWrongExamplesDataset(paths, wrong_indices, synset_to_idx, transform=train_tfms, root_dir=args.root_dir)
 	train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=True, drop_last=False)
 
 	# Optimizer and AMP
@@ -118,7 +142,6 @@ def main() -> None:
 		return os.path.join(args.root_dir, p) if args.root_dir and not os.path.isabs(p) else p
 
 	train_paths_full = [resolve_full(paths[i]) for i in wrong_indices]
-	# Track per-example consecutive epoch correctness and the step when it first reached the streak threshold
 	consecutive_epoch_correct: Dict[str, int] = {p: 0 for p in train_paths_full}
 	tenth_epoch_streak_step: Dict[str, int] = {p: -1 for p in train_paths_full}
 	stats_csv = os.path.join(model_out_dir, "example_statistics.csv")
@@ -134,7 +157,7 @@ def main() -> None:
 	except Exception:
 		pass
 
-	# Checkpoint helpers
+	# Checkpoint helpers (unchanged)
 	def latest_checkpoint_path():
 		latest = os.path.join(ckpt_dir, "latest.pt")
 		if os.path.exists(latest):
@@ -156,7 +179,6 @@ def main() -> None:
 		torch.save(state, step_path)
 		torch.save(state, os.path.join(ckpt_dir, "latest.pt"))
 
-	# Try resume
 	start_epoch = 1
 	global_step = 0
 	latest = latest_checkpoint_path()
@@ -181,7 +203,6 @@ def main() -> None:
 	for epoch in range(start_epoch, args.epochs + 1):
 		print(f"Epoch {epoch}/{args.epochs}")
 		model.train()
-		# Track if an example was correct at least once during this epoch
 		epoch_correct_this_epoch: Dict[str, bool] = {p: False for p in train_paths_full}
 		for step, (images, targets, batch_paths) in enumerate(train_loader, start=1):
 			step_start = time.time()
@@ -207,12 +228,10 @@ def main() -> None:
 				preds = torch.argmax(logits, dim=1)
 				correct_mask_batch = (preds == targets).cpu().tolist()
 				batch_acc = float(sum(correct_mask_batch)) / max(1, len(correct_mask_batch))
-				# Update per-epoch correctness flags
 				for p, is_corr in zip(batch_paths, correct_mask_batch):
 					if is_corr:
 						epoch_correct_this_epoch[p] = True
 
-			# Verbose per-step logging
 			lr = optimizer.param_groups[0]["lr"] if optimizer.param_groups else 0.0
 			step_time = time.time() - step_start
 			imgs_per_sec = int(images.size(0) / max(step_time, 1e-8))
@@ -223,7 +242,6 @@ def main() -> None:
 				flush=True,
 			)
 
-			# RIGHT/WRONG full-path logging
 			right_paths = [p for p, c in zip(batch_paths, correct_mask_batch) if c]
 			wrong_paths = [p for p, c in zip(batch_paths, correct_mask_batch) if not c]
 			if right_paths:
@@ -231,20 +249,16 @@ def main() -> None:
 			if wrong_paths:
 				print("WRONG: " + " | ".join(wrong_paths))
 
-			# Record stats
 			try:
 				with open(stats_csv, "a", newline="", encoding="utf-8") as f:
 					w = csv.writer(f)
 					for p, is_corr in zip(batch_paths, correct_mask_batch):
-						# For v2 (streak threshold), we still log per-step correctness only
 						w.writerow([global_step, p, int(is_corr)])
 			except Exception:
 				pass
 
-			# Save checkpoint after each step
 			save_checkpoint(epoch, global_step)
 
-		# End of epoch: update consecutive epoch correctness and record streak step
 		for p, was_correct in epoch_correct_this_epoch.items():
 			if was_correct:
 				consecutive_epoch_correct[p] += 1
@@ -253,12 +267,9 @@ def main() -> None:
 			if consecutive_epoch_correct[p] >= args.streak_epochs and tenth_epoch_streak_step[p] == -1:
 				tenth_epoch_streak_step[p] = global_step
 
-		# Epoch summary
 		print(f"  epoch_end_loss={float(loss.detach().item()):.4f}")
-		# Save checkpoint at epoch end as well
 		save_checkpoint(epoch, global_step)
 
-	# Final summary
 	remaining = sum(1 for v in tenth_epoch_streak_step.values() if v == -1)
 	print(f"Training done. Examples never correct: {remaining}")
 
@@ -269,7 +280,6 @@ def main() -> None:
 		for p, step in tenth_epoch_streak_step.items():
 			w.writerow([p, step])
 
-	# Optional: run same analysis util if available
 	try:
 		from training_gradient_evaluator.order_analysis import analyze_and_plot
 		analyze_and_plot(summary_csv, imagenet_csv=args.examples_csv)
