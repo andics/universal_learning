@@ -21,6 +21,8 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
+from transformers import AutoModel
+
 from training_gradient_evaluator.data import ImageNetWrongExamplesDataset, read_imagenet_paths, read_synset_to_index, build_transforms
 
 
@@ -36,17 +38,17 @@ def filter_existing_indices(paths: List[str], indices: List[int], root_dir: str 
 
 def main() -> None:
 	parser = argparse.ArgumentParser(description="V2: Train model on only the images it originally got wrong; torchvision transforms.")
-	parser.add_argument("--model_name", type=str, default="mobilenetv3_small_050.lamb_in1k")
+	parser.add_argument("--model_name", type=str, default="timm/resnet18.a3_in1k")
 	parser.add_argument("--bars_npy", type=str, default=os.path.join("bars", "imagenet.npy"))
 	parser.add_argument("--examples_csv", type=str, default=os.path.join("bars", "imagenet_examples_ammended.csv"))
 	parser.add_argument("--mapping_txt", type=str, default=os.path.join("image_difficulty_classifier", "imagenet_class_name_mapping.txt"))
 	parser.add_argument("--root_dir", type=str, default=None)
-	parser.add_argument("--mask_row_index", type=int, default=1022, help="Row for mobilenetv3_small_050.lamb_in1k in imagenet.npy")
-	parser.add_argument("--epochs", type=int, default=50)
+	parser.add_argument("--mask_row_index", type=int, default=1015, help="Row for mobilenetv3_small_050.lamb_in1k in imagenet.npy")
+	parser.add_argument("--epochs", type=int, default=80)
 	parser.add_argument("--batch_size", type=int, default=128)
 	parser.add_argument("--lr", type=float, default=5e-4)
 	parser.add_argument("--weight_decay", type=float, default=1e-2)
-	parser.add_argument("--image_size", type=int, default=224)
+	parser.add_argument("--image_size", type=int, default=160)
 	parser.add_argument("--num_workers", type=int, default=4)
 	parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu")
 	parser.add_argument("--output_dir", type=str, default=os.path.join("training_gradient_evaluator", "outputs"))
@@ -82,7 +84,7 @@ def main() -> None:
 
 	# Build model (timm) and torchvision transforms (V2 requirement)
 	import timm
-	model = timm.create_model(args.model_name, pretrained=True, num_classes=1000)
+	model = AutoModel.from_pretrained(args.model_name)
 	model = model.to(device)
 	if torch.cuda.device_count() > 1 and device.type == "cuda":
 		model = nn.DataParallel(model)
