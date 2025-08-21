@@ -22,12 +22,6 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 
 from training_gradient_evaluator.data import ImageNetWrongExamplesDataset, read_imagenet_paths, build_transforms, extract_synset_from_path
-from training_gradient_evaluator.utils.label_mapping import (
-	load_logit_class_list,
-	load_wnid_to_name_txt,
-	build_wnid_to_logit_index,
-	is_exact_match,
-)
 
 
 def filter_existing_indices(paths: List[str], indices: List[int], root_dir: str | None) -> List[int]:
@@ -60,8 +54,24 @@ def load_wnid_to_index_from_torchvision() -> Dict[str, int] | None:
 		return None
 
 
-def _default_logit_json_path() -> str:
-	return os.path.join(os.path.dirname(os.path.dirname(__file__)), 'image_difficulty_classifier', 'imagenet_logit_to_class_mapping.json')
+def _default_hierarchy_json_path() -> str:
+	return os.path.join('bars', 'imagenet_synset_hierarchy.json')
+
+
+def load_imagenet_hierarchy(path: str) -> tuple[dict[str, int], dict[int, str], dict[str, str]]:
+	with open(path, 'r', encoding='utf-8') as f:
+		data = json.load(f)
+	wnid_to_idx: dict[str, int] = {}
+	idx_to_words: dict[int, str] = {}
+	wnid_to_words: dict[str, str] = {}
+	for wnid, obj in data.items():
+		idx = int(obj.get('pytorch_class_id'))
+		words = str(obj.get('words', '')).strip()
+		wnid_to_idx[wnid] = idx
+		wnid_to_words[wnid] = words
+		if idx not in idx_to_words:
+			idx_to_words[idx] = words
+	return wnid_to_idx, idx_to_words, wnid_to_words
 
 
 def main() -> None:
@@ -69,7 +79,7 @@ def main() -> None:
 	parser.add_argument("--model_name", type=str, default="resnet18.a3_in1k")
 	parser.add_argument("--bars_npy", type=str, default=os.path.join("bars", "imagenet.npy"))
 	parser.add_argument("--examples_csv", type=str, default=os.path.join("bars", "imagenet_examples_ammended.csv"))
-	parser.add_argument("--mapping_txt", type=str, default=os.path.join("image_difficulty_classifier", "imagenet_class_name_mapping.txt"))
+	# mapping_txt no longer used; hierarchy_json replaces it
 	parser.add_argument("--root_dir", type=str, default=None)
 	parser.add_argument("--mask_row_index", type=int, default=1015, help="Row for mobilenetv3_small_050.lamb_in1k in imagenet.npy")
 	parser.add_argument("--epochs", type=int, default=80)
@@ -82,7 +92,7 @@ def main() -> None:
 	parser.add_argument("--output_dir", type=str, default=os.path.join("training_gradient_evaluator", "outputs"))
 	parser.add_argument("--no_amp", action="store_true")
 	parser.add_argument("--streak_epochs", type=int, default=10, help="Consecutive epochs required for an example to be considered first-correct")
-	parser.add_argument("--logit_classes_json", type=str, default=_default_logit_json_path(), help="Path to JSON mapping logits to class names.")
+	parser.add_argument("--hierarchy_json", type=str, default=_default_hierarchy_json_path(), help="Path to bars/imagenet_synset_hierarchy.json")
 	args = parser.parse_args()
 
 	os.makedirs(args.output_dir, exist_ok=True)
@@ -116,10 +126,8 @@ def main() -> None:
 	if torch.cuda.device_count() > 1 and device.type == "cuda":
 		model = nn.DataParallel(model)
 
-	# Build wnid->index mapping using provided class lists and fuzzy matching
-	wnid_to_name = load_wnid_to_name_txt(args.mapping_txt)
-	logit_classes = load_logit_class_list(args.logit_classes_json)
-	synset_to_idx, index_to_name = build_wnid_to_logit_index(wnid_to_name, logit_classes)
+	# Build wnid->index/name mapping from hierarchy JSON
+	synset_to_idx, index_to_name, wnid_to_words = load_imagenet_hierarchy(args.hierarchy_json)
 
 	train_tfms = build_transforms(args.image_size, is_train=True)
 
@@ -233,13 +241,12 @@ def main() -> None:
 
 			with torch.no_grad():
 				preds = torch.argmax(logits, dim=1)
-				# Exact correctness per sample based on string labels
+				# Correctness based on numeric class index from hierarchy
 				correct_mask_batch: List[bool] = []
 				for p, pred_idx in zip(batch_paths, preds.cpu().tolist()):
 					wnid = extract_synset_from_path(p)
-					gt_name = wnid_to_name.get(wnid, str(wnid)) if wnid is not None else ""
-					pred_name = index_to_name.get(int(pred_idx), str(pred_idx))
-					ok = is_exact_match(pred_name, gt_name)
+					tgt_idx = synset_to_idx.get(wnid, -1)
+					ok = int(pred_idx) == int(tgt_idx)
 					correct_mask_batch.append(ok)
 					if ok:
 						epoch_correct_this_epoch[p] = True

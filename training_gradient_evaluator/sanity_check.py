@@ -16,12 +16,6 @@ from training_gradient_evaluator.data import (
 	extract_synset_from_path,
 	build_transforms,
 )
-from training_gradient_evaluator.utils.label_mapping import (
-	load_logit_class_list,
-	load_wnid_to_name_txt,
-	build_wnid_to_logit_index,
-	is_exact_match,
-)
 
 
 # Align cwd and sys.path with the project root like train_grad.py
@@ -34,10 +28,25 @@ except Exception:
 	pass
 
 
-def _default_logit_json_path() -> str:
-	return os.path.join(os.path.dirname(os.path.dirname(__file__)),
-						'image_difficulty_classifier',
-						'imagenet_logit_to_class_mapping.json')
+def _default_hierarchy_json_path() -> str:
+	return os.path.join('bars', 'imagenet_synset_hierarchy.json')
+
+
+def load_imagenet_hierarchy(path: str) -> tuple[dict[str, int], dict[int, str], dict[str, str]]:
+	with open(path, 'r', encoding='utf-8') as f:
+		data = json.load(f)
+	wnid_to_idx: dict[str, int] = {}
+	idx_to_words: dict[int, str] = {}
+	wnid_to_words: dict[str, str] = {}
+	for wnid, obj in data.items():
+		idx = int(obj.get('pytorch_class_id'))
+		words = str(obj.get('words', '')).strip()
+		wnid_to_idx[wnid] = idx
+		wnid_to_words[wnid] = words
+		# Do not overwrite if duplicate indices appear; keep first
+		if idx not in idx_to_words:
+			idx_to_words[idx] = words
+	return wnid_to_idx, idx_to_words, wnid_to_words
 
 
 class ImageNetEvalDataset(Dataset):
@@ -71,8 +80,7 @@ def main() -> None:
 	parser = argparse.ArgumentParser(description="Sanity check a pretrained timm model on ImageNet validation and compare with bars/imagenet.npy row mask.")
 	parser.add_argument("--model_name", type=str, default="resnet18.a3_in1k")
 	parser.add_argument("--examples_csv", type=str, default=os.path.join("bars", "imagenet_examples_ammended.csv"))
-	parser.add_argument("--mapping_txt", type=str, default=os.path.join("image_difficulty_classifier", "imagenet_class_name_mapping.txt"))
-	parser.add_argument("--logit_classes_json", type=str, default=_default_logit_json_path(), help="JSON list of class names in model logit order")
+	parser.add_argument("--hierarchy_json", type=str, default=_default_hierarchy_json_path(), help="Path to bars/imagenet_synset_hierarchy.json")
 	parser.add_argument("--bars_npy", type=str, default=os.path.join("bars", "imagenet.npy"))
 	parser.add_argument("--mask_row_index", type=int, default=1015)
 	parser.add_argument("--root_dir", type=str, default=None)
@@ -99,13 +107,11 @@ def main() -> None:
 	# Model and label mappings
 	import timm
 	model = timm.create_model(args.model_name, pretrained=True)
-	# Load mappings
-	wnid_to_name = load_wnid_to_name_txt(args.mapping_txt)
-	logit_classes = load_logit_class_list(args.logit_classes_json)
-	synset_to_idx, index_to_name = build_wnid_to_logit_index(wnid_to_name, logit_classes)
+	# Load mappings from hierarchy
+	synset_to_idx, index_to_name, wnid_to_words = load_imagenet_hierarchy(args.hierarchy_json)
 	model.eval().to(device)
 
-	# index_to_name already from logit list mapping builder
+	# index_to_name already provided by hierarchy mapping
 
 	transform = build_transforms(args.image_size, is_train=False)
 	ds = ImageNetEvalDataset(paths, synset_to_idx, args.root_dir, transform)
@@ -133,9 +139,9 @@ def main() -> None:
 				if args.root_dir and not os.path.isabs(path):
 					path = os.path.join(args.root_dir, path)
 				wnid = extract_synset_from_path(path)
-				gt_name = wnid_to_name.get(wnid, str(wnid)) if wnid is not None else ""
-				pred_name = index_to_name.get(int(pred_idx), str(pred_idx))
-				ok = is_exact_match(pred_name, gt_name)
+				# Numeric correctness based on indices
+				tgt_idx = synset_to_idx.get(wnid, -1)
+				ok = int(pred_idx) == int(tgt_idx)
 				batch_correct.append(ok)
 			correct = np.array(batch_correct, dtype=bool)
 			correct_mask[idxs_np] = correct
@@ -184,7 +190,7 @@ def main() -> None:
 				pred_idx = int(preds_all[i])
 				wnid = extract_synset_from_path(img_path)
 				pred_name = index_to_name.get(pred_idx, str(pred_idx))
-				gt_name = wnid_to_name.get(wnid, str(wnid)) if wnid is not None else ""
+				gt_name = wnid_to_words.get(wnid, str(wnid)) if wnid is not None else ""
 				ax.set_title(f"Pred: {pred_name}", fontsize=9)
 				ax.text(0.5, -0.12, f"GT: {gt_name}", fontsize=9, ha='center', va='top', transform=ax.transAxes)
 			except Exception:
