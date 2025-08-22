@@ -113,7 +113,7 @@ def analyze_and_plot(model_csv: str, imagenet_csv: str) -> None:
 	plt.close()
 	print(f"Saved order correlation plot to {plot_path1}")
 
-	# Second plot: x = first-correct step (raw), y = universal absolute rank (1..N on overlap)
+	# Second plot: x = first-correct GLOBAL step, y = universal absolute rank (1..N)
 	X2 = np.array([model_steps[p] for p in sorted_by_model], dtype=float)
 	# Absolute universal rank among all universal entries, 1-based
 	Y2 = np.array([universal_index[p] + 1 for p in sorted_by_model], dtype=float)
@@ -124,7 +124,7 @@ def analyze_and_plot(model_csv: str, imagenet_csv: str) -> None:
 	plot_path2 = os.path.join(out_dir, "order_steps_vs_universal.png")
 	plt.figure(figsize=(7, 6))
 	plt.scatter(X2, Y2, s=8, alpha=0.5)
-	plt.xlabel("First-correct step (raw)")
+	plt.xlabel("First-correct global step")
 	plt.ylabel("Universal absolute rank (1=easiest)")
 	plt.title(f"Overlap size={M}  |  Pearson r={corr2:.4f}")
 	plt.tight_layout()
@@ -132,28 +132,17 @@ def analyze_and_plot(model_csv: str, imagenet_csv: str) -> None:
 	plt.close()
 	print(f"Saved steps-vs-universal plot to {plot_path2}")
 
-	# Third plot (additional): mean universal index per first-correct step (with ±1 std band)
-	step_to_vals: Dict[int, List[int]] = {}
-	for p in sorted_by_model:
-		step = int(model_steps[p])
-		ui = int(universal_index[p])
-		step_to_vals.setdefault(step, []).append(ui)
-	if step_to_vals:
-		steps_sorted = sorted(step_to_vals.keys())
-		means = np.array([float(np.mean(step_to_vals[s])) for s in steps_sorted], dtype=float)
-		stds = np.array([float(np.std(step_to_vals[s])) for s in steps_sorted], dtype=float)
-		plot_path3 = os.path.join(out_dir, "order_steps_vs_universal_binned.png")
-		plt.figure(figsize=(7, 6))
-		plt.plot(steps_sorted, means, label="Mean universal index")
-		plt.fill_between(steps_sorted, means - stds, means + stds, alpha=0.2, label="±1 std")
-		plt.xlabel("First-correct step")
-		plt.ylabel("Universal order index (0=easiest)")
-		plt.title("Universal index vs first-correct step (mean ± std)")
-		plt.legend()
-		plt.tight_layout()
-		plt.savefig(plot_path3, dpi=150)
-		plt.close()
-		print(f"Saved binned steps-vs-universal plot to {plot_path3}")
+	# Third plot (replacement): scatter of first-correct GLOBAL step vs GLOBAL difficulty rank
+	plot_path3 = os.path.join(out_dir, "order_step_vs_global_rank.png")
+	plt.figure(figsize=(7, 6))
+	plt.scatter(X2, Y2, s=8, alpha=0.5)
+	plt.xlabel("First-correct global step")
+	plt.ylabel("Global difficulty rank (1=easiest)")
+	plt.title("Global rank vs first-correct global step")
+	plt.tight_layout()
+	plt.savefig(plot_path3, dpi=150)
+	plt.close()
+	print(f"Saved step-vs-global-rank plot to {plot_path3}")
 
 
 def _default_paths() -> Tuple[str, str]:
