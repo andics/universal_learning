@@ -10,6 +10,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 import matplotlib.pyplot as plt
 import json
+from tqdm import tqdm
 
 from training_gradient_evaluator.data import (
 	read_imagenet_paths,
@@ -125,6 +126,7 @@ def main() -> None:
 	targets_all = -np.ones(len(paths), dtype=np.int64)
 	correct_total = 0
 	total = 0
+	pbar = tqdm(total=len(paths), desc="Inferring", unit="img")
 	with torch.no_grad():
 		for images, targets, idxs in loader:
 			images = images.to(device, non_blocking=True)
@@ -151,6 +153,8 @@ def main() -> None:
 			targets_all[idxs_np] = targets_np
 			correct_total += int(correct.sum())
 			total += int(len(batch_correct))
+			pbar.update(int(len(batch_correct)))
+	pbar.close()
 
 	acc = correct_total / max(total, 1)
 	print(f"Sanity accuracy: {acc:.4f} ({correct_total}/{total})")
