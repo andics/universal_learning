@@ -17,6 +17,7 @@ except Exception:
 	pass
 
 import numpy as np
+import logging
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
@@ -103,6 +104,25 @@ def main() -> None:
 	os.makedirs(ckpt_dir, exist_ok=True)
 	device = torch.device(args.device)
 
+	# Configure timestamped logger in model output directory
+	logger = logging.getLogger(f"train_grad_{safe_model_name}")
+	logger.setLevel(logging.INFO)
+	logger.propagate = False
+	for h in list(logger.handlers):
+		logger.removeHandler(h)
+	from time import strftime, localtime
+	stamp = strftime("%Y%m%d_%H%M%S", localtime())
+	log_path = os.path.join(model_out_dir, f"train_{stamp}.log")
+	fh = logging.FileHandler(log_path)
+	fh.setLevel(logging.INFO)
+	sh = logging.StreamHandler()
+	sh.setLevel(logging.INFO)
+	fmt = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+	fh.setFormatter(fmt)
+	sh.setFormatter(fmt)
+	logger.addHandler(fh)
+	logger.addHandler(sh)
+
 	# Paths
 	paths = read_imagenet_paths(args.examples_csv)
 	if not paths:
@@ -115,13 +135,13 @@ def main() -> None:
 		pcfg = getattr(model, 'pretrained_cfg', {}) or {}
 		url = pcfg.get('url', None)
 		hf_id = pcfg.get('hf_hub_id', None)
-		print(f"Loaded TIMM pretrained weights for {args.model_name}")
-		print(f"pretrained_cfg.url={url} hf_hub_id={hf_id}")
-		print(f"torch.hub cache dir: {torch.hub.get_dir()}")
+		logger.info(f"Loaded TIMM pretrained weights for {args.model_name}")
+		logger.info(f"pretrained_cfg.url={url} hf_hub_id={hf_id}")
+		logger.info(f"torch.hub cache dir: {torch.hub.get_dir()}")
 		from pathlib import Path as _P
-		print("HF caches:", os.getenv("HF_HOME"), os.getenv("HUGGINGFACE_HUB_CACHE"), str(_P.home() / ".cache/huggingface/hub"))
+		logger.info("HF caches: %s %s %s", os.getenv("HF_HOME"), os.getenv("HUGGINGFACE_HUB_CACHE"), str(_P.home() / ".cache/huggingface/hub"))
 	except Exception as _e:
-		print(f"Note: could not display pretrained cfg details: {_e}")
+		logger.info(f"Note: could not display pretrained cfg details: {_e}")
 	model = model.to(device)
 	if torch.cuda.device_count() > 1 and device.type == "cuda":
 		model = nn.DataParallel(model)
@@ -143,7 +163,7 @@ def main() -> None:
 	wrong_indices = filter_existing_indices(paths, wrong_indices, args.root_dir)
 	if not wrong_indices:
 		raise RuntimeError("No existing images among wrong examples.")
-	print(f"Training on {len(wrong_indices)} originally-wrong examples.")
+	logger.info(f"Training on {len(wrong_indices)} originally-wrong examples.")
 
 	# Dataset & loader with wnid-based label indices
 	train_ds = ImageNetWrongExamplesDataset(paths, wrong_indices, synset_to_idx, transform=train_tfms, root_dir=args.root_dir)
@@ -162,9 +182,11 @@ def main() -> None:
 	consecutive_epoch_correct: Dict[str, int] = {p: 0 for p in train_paths_full}
 	tenth_epoch_streak_step: Dict[str, int] = {p: -1 for p in train_paths_full}
 	stats_csv = os.path.join(model_out_dir, "example_statistics.csv")
-	with open(stats_csv, "w", newline="", encoding="utf-8") as f:
-		w = csv.writer(f)
-		w.writerow(["step", "path", "correct"])  # per-step per-sample logging
+	# Create file and header only if not present
+	if not os.path.exists(stats_csv) or os.path.getsize(stats_csv) == 0:
+		with open(stats_csv, "w", newline="", encoding="utf-8") as f:
+			w = csv.writer(f)
+			w.writerow(["step", "path", "correct"])  # per-step per-sample logging
 
 	# Save hyperparameters
 	hparams_path = os.path.join(model_out_dir, "hparams.json")
@@ -212,13 +234,13 @@ def main() -> None:
 				consecutive_epoch_correct.update(payload["consecutive_epoch_correct"])  # type: ignore[index]
 			if "tenth_epoch_streak_step" in payload:
 				tenth_epoch_streak_step.update(payload["tenth_epoch_streak_step"])  # type: ignore[index]
-			print(f"Resumed from {latest} at epoch {start_epoch} global_step {global_step}")
+			logger.info(f"Resumed from {latest} at epoch {start_epoch} global_step {global_step}")
 		except Exception as e:
-			print(f"Warning: failed to resume from {latest}: {e}")
+			logger.warning(f"Warning: failed to resume from {latest}: {e}")
 
 	num_steps_per_epoch = len(train_loader)
 	for epoch in range(start_epoch, args.epochs + 1):
-		print(f"Epoch {epoch}/{args.epochs}")
+		logger.info(f"Epoch {epoch}/{args.epochs}")
 		model.train()
 		epoch_correct_this_epoch: Dict[str, bool] = {p: False for p in train_paths_full}
 		for step, (images, targets, batch_paths) in enumerate(train_loader, start=1):
@@ -257,27 +279,26 @@ def main() -> None:
 			lr = optimizer.param_groups[0]["lr"] if optimizer.param_groups else 0.0
 			step_time = time.time() - step_start
 			imgs_per_sec = int(images.size(0) / max(step_time, 1e-8))
-			print(
+			logger.info(
 				f"epoch={epoch} step={step}/{num_steps_per_epoch} global_step={global_step} "
 				f"loss={float(loss.detach().item()):.4f} batch_acc={batch_acc:.4f} lr={lr:.6g} "
-				f"time={step_time:.3f}s ips={imgs_per_sec}/s",
-				flush=True,
+				f"time={step_time:.3f}s ips={imgs_per_sec}/s"
 			)
 
 			right_paths = [p for p, c in zip(batch_paths, correct_mask_batch) if c]
 			wrong_paths = [p for p, c in zip(batch_paths, correct_mask_batch) if not c]
 			if right_paths:
-				print("RIGHT: " + " | ".join(right_paths))
+				logger.info("RIGHT: " + " | ".join(right_paths))
 			if wrong_paths:
-				print("WRONG: " + " | ".join(wrong_paths))
+				logger.info("WRONG: " + " | ".join(wrong_paths))
 
 			try:
 				with open(stats_csv, "a", newline="", encoding="utf-8") as f:
 					w = csv.writer(f)
 					for p, is_corr in zip(batch_paths, correct_mask_batch):
 						w.writerow([global_step, p, int(is_corr)])
-			except Exception:
-				pass
+			except Exception as e:
+				logger.warning(f"Failed to append stats: {e}")
 
 			save_checkpoint(epoch, global_step)
 
@@ -293,7 +314,7 @@ def main() -> None:
 		save_checkpoint(epoch, global_step)
 
 	remaining = sum(1 for v in tenth_epoch_streak_step.values() if v == -1)
-	print(f"Training done. Examples never correct: {remaining}")
+	logger.info(f"Training done. Examples never correct: {remaining}")
 
 	summary_csv = os.path.join(model_out_dir, "first_correct_summary.csv")
 	with open(summary_csv, "w", newline="", encoding="utf-8") as f:
@@ -306,7 +327,7 @@ def main() -> None:
 		from training_gradient_evaluator.order_analysis import analyze_and_plot
 		analyze_and_plot(summary_csv, imagenet_csv=args.examples_csv)
 	except Exception as e:
-		print(f"Warning: analysis step failed: {e}")
+		logger.warning(f"Warning: analysis step failed: {e}")
 
 
 if __name__ == "__main__":

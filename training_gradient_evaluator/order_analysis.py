@@ -9,55 +9,41 @@ import matplotlib.pyplot as plt
 
 
 def _read_first_correct(model_csv: str) -> List[Tuple[str, int]]:
-	"""
-	Read either a first_correct_summary.csv (path, first_correct_step) or
-	per-step example_statistics.csv (step, path, correct) and return
-	[(path, first_correct_step>=0)].
+	"""Simplified reader for either first_correct_summary.csv or example_statistics.csv.
+
+	- If header starts with ["path", ...], expects rows: path, first_correct_step
+	- Else expects rows: step, path, correct and takes the first step where correct==1
 	"""
 	rows: List[Tuple[str, int]] = []
 	with open(model_csv, "r", encoding="utf-8") as f:
 		r = csv.reader(f)
 		head = next(r, None)
-		# Try to detect format by header
-		is_summary = False
-		if head and len(head) >= 2:
-			lhs = head[0].strip().lower()
-			rhs = head[1].strip().lower()
-			if lhs == "path" and ("first_correct" in rhs):
-				is_summary = True
-		# If summary: read directly
-		if is_summary:
+		if head and head and head[0].strip().lower() == "path":
+			# Direct summary format
 			for line in r:
 				if len(line) < 2:
 					continue
-				path, step_str = line[0], line[1]
 				try:
-					step = int(step_str)
+					step = int(line[1])
 				except Exception:
 					continue
-				# keep only examples that became correct at some step > 0
 				if step > 0:
-					rows.append((path, step))
+					rows.append((line[0], step))
 			return rows
-		# Else assume example_statistics.csv: (step, path, correct)
+
+		# Fallback: example_statistics.csv format (step, path, correct)
 		first_seen: Dict[str, int] = {}
-		# If there was a header, continue from current iterator; else we already consumed first data row
 		for line in r:
 			if len(line) < 3:
 				continue
 			try:
 				step = int(line[0])
-			except Exception:
-				# Maybe there was no header and this is first row: try again by reading entire file without header
-				continue
-			path = line[1]
-			try:
 				correct = int(line[2])
 			except Exception:
 				continue
+			path = line[1]
 			if correct == 1 and path not in first_seen:
 				first_seen[path] = step
-	# Convert to list
 	for p, s in first_seen.items():
 		if s > 0:
 			rows.append((p, s))
@@ -127,9 +113,10 @@ def analyze_and_plot(model_csv: str, imagenet_csv: str) -> None:
 	plt.close()
 	print(f"Saved order correlation plot to {plot_path1}")
 
-	# Second plot: x = first-correct step (raw), y = universal global index (raw)
+	# Second plot: x = first-correct step (raw), y = universal absolute rank (1..N on overlap)
 	X2 = np.array([model_steps[p] for p in sorted_by_model], dtype=float)
-	Y2 = np.array([universal_index[p] for p in sorted_by_model], dtype=float)
+	# Absolute universal rank among all universal entries, 1-based
+	Y2 = np.array([universal_index[p] + 1 for p in sorted_by_model], dtype=float)
 	if X2.std() > 0 and Y2.std() > 0:
 		corr2 = float(np.corrcoef(X2, Y2)[0, 1])
 	else:
@@ -138,7 +125,7 @@ def analyze_and_plot(model_csv: str, imagenet_csv: str) -> None:
 	plt.figure(figsize=(7, 6))
 	plt.scatter(X2, Y2, s=8, alpha=0.5)
 	plt.xlabel("First-correct step (raw)")
-	plt.ylabel("Universal order index (raw, 0=easiest)")
+	plt.ylabel("Universal absolute rank (1=easiest)")
 	plt.title(f"Overlap size={M}  |  Pearson r={corr2:.4f}")
 	plt.tight_layout()
 	plt.savefig(plot_path2, dpi=150)
