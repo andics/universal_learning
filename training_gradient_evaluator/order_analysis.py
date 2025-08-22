@@ -148,7 +148,7 @@ def analyze_and_plot(model_csv: str, imagenet_csv: str) -> None:
 def _default_paths() -> Tuple[str, str]:
 	# Programming root is parent of this file's parent
 	root = Path(__file__).resolve().parents[1]
-	model_csv = str(root / "training_gradient_evaluator_v2" / "outputs" / "mobilenetv3_small_050.lamb_in1k" / "first_correct_summary.csv")
+	model_csv = str(root / "training_gradient_evaluator" / "outputs" / "resnet34.a3_in1k" / "first_correct_summary.csv")
 	imagenet_csv = str(root / "bars" / "imagenet_examples_ammended.csv")
 	return model_csv, imagenet_csv
 
