@@ -82,7 +82,9 @@ def main() -> None:
 	parser.add_argument("--examples_csv", type=str, default=os.path.join("bars", "imagenet_examples_ammended.csv"))
 	# mapping_txt no longer used; hierarchy_json replaces it
 	parser.add_argument("--root_dir", type=str, default=None)
-	parser.add_argument("--mask_row_index", type=int, default=1015, help="Row for resnet18.a3_in1k in imagenet.npy")
+	# Select the row in imagenet.npy by model name looked up from bars/imagenet_models.csv
+	parser.add_argument("--model_csv_name", type=str, default="resnet_34_160_classification_imagenet_1k", help="Model name to look up in imagenet_models.csv to select row in imagenet.npy")
+	parser.add_argument("--imagenet_models_csv", type=str, default=os.path.join("bars", "imagenet_models.csv"), help="Path to bars/imagenet_models.csv containing model column names")
 	parser.add_argument("--epochs", type=int, default=8)
 	parser.add_argument("--batch_size", type=int, default=1024)
 	parser.add_argument("--lr", type=float, default=40e-4)
@@ -153,11 +155,24 @@ def main() -> None:
 	data_config = timm.data.resolve_model_data_config(model)
 	train_tfms = timm.data.create_transform(**data_config, is_training=True)
 
+	# Resolve mask row index from CSV of model names
+	def _find_model_index(models_csv_path: str, model_name: str) -> int:
+		with open(models_csv_path, 'r', encoding='utf-8') as f:
+			reader = csv.reader(f)
+			for row in reader:
+				for j, name in enumerate(row):
+					if name.strip() == model_name:
+						return j
+		raise ValueError(f"Model '{model_name}' not found in {models_csv_path}")
+
+	resolved_mask_row_index = _find_model_index(args.imagenet_models_csv, args.model_csv_name)
+	logger.info(f"Resolved model_csv_name='{args.model_csv_name}' to mask_row_index={resolved_mask_row_index} using {args.imagenet_models_csv}")
+
 	# Mask & wrong indices
 	mask = np.load(args.bars_npy)
-	if mask.ndim != 2 or args.mask_row_index < 0 or args.mask_row_index >= mask.shape[0]:
-		raise ValueError(f"Unexpected mask shape {mask.shape} or bad row {args.mask_row_index}")
-	correct_mask = mask[args.mask_row_index].astype(bool)
+	if mask.ndim != 2 or resolved_mask_row_index < 0 or resolved_mask_row_index >= mask.shape[0]:
+		raise ValueError(f"Unexpected mask shape {mask.shape} or bad row {resolved_mask_row_index}")
+	correct_mask = mask[resolved_mask_row_index].astype(bool)
 	wrong_mask = ~correct_mask
 	wrong_indices = np.nonzero(wrong_mask)[0].tolist()
 	wrong_indices = filter_existing_indices(paths, wrong_indices, args.root_dir)

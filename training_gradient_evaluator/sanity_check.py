@@ -1,4 +1,5 @@
 import argparse
+import csv
 import os, sys
 from pathlib import Path
 from typing import List, Tuple
@@ -82,7 +83,8 @@ def main() -> None:
 	parser.add_argument("--examples_csv", type=str, default=os.path.join("bars", "imagenet_examples_ammended.csv"))
 	parser.add_argument("--hierarchy_json", type=str, default=_default_hierarchy_json_path(), help="Path to bars/imagenet_synset_hierarchy.json")
 	parser.add_argument("--bars_npy", type=str, default=os.path.join("bars", "imagenet.npy"))
-	parser.add_argument("--mask_row_index", type=int, default=1015)
+	parser.add_argument("--model_csv_name", type=str, default="resnet_34_160_classification_imagenet_1k", help="Model name to look up in imagenet_models.csv to select row in imagenet.npy")
+	parser.add_argument("--imagenet_models_csv", type=str, default=os.path.join("bars", "imagenet_models.csv"), help="Path to bars/imagenet_models.csv containing model column names")
 	parser.add_argument("--root_dir", type=str, default=None)
 	parser.add_argument("--image_size", type=int, default=160)
 	parser.add_argument("--batch_size", type=int, default=128)
@@ -159,18 +161,28 @@ def main() -> None:
 	acc = correct_total / max(total, 1)
 	print(f"Sanity accuracy: {acc:.4f} ({correct_total}/{total})")
 
-	# Compare with bars/imagenet.npy row
+	# Compare with bars/imagenet.npy row using model name lookup from CSV
+	def _find_model_index(models_csv_path: str, model_name: str) -> int:
+		with open(models_csv_path, 'r', encoding='utf-8') as f:
+			reader = csv.reader(f)
+			for row in reader:
+				for j, name in enumerate(row):
+					if name.strip() == model_name:
+						return j
+		raise ValueError(f"Model '{model_name}' not found in {models_csv_path}")
+
+	resolved_mask_row_index = _find_model_index(args.imagenet_models_csv, args.model_csv_name)
 	row_mask = np.load(args.bars_npy)
-	if row_mask.ndim != 2 or not (0 <= args.mask_row_index < row_mask.shape[0]):
-		raise ValueError(f"Unexpected imagenet.npy shape {row_mask.shape} or bad row {args.mask_row_index}")
-	baseline = row_mask[args.mask_row_index].astype(bool)  # True means baseline got it correct
+	if row_mask.ndim != 2 or not (0 <= resolved_mask_row_index < row_mask.shape[0]):
+		raise ValueError(f"Unexpected imagenet.npy shape {row_mask.shape} or bad row {resolved_mask_row_index}")
+	baseline = row_mask[resolved_mask_row_index].astype(bool)  # True means baseline got it correct
 	if baseline.shape[0] != correct_mask.shape[0]:
 		print("Warning: length mismatch between CSV paths and npy mask; truncating to min length.")
 		min_len = min(baseline.shape[0], correct_mask.shape[0])
 		baseline = baseline[:min_len]
 		correct_mask = correct_mask[:min_len]
 	overlap = float((baseline == correct_mask).mean()) if baseline.size > 0 else float('nan')
-	print(f"Percentage overlap with imagenet.npy row {args.mask_row_index}: {overlap*100:.2f}%")
+	print(f"Percentage overlap with imagenet.npy row {resolved_mask_row_index}: {overlap*100:.2f}% (model_csv_name='{args.model_csv_name}')")
 
 	# Save mask
 	out_path = os.path.join(model_out_dir, f"sanity_{safe_model}_correct_mask.npy")
