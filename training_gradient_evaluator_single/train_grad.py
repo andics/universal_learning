@@ -7,6 +7,7 @@ import time
 import json
 import glob
 import copy
+import random
 
 # Ensure working directory and sys.path point to the Programming root so package imports resolve
 try:
@@ -234,28 +235,41 @@ def main() -> None:
 		raise ValueError(f"Unexpected mask shape {mask.shape} or bad row {resolved_mask_row_index}")
 	correct_mask = mask[resolved_mask_row_index].astype(bool)
 	wrong_mask = ~correct_mask
+	wrong_indices = np.nonzero(wrong_mask)[0].tolist()
 	
 	# Find wrong examples that exist in the difficulty order
 	def resolve_full(p: str) -> str:
 		return os.path.join(args.root_dir, p) if args.root_dir and not os.path.isabs(p) else p
 
-	# Get wrong examples in difficulty order (easiest wrong examples first)
-	wrong_examples_ordered = []
-	for path in difficulty_ordered_paths:
-		full_path = resolve_full(path)
-		if os.path.exists(full_path):
-			# Find index in original paths list to check if it was wrong
-			try:
-				# We need to map back to the original indices to check the mask
-				# For now, let's assume all examples in difficulty order could be wrong
-				# and we'll check during training
-				wrong_examples_ordered.append(path)
-				if len(wrong_examples_ordered) >= args.max_examples:
-					break
-			except Exception:
-				continue
+	# Get wrong examples that exist and map them to difficulty order
+	all_paths = read_imagenet_paths(args.examples_csv)
 	
-	logger.info(f"Selected first {len(wrong_examples_ordered)} examples for training")
+	# Find wrong examples that exist 
+	wrong_examples_with_difficulty = []
+	path_to_difficulty_rank = {path: i for i, path in enumerate(difficulty_ordered_paths)}
+	
+	for idx in wrong_indices:
+		if idx < len(all_paths):
+			path = all_paths[idx]
+			full_path = resolve_full(path)
+			if os.path.exists(full_path) and path in path_to_difficulty_rank:
+				difficulty_rank = path_to_difficulty_rank[path]
+				wrong_examples_with_difficulty.append((path, difficulty_rank))
+	
+	logger.info(f"Found {len(wrong_examples_with_difficulty)} wrong examples that exist and have difficulty rankings")
+	
+	# Randomly sample from wrong examples
+	if len(wrong_examples_with_difficulty) > args.max_examples:
+		random.seed(42)  # For reproducibility
+		selected_examples = random.sample(wrong_examples_with_difficulty, args.max_examples)
+	else:
+		selected_examples = wrong_examples_with_difficulty
+	
+	# Sort selected examples by difficulty (easiest first) for training order
+	selected_examples.sort(key=lambda x: x[1])
+	wrong_examples_ordered = [path for path, _ in selected_examples]
+	
+	logger.info(f"Selected {len(wrong_examples_ordered)} random wrong examples for training (sorted by difficulty)")
 
 	# Prepare CSV for results
 	results_csv = os.path.join(model_out_dir, "single_example_results.csv")
@@ -265,7 +279,7 @@ def main() -> None:
 
 	# Train each example individually
 	criterion = nn.CrossEntropyLoss()
-	results: List[Tuple[int, str, int]] = []
+	results: List[Tuple[int, str, int, int]] = []
 	
 	for example_idx, example_path in enumerate(wrong_examples_ordered):
 		logger.info(f"\n=== Training Example {example_idx + 1}/{len(wrong_examples_ordered)}: {example_path} ===")
@@ -285,8 +299,8 @@ def main() -> None:
 			optimizer, criterion, scaler, logger, args.max_steps_per_example
 		)
 		
-		# Record result
-		universal_rank = example_idx + 1  # 1-based ranking in difficulty order
+		# Get the actual universal difficulty rank (1-based)
+		universal_rank = path_to_difficulty_rank[example_path] + 1
 		results.append((example_idx, example_path, steps_to_correct, universal_rank))
 		
 		# Append to CSV
@@ -294,7 +308,7 @@ def main() -> None:
 			writer = csv.writer(f)
 			writer.writerow([example_idx, example_path, steps_to_correct, universal_rank])
 		
-		logger.info(f"Example {example_idx + 1} completed: {steps_to_correct} steps")
+		logger.info(f"Example {example_idx + 1} completed: {steps_to_correct} steps (universal rank: {universal_rank})")
 
 	# Create final plot
 	logger.info("Creating final plot...")
@@ -303,19 +317,19 @@ def main() -> None:
 	successful_results = [(idx, path, steps, rank) for idx, path, steps, rank in results if steps > 0]
 	
 	if len(successful_results) >= 2:
-		ranks = [rank for _, _, _, rank in successful_results]
-		steps = [steps for _, _, steps, _ in successful_results]
+		steps_to_correct = [steps for _, _, steps, _ in successful_results]
+		difficulty_ranks = [rank for _, _, _, rank in successful_results]
 		
 		plt.figure(figsize=(10, 6))
-		plt.scatter(ranks, steps, alpha=0.7, s=50)
-		plt.xlabel("Universal Difficulty Ranking (1=easiest)")
-		plt.ylabel("Steps to Get Correct")
-		plt.title(f"Steps vs Universal Difficulty Ranking\n({len(successful_results)} examples)")
+		plt.scatter(steps_to_correct, difficulty_ranks, alpha=0.7, s=50)
+		plt.xlabel("Steps to Get Correct")
+		plt.ylabel("Universal Difficulty Ranking (1=easiest)")
+		plt.title(f"Universal Difficulty vs Steps to Get Correct\n({len(successful_results)} examples)")
 		plt.grid(True, alpha=0.3)
 		
 		# Add correlation info
 		if len(successful_results) > 1:
-			correlation = np.corrcoef(ranks, steps)[0, 1]
+			correlation = np.corrcoef(steps_to_correct, difficulty_ranks)[0, 1]
 			plt.text(0.05, 0.95, f'Correlation: {correlation:.3f}', 
 			        transform=plt.gca().transAxes, bbox=dict(boxstyle="round", facecolor='wheat'))
 		

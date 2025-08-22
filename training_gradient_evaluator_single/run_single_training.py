@@ -13,7 +13,7 @@ def main():
         sys.executable, "train_grad.py",
         "--model_name", "efficientvit_b0.r224_in1k",
         "--model_csv_name", "efficientvit_base_0_224_classification_imagenet_1k",
-        "--max_examples", "20",  # Train on first 20 examples
+        "--max_examples", "50",  # Train on 50 random wrong examples
         "--max_steps_per_example", "500",  # Up to 500 steps per example
         "--lr", "0.01",  # Higher learning rate for faster convergence
         "--weight_decay", "0.001"

@@ -6,19 +6,27 @@ This is a modified version of the training_gradient_evaluator that trains on exa
 
 1. **Loads examples in difficulty order**: Uses the `imagenet_examples_ammended.csv` file which contains image paths sorted by universal difficulty (easiest first).
 
-2. **Trains one example at a time**: For each example:
+2. **Randomly samples wrong examples**: Instead of taking the first N examples, it:
+   - Identifies all examples the model originally got wrong
+   - Randomly samples from these wrong examples (for better statistical coverage)
+   - Sorts the selected examples by difficulty for training order
+
+3. **Trains one example at a time**: For each selected example:
    - Resets the model to original pretrained weights
    - Trains only on that single example until it gets it correct
    - Records the number of steps it took to get it right
    - Moves to the next example
 
-3. **Stores results**: Creates a CSV file with:
+4. **Stores results**: Creates a CSV file with:
    - Example index
    - Image path
    - Steps to get correct (-1 if never got correct)
-   - Universal difficulty ranking
+   - Universal difficulty ranking (absolute position in difficulty order)
 
-4. **Creates visualization**: Plots steps vs universal difficulty ranking to show the relationship.
+5. **Creates visualization**: Plots with:
+   - X-axis: Steps to get correct
+   - Y-axis: Universal difficulty ranking (1=easiest)
+   - Shows relationship between training difficulty and universal difficulty
 
 ## Usage
 
@@ -30,7 +38,7 @@ python run_single_training.py
 
 This will run with sensible defaults:
 - efficientvit_b0 model
-- First 20 examples
+- 50 randomly sampled wrong examples
 - Up to 500 steps per example
 - Higher learning rate for faster convergence
 
@@ -58,10 +66,11 @@ The script creates several output files in `outputs/{model_name}/`:
 ## Key Differences from Original
 
 - **Single example training**: Trains one image at a time instead of batches
+- **Random sampling**: Randomly samples from wrong examples instead of taking first N
 - **Weight reset**: Resets to original pretrained weights before each example
 - **Difficulty ordering**: Uses universal difficulty ranking from imagenet_examples_ammended.csv
 - **Step counting**: Records exact number of steps to get each example correct
-- **Simplified output**: Focuses on steps vs difficulty relationship
+- **Updated visualization**: X-axis = steps, Y-axis = universal difficulty ranking
 
 ## Requirements
 
