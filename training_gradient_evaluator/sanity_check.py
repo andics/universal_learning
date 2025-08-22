@@ -14,7 +14,6 @@ import json
 from training_gradient_evaluator.data import (
 	read_imagenet_paths,
 	extract_synset_from_path,
-	build_transforms,
 )
 
 
@@ -113,7 +112,10 @@ def main() -> None:
 
 	# index_to_name already provided by hierarchy mapping
 
-	transform = build_transforms(args.image_size, is_train=False)
+	# Transforms from timm model data_config (eval pipeline)
+	data_config = timm.data.resolve_model_data_config(model)
+	transform = timm.data.create_transform(**data_config, is_training=False)
+
 	ds = ImageNetEvalDataset(paths, synset_to_idx, args.root_dir, transform)
 	loader = DataLoader(ds, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
 

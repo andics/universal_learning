@@ -21,7 +21,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-from training_gradient_evaluator.data import ImageNetWrongExamplesDataset, read_imagenet_paths, build_transforms, extract_synset_from_path
+from training_gradient_evaluator.data import ImageNetWrongExamplesDataset, read_imagenet_paths, extract_synset_from_path
 
 
 def filter_existing_indices(paths: List[str], indices: List[int], root_dir: str | None) -> List[int]:
@@ -129,7 +129,9 @@ def main() -> None:
 	# Build wnid->index/name mapping from hierarchy JSON
 	synset_to_idx, index_to_name, wnid_to_words = load_imagenet_hierarchy(args.hierarchy_json)
 
-	train_tfms = build_transforms(args.image_size, is_train=True)
+	# Build training transforms from timm model data_config (train pipeline)
+	data_config = timm.data.resolve_model_data_config(model)
+	train_tfms = timm.data.create_transform(**data_config, is_training=True)
 
 	# Mask & wrong indices
 	mask = np.load(args.bars_npy)
