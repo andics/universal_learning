@@ -93,7 +93,7 @@ def main() -> None:
 	parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu")
 	parser.add_argument("--output_dir", type=str, default=os.path.join("training_gradient_evaluator", "outputs"))
 	parser.add_argument("--no_amp", action="store_true")
-	parser.add_argument("--streak_epochs", type=int, default=2, help="Consecutive epochs required for an example to be considered first-correct")
+	parser.add_argument("--streak_epochs", type=int, default=2, help="(Deprecated) Unused; first-correct computed at global-step granularity")
 	parser.add_argument("--hierarchy_json", type=str, default=_default_hierarchy_json_path(), help="Path to bars/imagenet_synset_hierarchy.json")
 	args = parser.parse_args()
 
@@ -193,8 +193,6 @@ def main() -> None:
 		return os.path.join(args.root_dir, p) if args.root_dir and not os.path.isabs(p) else p
 
 	train_paths_full = [resolve_full(paths[i]) for i in wrong_indices]
-	consecutive_epoch_correct: Dict[str, int] = {p: 0 for p in train_paths_full}
-	tenth_epoch_streak_step: Dict[str, int] = {p: -1 for p in train_paths_full}
 	stats_csv = os.path.join(model_out_dir, "example_statistics.csv")
 	# Create file and header only if not present
 	if not os.path.exists(stats_csv) or os.path.getsize(stats_csv) == 0:
@@ -225,8 +223,6 @@ def main() -> None:
 			"model": model.state_dict(),
 			"optimizer": optimizer.state_dict(),
 			"scaler": (scaler.state_dict() if scaler is not None else None),
-			"consecutive_epoch_correct": consecutive_epoch_correct,
-			"tenth_epoch_streak_step": tenth_epoch_streak_step,
 		}
 		step_path = os.path.join(ckpt_dir, f"ckpt_step_{global_step_val}.pt")
 		torch.save(state, step_path)
@@ -244,10 +240,6 @@ def main() -> None:
 				scaler.load_state_dict(payload["scaler"])  # type: ignore[index]
 			start_epoch = int(payload.get("epoch", 0)) + 1
 			global_step = int(payload.get("global_step", 0))
-			if "consecutive_epoch_correct" in payload:
-				consecutive_epoch_correct.update(payload["consecutive_epoch_correct"])  # type: ignore[index]
-			if "tenth_epoch_streak_step" in payload:
-				tenth_epoch_streak_step.update(payload["tenth_epoch_streak_step"])  # type: ignore[index]
 			logger.info(f"Resumed from {latest} at epoch {start_epoch} global_step {global_step}")
 		except Exception as e:
 			logger.warning(f"Warning: failed to resume from {latest}: {e}")
@@ -256,7 +248,6 @@ def main() -> None:
 	for epoch in range(start_epoch, args.epochs + 1):
 		logger.info(f"Epoch {epoch}/{args.epochs}")
 		model.train()
-		epoch_correct_this_epoch: Dict[str, bool] = {p: False for p in train_paths_full}
 		for step, (images, targets, batch_paths) in enumerate(train_loader, start=1):
 			step_start = time.time()
 			global_step += 1
@@ -286,8 +277,7 @@ def main() -> None:
 					tgt_idx = synset_to_idx.get(wnid, -1)
 					ok = int(pred_idx) == int(tgt_idx)
 					correct_mask_batch.append(ok)
-					if ok:
-						epoch_correct_this_epoch[p] = True
+					# per-step correctness is logged; first-correct will be computed from stats CSV
 				batch_acc = float(sum(correct_mask_batch)) / max(1, len(correct_mask_batch))
 
 			lr = optimizer.param_groups[0]["lr"] if optimizer.param_groups else 0.0
@@ -316,25 +306,37 @@ def main() -> None:
 
 			save_checkpoint(epoch, global_step)
 
-		for p, was_correct in epoch_correct_this_epoch.items():
-			if was_correct:
-				consecutive_epoch_correct[p] += 1
-			else:
-				consecutive_epoch_correct[p] = 0
-			if consecutive_epoch_correct[p] >= args.streak_epochs and tenth_epoch_streak_step[p] == -1:
-				tenth_epoch_streak_step[p] = global_step
-
 		print(f"  epoch_end_loss={float(loss.detach().item()):.4f}")
 		save_checkpoint(epoch, global_step)
 
-	remaining = sum(1 for v in tenth_epoch_streak_step.values() if v == -1)
+	# Compute first-time-correct (global step) by scanning stats CSV
+	first_correct: Dict[str, int] = {p: -1 for p in train_paths_full}
+	try:
+		with open(stats_csv, "r", encoding="utf-8") as f:
+			r = csv.reader(f)
+			head = next(r, None)
+			for line in r:
+				if len(line) < 3:
+					continue
+				try:
+					step_val = int(line[0])
+					corr_val = int(line[2])
+				except Exception:
+					continue
+				path_val = line[1]
+				if corr_val == 1 and path_val in first_correct and first_correct[path_val] == -1:
+					first_correct[path_val] = step_val
+	except Exception as e:
+		logger.warning(f"Failed to parse stats for first-correct: {e}")
+
+	remaining = sum(1 for v in first_correct.values() if v == -1)
 	logger.info(f"Training done. Examples never correct: {remaining}")
 
 	summary_csv = os.path.join(model_out_dir, "first_correct_summary.csv")
 	with open(summary_csv, "w", newline="", encoding="utf-8") as f:
 		w = csv.writer(f)
-		w.writerow(["path", "first_correct_step"])  # Here: step when streak threshold was first reached; -1 if never
-		for p, step in tenth_epoch_streak_step.items():
+		w.writerow(["path", "first_correct_step"])  # step when first correct was observed; -1 if never
+		for p, step in first_correct.items():
 			w.writerow([p, step])
 
 	try:
