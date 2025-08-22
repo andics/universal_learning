@@ -77,17 +77,17 @@ def load_imagenet_hierarchy(path: str) -> tuple[dict[str, int], dict[int, str], 
 
 def main() -> None:
 	parser = argparse.ArgumentParser(description="V2: Train model on only the images it originally got wrong; torchvision transforms.")
-	parser.add_argument("--model_name", type=str, default="mobilenetv3_small_050.lamb_in1k")
+	parser.add_argument("--model_name", type=str, default="efficientvit_b0.r224_in1k")
 	parser.add_argument("--bars_npy", type=str, default=os.path.join("bars", "imagenet.npy"))
 	parser.add_argument("--examples_csv", type=str, default=os.path.join("bars", "imagenet_examples_ammended.csv"))
 	# mapping_txt no longer used; hierarchy_json replaces it
 	parser.add_argument("--root_dir", type=str, default=None)
 	# Select the row in imagenet.npy by model name looked up from bars/imagenet_models.csv
-	parser.add_argument("--model_csv_name", type=str, default="mobilenetv3_small_050_224_lamb_imagenet_1k",
+	parser.add_argument("--model_csv_name", type=str, default="efficientvit_base_0_224_classification_imagenet_1k",
 						help="Model name to look up in imagenet_models.csv to select row in imagenet.npy")
 	parser.add_argument("--imagenet_models_csv", type=str, default=os.path.join("bars", "imagenet_models.csv"),
 						help="Path to bars/imagenet_models.csv containing model column names")
-	parser.add_argument("--epochs", type=int, default=8)
+	parser.add_argument("--epochs", type=int, default=20)
 	parser.add_argument("--batch_size", type=int, default=1024)
 	parser.add_argument("--lr", type=float, default=40e-4)
 	parser.add_argument("--weight_decay", type=float, default=1e-2)
@@ -300,10 +300,10 @@ def main() -> None:
 
 			try:
 				pass
-				#with open(stats_csv, "a", newline="", encoding="utf-8") as f:
-					#w = csv.writer(f)
-					#for p, is_corr in zip(batch_paths, correct_mask_batch):
-						#w.writerow([global_step, p, int(is_corr)])
+				with open(stats_csv, "a", newline="", encoding="utf-8") as f:
+					w = csv.writer(f)
+					for p, is_corr in zip(batch_paths, correct_mask_batch):
+						w.writerow([global_step, p, int(is_corr)])
 			except Exception as e:
 				logger.warning(f"Failed to append stats: {e}")
 
