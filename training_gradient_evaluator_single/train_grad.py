@@ -148,9 +148,9 @@ def main() -> None:
 						help="Model name to look up in imagenet_models.csv to select row in imagenet.npy")
 	parser.add_argument("--imagenet_models_csv", type=str, default=os.path.join("bars", "imagenet_models.csv"),
 						help="Path to bars/imagenet_models.csv containing model column names")
-	parser.add_argument("--max_examples", type=int, default=10, help="Maximum number of examples to train on")
+	parser.add_argument("--max_examples", type=int, default=5000, help="Maximum number of examples to train on")
 	parser.add_argument("--max_steps_per_example", type=int, default=1000, help="Maximum steps to train each example")
-	parser.add_argument("--lr", type=float, default=40e-4)
+	parser.add_argument("--lr", type=float, default=5e-5)
 	parser.add_argument("--weight_decay", type=float, default=1e-2)
 	parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu")
 	parser.add_argument("--output_dir", type=str, default=os.path.join("training_gradient_evaluator_single", "outputs"))
