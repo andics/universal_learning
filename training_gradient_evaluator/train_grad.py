@@ -77,7 +77,7 @@ def load_imagenet_hierarchy(path: str) -> tuple[dict[str, int], dict[int, str], 
 
 def main() -> None:
 	parser = argparse.ArgumentParser(description="V2: Train model on only the images it originally got wrong; torchvision transforms.")
-	parser.add_argument("--model_name", type=str, default="resnet18.a3_in1k")
+	parser.add_argument("--model_name", type=str, default="resnet34.a3_in1k")
 	parser.add_argument("--bars_npy", type=str, default=os.path.join("bars", "imagenet.npy"))
 	parser.add_argument("--examples_csv", type=str, default=os.path.join("bars", "imagenet_examples_ammended.csv"))
 	# mapping_txt no longer used; hierarchy_json replaces it
@@ -89,7 +89,6 @@ def main() -> None:
 	parser.add_argument("--batch_size", type=int, default=1024)
 	parser.add_argument("--lr", type=float, default=40e-4)
 	parser.add_argument("--weight_decay", type=float, default=1e-2)
-	parser.add_argument("--image_size", type=int, default=160)
 	parser.add_argument("--num_workers", type=int, default=8)
 	parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu")
 	parser.add_argument("--output_dir", type=str, default=os.path.join("training_gradient_evaluator", "outputs"))
