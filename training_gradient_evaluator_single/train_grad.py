@@ -141,18 +141,18 @@ def train_single_example(model: nn.Module, example_path: str, synset_to_idx: Dic
 
 def main() -> None:
 	parser = argparse.ArgumentParser(description="Train model on single examples in order of difficulty.")
-	parser.add_argument("--model_name", type=str, default="efficientvit_b0.r224_in1k")
+	parser.add_argument("--model_name", type=str, default="resnet34.a3_in1k")
 	parser.add_argument("--bars_npy", type=str, default=os.path.join("bars", "imagenet.npy"))
 	parser.add_argument("--examples_csv", type=str, default=os.path.join("bars", "imagenet_examples_ammended.csv"))
 	parser.add_argument("--root_dir", type=str, default=None)
-	parser.add_argument("--model_csv_name", type=str, default="efficientvit_base_0_224_classification_imagenet_1k",
+	parser.add_argument("--model_csv_name", type=str, default="resnet_34_160_classification_imagenet_1k",
 						help="Model name to look up in imagenet_models.csv to select row in imagenet.npy")
 	parser.add_argument("--imagenet_models_csv", type=str, default=os.path.join("bars", "imagenet_models.csv"),
 						help="Path to bars/imagenet_models.csv containing model column names")
-	parser.add_argument("--max_examples", type=int, default=5000, help="Maximum number of examples to train on")
+	parser.add_argument("--max_examples", type=int, default=1000, help="Maximum number of examples to train on")
 	parser.add_argument("--max_steps_per_example", type=int, default=1000, help="Maximum steps to train each example")
-	parser.add_argument("--lr", type=float, default=5e-5)
-	parser.add_argument("--weight_decay", type=float, default=1e-2)
+	parser.add_argument("--lr", type=float, default=5e-6)
+	parser.add_argument("--weight_decay", type=float, default=0)
 	parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu")
 	parser.add_argument("--output_dir", type=str, default=os.path.join("training_gradient_evaluator_single", "outputs"))
 	parser.add_argument("--no_amp", action="store_true")
