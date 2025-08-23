@@ -16,19 +16,21 @@ This is a modified version of the training_gradient_evaluator that trains on exa
    - Trains only on that single example until loss ≤ epsilon (default: 1e-3)
    - **Counts SGD steps** until loss reaches epsilon threshold
    - **Sums all losses** accumulated during training until epsilon
-   - Records the total number of steps, loss sum, and final loss
+   - **Calculates weight distance** (Euclidean distance between initial and final network weights)
+   - Records the total number of steps, loss sum, final loss, and weight distance
    - **Logs each SGD step** with loss value and cumulative sum to individual CSV files
    - Moves to the next example
 
 4. **Stores results**: Creates multiple output files:
-   - **Main results CSV** with: example index, image path, total steps to epsilon, total loss sum, final loss, universal difficulty ranking
+   - **Main results CSV** with: example index, image path, total steps to epsilon, total loss sum, final loss, weight distance, universal difficulty ranking
    - **Individual step logs** (in `step_logs/` directory): CSV files for each example containing step-by-step loss values and cumulative sums
    - **Summary JSON**: Overall statistics and results
 
-5. **Creates dual visualizations**: 
+5. **Creates triple visualizations**: 
    - **Plot 1**: SGD steps vs universal difficulty ranking
    - **Plot 2**: Loss sum vs universal difficulty ranking
-   - Both show relationship between convergence metrics and universal difficulty
+   - **Plot 3**: Weight distance vs universal difficulty ranking
+   - All show relationship between convergence metrics and universal difficulty
 
 ## Usage
 
@@ -67,6 +69,7 @@ The script creates several output files in `outputs/{model_name}/`:
    - `total_steps_to_epsilon`: Number of SGD steps to reach epsilon (-1 if never reached)
    - `total_loss_sum`: Cumulative sum of all losses until epsilon reached
    - `final_loss`: Final loss value achieved
+   - `weight_distance`: Euclidean distance between initial and final network weights
    - `universal_difficulty_rank`: Ranking in universal difficulty order (1=easiest)
 
 2. **`step_logs/`**: Directory containing detailed step-by-step logs for each example:
@@ -79,9 +82,11 @@ The script creates several output files in `outputs/{model_name}/`:
 
 4. **`loss_sum_vs_difficulty.png`**: Scatter plot showing relationship between cumulative loss sum and difficulty ranking
 
-5. **`training_summary.json`**: Summary statistics and complete results in JSON format
+5. **`weight_distance_vs_difficulty.png`**: Scatter plot showing relationship between weight distance and difficulty ranking
 
-6. **`train_single_{timestamp}.log`**: Detailed training log with timestamps
+6. **`training_summary.json`**: Summary statistics and complete results in JSON format
+
+7. **`train_single_{timestamp}.log`**: Detailed training log with timestamps
 
 ## Key Changes from Original
 
@@ -90,8 +95,9 @@ The script creates several output files in `outputs/{model_name}/`:
 - **Single example training**: Disables DataParallel and sets BatchNorm to eval mode for batch size = 1
 - **Gradient clipping**: Prevents exploding gradients with max_norm=1.0
 - **NaN detection**: Automatically detects and handles NaN losses
-- **Dual metrics**: Tracks both SGD steps AND cumulative loss sum until epsilon
-- **Dual visualizations**: Creates two plots showing steps vs difficulty and loss sum vs difficulty
+- **Triple metrics**: Tracks SGD steps, cumulative loss sum, AND weight distance until epsilon
+- **Triple visualizations**: Creates three plots showing steps vs difficulty, loss sum vs difficulty, and weight distance vs difficulty
+- **Weight distance metric**: Calculates Euclidean distance between initial and final network weights in N-dimensional parameter space
 - **Enhanced logging**: Step-by-step logging includes both individual loss and cumulative sum
 - **Epsilon parameter**: Configurable loss threshold (default: 1e-3)
 - **Better convergence tracking**: Focus on optimization dynamics rather than classification accuracy

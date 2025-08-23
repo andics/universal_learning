@@ -78,6 +78,28 @@ def load_imagenet_hierarchy(path: str) -> tuple[dict[str, int], dict[int, str], 
 	return wnid_to_idx, idx_to_words, wnid_to_words
 
 
+def calculate_weight_distance(initial_weights: Dict[str, torch.Tensor], final_weights: Dict[str, torch.Tensor]) -> float:
+	"""Calculate Euclidean distance between two weight dictionaries.
+	
+	Args:
+		initial_weights: Dictionary of parameter name -> initial weight tensor
+		final_weights: Dictionary of parameter name -> final weight tensor
+		
+	Returns:
+		Euclidean distance between flattened weight vectors
+	"""
+	distance_squared = 0.0
+	for name in initial_weights:
+		if name in final_weights:
+			# Flatten tensors and compute squared difference
+			initial_flat = initial_weights[name].flatten().float()
+			final_flat = final_weights[name].flatten().float()
+			diff = final_flat - initial_flat
+			distance_squared += torch.sum(diff * diff).item()
+	
+	return float(distance_squared ** 0.5)
+
+
 def read_imagenet_difficulty_order(csv_path: str) -> List[str]:
 	"""Read the imagenet_examples_ammended.csv which contains paths in order of difficulty (easiest first)."""
 	with open(csv_path, "r", encoding="utf-8") as f:
@@ -92,10 +114,11 @@ def read_imagenet_difficulty_order(csv_path: str) -> List[str]:
 def train_single_example(model: nn.Module, example_path: str, synset_to_idx: Dict[str, int], 
                         device: torch.device, train_tfms, optimizer: torch.optim.Optimizer, 
                         criterion: nn.Module, scaler, logger, max_steps: int = 1000, 
-                        epsilon: float = 1e-6, csv_writer=None) -> Tuple[int, float, float]:
+                        epsilon: float = 1e-6, csv_writer=None, initial_weights=None) -> Tuple[int, float, float, float]:
 	"""Train on a single example until loss reaches epsilon or max_steps reached.
 	
-	Returns (total_steps, loss_sum, final_loss) tuple. If never reached epsilon, returns (-1, loss_sum, final_loss).
+	Returns (total_steps, loss_sum, final_loss, weight_distance) tuple. 
+	If never reached epsilon, returns (-1, loss_sum, final_loss, weight_distance).
 	"""
 	from PIL import Image
 	
@@ -153,29 +176,48 @@ def train_single_example(model: nn.Module, example_path: str, synset_to_idx: Dic
 		
 		# Check for NaN loss and stop if detected
 		if torch.isnan(loss):
+			# Calculate weight distance before returning
+			if initial_weights is not None:
+				final_weights = {name: param.data.clone().cpu() for name, param in model.named_parameters()}
+				weight_distance = calculate_weight_distance(initial_weights, final_weights)
+			else:
+				weight_distance = 0.0
 			# Restore BatchNorm to train mode before returning
 			for module in bn_modules:
 				module.train()
 			logger.warning(f"NaN loss detected at step {step}. Stopping training for this example.")
-			return -1, total_loss_sum, float('nan')
+			return -1, total_loss_sum, float('nan'), weight_distance
 		
 		# Check if loss is within epsilon of zero
 		if current_loss <= epsilon:
+			# Calculate weight distance
+			if initial_weights is not None:
+				final_weights = {name: param.data.clone().cpu() for name, param in model.named_parameters()}
+				weight_distance = calculate_weight_distance(initial_weights, final_weights)
+			else:
+				weight_distance = 0.0
 			# Restore BatchNorm to train mode
 			for module in bn_modules:
 				module.train()
-			logger.info(f"Example {example_path} reached epsilon at step {step}, loss sum: {total_loss_sum:.4f}, final loss: {current_loss:.8f}")
-			return step, total_loss_sum, current_loss
+			logger.info(f"Example {example_path} reached epsilon at step {step}, loss sum: {total_loss_sum:.4f}, final loss: {current_loss:.8f}, weight distance: {weight_distance:.4f}")
+			return step, total_loss_sum, current_loss, weight_distance
 		
 		if step % 100 == 0:
 			logger.info(f"Step {step}/{max_steps}, current loss: {current_loss:.8f}, loss sum: {total_loss_sum:.4f}")
+	
+	# Calculate final weight distance
+	if initial_weights is not None:
+		final_weights = {name: param.data.clone().cpu() for name, param in model.named_parameters()}
+		weight_distance = calculate_weight_distance(initial_weights, final_weights)
+	else:
+		weight_distance = 0.0
 	
 	# Restore BatchNorm to train mode before returning
 	for module in bn_modules:
 		module.train()
 	
-	logger.info(f"Example {example_path} never reached epsilon after {max_steps} steps, loss sum: {total_loss_sum:.4f}, final loss: {current_loss:.8f}")
-	return -1, total_loss_sum, current_loss
+	logger.info(f"Example {example_path} never reached epsilon after {max_steps} steps, loss sum: {total_loss_sum:.4f}, final loss: {current_loss:.8f}, weight distance: {weight_distance:.4f}")
+	return -1, total_loss_sum, current_loss, weight_distance
 
 
 def main() -> None:
@@ -316,7 +358,7 @@ def main() -> None:
 	results_csv = os.path.join(model_out_dir, "single_example_results.csv")
 	with open(results_csv, "w", newline="", encoding="utf-8") as f:
 		writer = csv.writer(f)
-		writer.writerow(["example_index", "path", "total_steps_to_epsilon", "total_loss_sum", "final_loss", "universal_difficulty_rank"])
+		writer.writerow(["example_index", "path", "total_steps_to_epsilon", "total_loss_sum", "final_loss", "weight_distance", "universal_difficulty_rank"])
 	
 	# Prepare directory for detailed step logs
 	step_logs_dir = os.path.join(model_out_dir, "step_logs")
@@ -324,7 +366,7 @@ def main() -> None:
 
 	# Train each example individually
 	criterion = nn.CrossEntropyLoss()
-	results: List[Tuple[int, str, int, float, float, int]] = []
+	results: List[Tuple[int, str, int, float, float, float, int]] = []
 	
 	for example_idx, example_path in enumerate(wrong_examples_ordered):
 		logger.info(f"\n=== Training Example {example_idx + 1}/{len(wrong_examples_ordered)}: {example_path} ===")
@@ -332,6 +374,9 @@ def main() -> None:
 		# Reset model to original weights
 		model.load_state_dict(original_state_dict)
 		logger.info("Reset model to original weights")
+		
+		# Store initial weights for distance calculation
+		initial_weights = {name: param.data.clone().cpu() for name, param in model.named_parameters()}
 		
 		# Create fresh optimizer for this example
 		optimizer = torch.optim.SGD(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
@@ -347,33 +392,34 @@ def main() -> None:
 			
 			# Train on this single example
 			full_path = resolve_full(example_path)
-			total_steps, total_loss_sum, final_loss = train_single_example(
+			total_steps, total_loss_sum, final_loss, weight_distance = train_single_example(
 				model, full_path, synset_to_idx, device, train_tfms, 
 				optimizer, criterion, scaler, logger, args.max_steps_per_example,
-				args.epsilon, step_writer
+				args.epsilon, step_writer, initial_weights
 			)
 		
 		# Get the actual universal difficulty rank (1-based)
 		universal_rank = path_to_difficulty_rank[example_path] + 1
-		results.append((example_idx, example_path, total_steps, total_loss_sum, final_loss, universal_rank))
+		results.append((example_idx, example_path, total_steps, total_loss_sum, final_loss, weight_distance, universal_rank))
 		
 		# Append to CSV
 		with open(results_csv, "a", newline="", encoding="utf-8") as f:
 			writer = csv.writer(f)
-			writer.writerow([example_idx, example_path, total_steps, total_loss_sum, final_loss, universal_rank])
+			writer.writerow([example_idx, example_path, total_steps, total_loss_sum, final_loss, weight_distance, universal_rank])
 		
-		logger.info(f"Example {example_idx + 1} completed: {total_steps} steps, loss sum: {total_loss_sum:.4f}, final loss: {final_loss:.8f} (universal rank: {universal_rank})")
+		logger.info(f"Example {example_idx + 1} completed: {total_steps} steps, loss sum: {total_loss_sum:.4f}, final loss: {final_loss:.8f}, weight distance: {weight_distance:.4f} (universal rank: {universal_rank})")
 
 	# Create final plots
 	logger.info("Creating final plots...")
 	
 	# Filter out examples that never reached epsilon (steps > 0, since -1 means never reached epsilon)
-	successful_results = [(idx, path, steps, loss_sum, final_loss, rank) for idx, path, steps, loss_sum, final_loss, rank in results if steps > 0]
+	successful_results = [(idx, path, steps, loss_sum, final_loss, weight_dist, rank) for idx, path, steps, loss_sum, final_loss, weight_dist, rank in results if steps > 0]
 	
 	if len(successful_results) >= 2:
-		total_steps = [steps for _, _, steps, _, _, _ in successful_results]
-		total_loss_sums = [loss_sum for _, _, _, loss_sum, _, _ in successful_results]
-		difficulty_ranks = [rank for _, _, _, _, _, rank in successful_results]
+		total_steps = [steps for _, _, steps, _, _, _, _ in successful_results]
+		total_loss_sums = [loss_sum for _, _, _, loss_sum, _, _, _ in successful_results]
+		weight_distances = [weight_dist for _, _, _, _, _, weight_dist, _ in successful_results]
+		difficulty_ranks = [rank for _, _, _, _, _, _, rank in successful_results]
 		
 		# Plot 1: Steps vs Difficulty
 		plt.figure(figsize=(10, 6))
@@ -412,6 +458,25 @@ def main() -> None:
 		plt.savefig(plot_path_loss, dpi=150, bbox_inches='tight')
 		plt.close()
 		logger.info(f"Saved loss sum plot to {plot_path_loss}")
+		
+		# Plot 3: Weight Distance vs Difficulty
+		plt.figure(figsize=(10, 6))
+		plt.scatter(weight_distances, difficulty_ranks, alpha=0.7, s=50, color='green')
+		plt.xlabel("Weight Distance to Reach Epsilon")
+		plt.ylabel("Universal Difficulty Ranking (1=easiest)")
+		plt.title(f"Universal Difficulty vs Weight Distance to Reach Epsilon\n({len(successful_results)} examples, ε={args.epsilon})")
+		plt.grid(True, alpha=0.3)
+		
+		# Add correlation info
+		if len(successful_results) > 1:
+			correlation_weight = np.corrcoef(weight_distances, difficulty_ranks)[0, 1]
+			plt.text(0.05, 0.95, f'Correlation: {correlation_weight:.3f}', 
+			        transform=plt.gca().transAxes, bbox=dict(boxstyle="round", facecolor='wheat'))
+		
+		plot_path_weight = os.path.join(model_out_dir, "weight_distance_vs_difficulty.png")
+		plt.savefig(plot_path_weight, dpi=150, bbox_inches='tight')
+		plt.close()
+		logger.info(f"Saved weight distance plot to {plot_path_weight}")
 	else:
 		logger.warning("Not enough successful examples to create meaningful plots")
 
@@ -423,8 +488,8 @@ def main() -> None:
 		"total_examples_attempted": len(wrong_examples_ordered),
 		"successful_examples": len(successful_results),
 		"failed_examples": len(wrong_examples_ordered) - len(successful_results),
-		"results": [{"path": path, "total_steps": steps, "total_loss_sum": loss_sum, "final_loss": final_loss, "rank": rank} 
-		           for _, path, steps, loss_sum, final_loss, rank in results]
+		"results": [{"path": path, "total_steps": steps, "total_loss_sum": loss_sum, "final_loss": final_loss, "weight_distance": weight_dist, "rank": rank} 
+		           for _, path, steps, loss_sum, final_loss, weight_dist, rank in results]
 	}
 	
 	with open(summary_path, "w", encoding="utf-8") as f:
