@@ -13,21 +13,22 @@ This is a modified version of the training_gradient_evaluator that trains on exa
 
 3. **Trains one example at a time**: For each selected example:
    - Resets the model to original pretrained weights
-   - Trains only on that single example until loss ≤ epsilon (default: 1e-6)
+   - Trains only on that single example until loss ≤ epsilon (default: 1e-3)
    - **Counts SGD steps** until loss reaches epsilon threshold
-   - Records the total number of steps and final loss
-   - **Logs each SGD step** with loss value to individual CSV files
+   - **Sums all losses** accumulated during training until epsilon
+   - Records the total number of steps, loss sum, and final loss
+   - **Logs each SGD step** with loss value and cumulative sum to individual CSV files
    - Moves to the next example
 
 4. **Stores results**: Creates multiple output files:
-   - **Main results CSV** with: example index, image path, total steps to epsilon, final loss, universal difficulty ranking
-   - **Individual step logs** (in `step_logs/` directory): CSV files for each example containing step-by-step loss values
+   - **Main results CSV** with: example index, image path, total steps to epsilon, total loss sum, final loss, universal difficulty ranking
+   - **Individual step logs** (in `step_logs/` directory): CSV files for each example containing step-by-step loss values and cumulative sums
    - **Summary JSON**: Overall statistics and results
 
-5. **Creates visualization**: Plots with:
-   - X-axis: Total SGD steps to reach epsilon
-   - Y-axis: Universal difficulty ranking (1=easiest)
-   - Shows relationship between convergence speed and universal difficulty
+5. **Creates dual visualizations**: 
+   - **Plot 1**: SGD steps vs universal difficulty ranking
+   - **Plot 2**: Loss sum vs universal difficulty ranking
+   - Both show relationship between convergence metrics and universal difficulty
 
 ## Usage
 
@@ -49,11 +50,11 @@ python train_grad.py --model_name resnet18.a1_in1k --max_examples 100 --max_step
 ```
 
 ### Key Arguments
-- `--model_name`: TIMM model name (default: efficientvit_b0.r224_in1k)
-- `--epsilon`: Loss threshold to reach (default: 1e-6)
-- `--max_examples`: Maximum number of examples to train on (default: 7000)
-- `--max_steps_per_example`: Maximum SGD steps per example (default: 1000)
-- `--lr`: Learning rate (default: 5e-6)
+- `--model_name`: TIMM model name (default: efficientvit_b1.r224_in1k)
+- `--epsilon`: Loss threshold to reach (default: 1e-3)
+- `--max_examples`: Maximum number of examples to train on (default: 700)
+- `--max_steps_per_example`: Maximum SGD steps per example (default: 10000)
+- `--lr`: Learning rate for classical SGD (default: 0.01)
 - `--model_csv_name`: Model name to look up in imagenet_models.csv
 
 ## Output Files
@@ -64,6 +65,7 @@ The script creates several output files in `outputs/{model_name}/`:
    - `example_index`: Sequential index of the example
    - `path`: Path to the image file
    - `total_steps_to_epsilon`: Number of SGD steps to reach epsilon (-1 if never reached)
+   - `total_loss_sum`: Cumulative sum of all losses until epsilon reached
    - `final_loss`: Final loss value achieved
    - `universal_difficulty_rank`: Ranking in universal difficulty order (1=easiest)
 
@@ -71,19 +73,24 @@ The script creates several output files in `outputs/{model_name}/`:
    - `example_{idx}_{safe_path}_steps.csv`: Individual CSV files with columns:
      - `step`: SGD step number
      - `loss`: Loss value at that step
+     - `cumulative_loss_sum`: Running total of all losses up to that step
 
 3. **`steps_vs_difficulty.png`**: Scatter plot showing relationship between SGD steps and difficulty ranking
 
-4. **`training_summary.json`**: Summary statistics and complete results in JSON format
+4. **`loss_sum_vs_difficulty.png`**: Scatter plot showing relationship between cumulative loss sum and difficulty ranking
 
-5. **`train_single_{timestamp}.log`**: Detailed training log with timestamps
+5. **`training_summary.json`**: Summary statistics and complete results in JSON format
+
+6. **`train_single_{timestamp}.log`**: Detailed training log with timestamps
 
 ## Key Changes from Original
 
 - **Training criterion**: Changed from "until correct prediction" to "until loss ≤ epsilon"
-- **X-axis metric**: Changed from "total accumulated loss" to "total SGD steps"
-- **Detailed logging**: Added step-by-step loss logging for each example
-- **Epsilon parameter**: Configurable loss threshold (default: 1e-6)
+- **Classical SGD**: Uses standard SGD with fixed learning rate (no adaptive algorithms like Adam/AdamW)
+- **Dual metrics**: Tracks both SGD steps AND cumulative loss sum until epsilon
+- **Dual visualizations**: Creates two plots showing steps vs difficulty and loss sum vs difficulty
+- **Enhanced logging**: Step-by-step logging includes both individual loss and cumulative sum
+- **Epsilon parameter**: Configurable loss threshold (default: 1e-3)
 - **Better convergence tracking**: Focus on optimization dynamics rather than classification accuracy
 
 ## Requirements

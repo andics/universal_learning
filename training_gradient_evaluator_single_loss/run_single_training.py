@@ -15,7 +15,7 @@ def main():
         "--model_csv_name", "resnet_34_160_classification_imagenet_1k",
         "--max_examples", "50",  # Train on 50 random wrong examples
         "--max_steps_per_example", "500",  # Up to 500 steps per example
-        "--lr", "0.01",  # Higher learning rate for faster convergence
+        "--lr", "0.01",  # Classical SGD learning rate
         "--weight_decay", "0.001",
         "--epsilon", "1e-6"  # Loss threshold for convergence
     ]
