@@ -87,7 +87,7 @@ The script creates several output files in `outputs/{model_name}/`:
 
 - **Training criterion**: Changed from "until correct prediction" to "until loss ≤ epsilon"
 - **Classical SGD**: Uses standard SGD with fixed learning rate (no adaptive algorithms like Adam/AdamW)
-- **Single example training**: Temporarily disables BatchNorm momentum to handle batch size = 1
+- **Single example training**: Disables DataParallel and sets BatchNorm to eval mode for batch size = 1
 - **Gradient clipping**: Prevents exploding gradients with max_norm=1.0
 - **NaN detection**: Automatically detects and handles NaN losses
 - **Dual metrics**: Tracks both SGD steps AND cumulative loss sum until epsilon

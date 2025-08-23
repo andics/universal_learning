@@ -109,23 +109,16 @@ def train_single_example(model: nn.Module, example_path: str, synset_to_idx: Dic
 		raise RuntimeError(f"Could not determine synset/class for path: {example_path}")
 	target = torch.tensor([synset_to_idx[wnid]], device=device)
 	
-	# Set model to train mode
+	# Set model to train mode 
 	model.train()
 	
-	# Handle BatchNorm layers for single example training
-	# Store original settings and temporarily disable running stats tracking
+	# For single example training, we'll handle BatchNorm by setting it to eval mode
+	# This uses pretrained running statistics instead of computing batch stats
 	bn_modules = []
-	original_momentum = []
-	original_track_running_stats = []
-	
 	for module in model.modules():
 		if isinstance(module, (torch.nn.BatchNorm1d, torch.nn.BatchNorm2d, torch.nn.BatchNorm3d)):
 			bn_modules.append(module)
-			original_momentum.append(module.momentum)
-			original_track_running_stats.append(module.track_running_stats)
-			# Set momentum to None to use current batch statistics only
-			module.momentum = None
-			# Keep track_running_stats as True but momentum=None means it won't update running stats
+			module.eval()  # Use running stats to avoid batch size=1 error
 	
 	total_loss_sum = 0.0
 	
@@ -160,29 +153,26 @@ def train_single_example(model: nn.Module, example_path: str, synset_to_idx: Dic
 		
 		# Check for NaN loss and stop if detected
 		if torch.isnan(loss):
-			# Restore BatchNorm settings before returning
-			for i, module in enumerate(bn_modules):
-				module.momentum = original_momentum[i]
-				module.track_running_stats = original_track_running_stats[i]
+			# Restore BatchNorm to train mode before returning
+			for module in bn_modules:
+				module.train()
 			logger.warning(f"NaN loss detected at step {step}. Stopping training for this example.")
 			return -1, total_loss_sum, float('nan')
 		
 		# Check if loss is within epsilon of zero
 		if current_loss <= epsilon:
-			# Restore BatchNorm settings
-			for i, module in enumerate(bn_modules):
-				module.momentum = original_momentum[i]
-				module.track_running_stats = original_track_running_stats[i]
+			# Restore BatchNorm to train mode
+			for module in bn_modules:
+				module.train()
 			logger.info(f"Example {example_path} reached epsilon at step {step}, loss sum: {total_loss_sum:.4f}, final loss: {current_loss:.8f}")
 			return step, total_loss_sum, current_loss
 		
 		if step % 100 == 0:
 			logger.info(f"Step {step}/{max_steps}, current loss: {current_loss:.8f}, loss sum: {total_loss_sum:.4f}")
 	
-	# Restore BatchNorm settings before returning
-	for i, module in enumerate(bn_modules):
-		module.momentum = original_momentum[i]
-		module.track_running_stats = original_track_running_stats[i]
+	# Restore BatchNorm to train mode before returning
+	for module in bn_modules:
+		module.train()
 	
 	logger.info(f"Example {example_path} never reached epsilon after {max_steps} steps, loss sum: {total_loss_sum:.4f}, final loss: {current_loss:.8f}")
 	return -1, total_loss_sum, current_loss
@@ -252,8 +242,9 @@ def main() -> None:
 		logger.info(f"Note: could not display pretrained cfg details: {_e}")
 	
 	model = model.to(device)
-	if torch.cuda.device_count() > 1 and device.type == "cuda":
-		model = nn.DataParallel(model)
+	# Note: DataParallel disabled for single example training to avoid batch size issues
+	# if torch.cuda.device_count() > 1 and device.type == "cuda":
+	# 	model = nn.DataParallel(model)
 
 	# Store original model weights for reset
 	original_state_dict = copy.deepcopy(model.state_dict())
