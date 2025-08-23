@@ -91,10 +91,11 @@ def read_imagenet_difficulty_order(csv_path: str) -> List[str]:
 
 def train_single_example(model: nn.Module, example_path: str, synset_to_idx: Dict[str, int], 
                         device: torch.device, train_tfms, optimizer: torch.optim.Optimizer, 
-                        criterion: nn.Module, scaler, logger, max_steps: int = 1000) -> float:
-	"""Train on a single example until it gets it right or max_steps reached.
+                        criterion: nn.Module, scaler, logger, max_steps: int = 1000, 
+                        epsilon: float = 1e-6, csv_writer=None) -> Tuple[int, float]:
+	"""Train on a single example until loss reaches epsilon or max_steps reached.
 	
-	Returns the sum of losses until it got it right, or -1 if never got it right.
+	Returns (total_steps, final_loss) tuple. If never reached epsilon, returns (-1, final_loss).
 	"""
 	from PIL import Image
 	
@@ -109,7 +110,6 @@ def train_single_example(model: nn.Module, example_path: str, synset_to_idx: Dic
 	target = torch.tensor([synset_to_idx[wnid]], device=device)
 	
 	model.train()
-	total_loss = 0.0
 	
 	for step in range(1, max_steps + 1):
 		optimizer.zero_grad(set_to_none=True)
@@ -127,21 +127,22 @@ def train_single_example(model: nn.Module, example_path: str, synset_to_idx: Dic
 			loss.backward()
 			optimizer.step()
 		
-		# Add to total loss
-		total_loss += float(loss.item())
+		current_loss = float(loss.item())
 		
-		# Check if correct
-		with torch.no_grad():
-			pred = torch.argmax(logits, dim=1)
-			if pred.item() == target.item():
-				logger.info(f"Example {example_path} got correct at step {step}, total loss: {total_loss:.4f}")
-				return total_loss
+		# Log each step to CSV if writer provided
+		if csv_writer is not None:
+			csv_writer.writerow([step, current_loss])
+		
+		# Check if loss is within epsilon of zero
+		if current_loss <= epsilon:
+			logger.info(f"Example {example_path} reached epsilon at step {step}, final loss: {current_loss:.8f}")
+			return step, current_loss
 		
 		if step % 100 == 0:
-			logger.info(f"Step {step}/{max_steps}, current loss: {loss.item():.4f}, total loss: {total_loss:.4f}")
+			logger.info(f"Step {step}/{max_steps}, current loss: {current_loss:.8f}")
 	
-	logger.info(f"Example {example_path} never got correct after {max_steps} steps, total loss: {total_loss:.4f}")
-	return -1.0
+	logger.info(f"Example {example_path} never reached epsilon after {max_steps} steps, final loss: {current_loss:.8f}")
+	return -1, current_loss
 
 
 def main() -> None:
@@ -158,6 +159,7 @@ def main() -> None:
 	parser.add_argument("--max_steps_per_example", type=int, default=1000, help="Maximum steps to train each example")
 	parser.add_argument("--lr", type=float, default=5e-6)
 	parser.add_argument("--weight_decay", type=float, default=0)
+	parser.add_argument("--epsilon", type=float, default=1e-6, help="Train until loss reaches this epsilon (default: 1e-6)")
 	parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu")
 	parser.add_argument("--output_dir", type=str, default=os.path.join("training_gradient_evaluator_single_loss", "outputs"))
 	parser.add_argument("--no_amp", action="store_true")
@@ -280,11 +282,15 @@ def main() -> None:
 	results_csv = os.path.join(model_out_dir, "single_example_results.csv")
 	with open(results_csv, "w", newline="", encoding="utf-8") as f:
 		writer = csv.writer(f)
-		writer.writerow(["example_index", "path", "total_loss_to_correct", "universal_difficulty_rank"])
+		writer.writerow(["example_index", "path", "total_steps_to_epsilon", "final_loss", "universal_difficulty_rank"])
+	
+	# Prepare directory for detailed step logs
+	step_logs_dir = os.path.join(model_out_dir, "step_logs")
+	os.makedirs(step_logs_dir, exist_ok=True)
 
 	# Train each example individually
 	criterion = nn.CrossEntropyLoss()
-	results: List[Tuple[int, str, float, int]] = []
+	results: List[Tuple[int, str, int, float, int]] = []
 	
 	for example_idx, example_path in enumerate(wrong_examples_ordered):
 		logger.info(f"\n=== Training Example {example_idx + 1}/{len(wrong_examples_ordered)}: {example_path} ===")
@@ -297,48 +303,57 @@ def main() -> None:
 		optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
 		scaler = None if args.no_amp or device.type != "cuda" else torch.cuda.amp.GradScaler()
 		
-		# Train on this single example
-		full_path = resolve_full(example_path)
-		total_loss_to_correct = train_single_example(
-			model, full_path, synset_to_idx, device, train_tfms, 
-			optimizer, criterion, scaler, logger, args.max_steps_per_example
-		)
+		# Create step-by-step log file for this example
+		safe_path = example_path.replace('/', '_').replace('\\', '_').replace(':', '_')
+		step_log_file = os.path.join(step_logs_dir, f"example_{example_idx}_{safe_path}_steps.csv")
+		
+		with open(step_log_file, "w", newline="", encoding="utf-8") as step_f:
+			step_writer = csv.writer(step_f)
+			step_writer.writerow(["step", "loss"])
+			
+			# Train on this single example
+			full_path = resolve_full(example_path)
+			total_steps, final_loss = train_single_example(
+				model, full_path, synset_to_idx, device, train_tfms, 
+				optimizer, criterion, scaler, logger, args.max_steps_per_example,
+				args.epsilon, step_writer
+			)
 		
 		# Get the actual universal difficulty rank (1-based)
 		universal_rank = path_to_difficulty_rank[example_path] + 1
-		results.append((example_idx, example_path, total_loss_to_correct, universal_rank))
+		results.append((example_idx, example_path, total_steps, final_loss, universal_rank))
 		
 		# Append to CSV
 		with open(results_csv, "a", newline="", encoding="utf-8") as f:
 			writer = csv.writer(f)
-			writer.writerow([example_idx, example_path, total_loss_to_correct, universal_rank])
+			writer.writerow([example_idx, example_path, total_steps, final_loss, universal_rank])
 		
-		logger.info(f"Example {example_idx + 1} completed: {total_loss_to_correct:.4f} total loss (universal rank: {universal_rank})")
+		logger.info(f"Example {example_idx + 1} completed: {total_steps} steps, final loss: {final_loss:.8f} (universal rank: {universal_rank})")
 
 	# Create final plot
 	logger.info("Creating final plot...")
 	
-	# Filter out examples that never got correct (loss > 0, since -1 means never correct)
-	successful_results = [(idx, path, loss, rank) for idx, path, loss, rank in results if loss > 0]
+	# Filter out examples that never reached epsilon (steps > 0, since -1 means never reached epsilon)
+	successful_results = [(idx, path, steps, loss, rank) for idx, path, steps, loss, rank in results if steps > 0]
 	
 	if len(successful_results) >= 2:
-		total_losses = [loss for _, _, loss, _ in successful_results]
-		difficulty_ranks = [rank for _, _, _, rank in successful_results]
+		total_steps = [steps for _, _, steps, _, _ in successful_results]
+		difficulty_ranks = [rank for _, _, _, _, rank in successful_results]
 		
 		plt.figure(figsize=(10, 6))
-		plt.scatter(total_losses, difficulty_ranks, alpha=0.7, s=50)
-		plt.xlabel("Total Loss to Get Correct")
+		plt.scatter(total_steps, difficulty_ranks, alpha=0.7, s=50)
+		plt.xlabel("Total SGD Steps to Reach Epsilon")
 		plt.ylabel("Universal Difficulty Ranking (1=easiest)")
-		plt.title(f"Universal Difficulty vs Total Loss to Get Correct\n({len(successful_results)} examples)")
+		plt.title(f"Universal Difficulty vs SGD Steps to Reach Epsilon\n({len(successful_results)} examples, ε={args.epsilon})")
 		plt.grid(True, alpha=0.3)
 		
 		# Add correlation info
 		if len(successful_results) > 1:
-			correlation = np.corrcoef(total_losses, difficulty_ranks)[0, 1]
+			correlation = np.corrcoef(total_steps, difficulty_ranks)[0, 1]
 			plt.text(0.05, 0.95, f'Correlation: {correlation:.3f}', 
 			        transform=plt.gca().transAxes, bbox=dict(boxstyle="round", facecolor='wheat'))
 		
-		plot_path = os.path.join(model_out_dir, "loss_vs_difficulty.png")
+		plot_path = os.path.join(model_out_dir, "steps_vs_difficulty.png")
 		plt.savefig(plot_path, dpi=150, bbox_inches='tight')
 		plt.close()
 		logger.info(f"Saved plot to {plot_path}")
@@ -349,11 +364,12 @@ def main() -> None:
 	summary_path = os.path.join(model_out_dir, "training_summary.json")
 	summary = {
 		"model_name": args.model_name,
+		"epsilon": args.epsilon,
 		"total_examples_attempted": len(wrong_examples_ordered),
 		"successful_examples": len(successful_results),
 		"failed_examples": len(wrong_examples_ordered) - len(successful_results),
-		"results": [{"path": path, "total_loss": loss, "rank": rank} 
-		           for _, path, loss, rank in results]
+		"results": [{"path": path, "total_steps": steps, "final_loss": loss, "rank": rank} 
+		           for _, path, steps, loss, rank in results]
 	}
 	
 	with open(summary_path, "w", encoding="utf-8") as f:

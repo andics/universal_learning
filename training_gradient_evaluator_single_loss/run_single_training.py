@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Convenience script to run single example training with loss summation.
+Convenience script to run single example training with epsilon-based convergence.
 """
 
 import subprocess
@@ -8,7 +8,7 @@ import sys
 import os
 
 def main():
-    # Default arguments for the single example training (loss version)
+    # Default arguments for the single example training (epsilon version)
     cmd = [
         sys.executable, "train_grad.py",
         "--model_name", "resnet34.a3_in1k",
@@ -16,10 +16,11 @@ def main():
         "--max_examples", "50",  # Train on 50 random wrong examples
         "--max_steps_per_example", "500",  # Up to 500 steps per example
         "--lr", "0.01",  # Higher learning rate for faster convergence
-        "--weight_decay", "0.001"
+        "--weight_decay", "0.001",
+        "--epsilon", "1e-6"  # Loss threshold for convergence
     ]
     
-    print("Running single example training (loss version) with the following command:")
+    print("Running single example training (epsilon version) with the following command:")
     print(" ".join(cmd))
     print()
     
