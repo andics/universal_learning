@@ -50,11 +50,11 @@ python train_grad.py --model_name resnet18.a1_in1k --max_examples 100 --max_step
 ```
 
 ### Key Arguments
-- `--model_name`: TIMM model name (default: efficientvit_b1.r224_in1k)
+- `--model_name`: TIMM model name (default: efficientvit_m1.r224_in1k)
 - `--epsilon`: Loss threshold to reach (default: 1e-3)
-- `--max_examples`: Maximum number of examples to train on (default: 700)
+- `--max_examples`: Maximum number of examples to train on (default: 100)
 - `--max_steps_per_example`: Maximum SGD steps per example (default: 10000)
-- `--lr`: Learning rate for classical SGD (default: 0.01)
+- `--lr`: Learning rate for classical SGD (default: 0.001)
 - `--model_csv_name`: Model name to look up in imagenet_models.csv
 
 ## Output Files
@@ -87,7 +87,9 @@ The script creates several output files in `outputs/{model_name}/`:
 
 - **Training criterion**: Changed from "until correct prediction" to "until loss ≤ epsilon"
 - **Classical SGD**: Uses standard SGD with fixed learning rate (no adaptive algorithms like Adam/AdamW)
-- **Single example training**: Handles BatchNorm layers properly for batch size = 1
+- **Single example training**: Uses eval mode to handle BatchNorm layers with batch size = 1
+- **Gradient clipping**: Prevents exploding gradients with max_norm=1.0
+- **NaN detection**: Automatically detects and handles NaN losses
 - **Dual metrics**: Tracks both SGD steps AND cumulative loss sum until epsilon
 - **Dual visualizations**: Creates two plots showing steps vs difficulty and loss sum vs difficulty
 - **Enhanced logging**: Step-by-step logging includes both individual loss and cumulative sum

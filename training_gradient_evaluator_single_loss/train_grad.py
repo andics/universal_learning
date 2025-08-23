@@ -109,12 +109,12 @@ def train_single_example(model: nn.Module, example_path: str, synset_to_idx: Dic
 		raise RuntimeError(f"Could not determine synset/class for path: {example_path}")
 	target = torch.tensor([synset_to_idx[wnid]], device=device)
 	
-	# Set model to train mode but handle BatchNorm layers
-	model.train()
-	# Set BatchNorm layers to eval mode to avoid batch size error
-	for module in model.modules():
-		if isinstance(module, torch.nn.BatchNorm2d) or isinstance(module, torch.nn.BatchNorm1d):
-			module.eval()
+	# Set model to eval mode to avoid BatchNorm issues with batch_size=1
+	# We'll still compute gradients and update parameters
+	model.eval()
+	# But enable gradient computation for all parameters
+	for param in model.parameters():
+		param.requires_grad = True
 	
 	total_loss_sum = 0.0
 	
@@ -126,12 +126,18 @@ def train_single_example(model: nn.Module, example_path: str, synset_to_idx: Dic
 				logits = model(x)
 				loss = criterion(logits, target)
 			scaler.scale(loss).backward()
+			# Unscale gradients for clipping
+			scaler.unscale_(optimizer)
+			# Clip gradients to prevent exploding gradients
+			torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
 			scaler.step(optimizer)
 			scaler.update()
 		else:
 			logits = model(x)
 			loss = criterion(logits, target)
 			loss.backward()
+			# Clip gradients to prevent exploding gradients
+			torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
 			optimizer.step()
 		
 		current_loss = float(loss.item())
@@ -140,6 +146,11 @@ def train_single_example(model: nn.Module, example_path: str, synset_to_idx: Dic
 		# Log each step to CSV if writer provided
 		if csv_writer is not None:
 			csv_writer.writerow([step, current_loss, total_loss_sum])
+		
+		# Check for NaN loss and stop if detected
+		if torch.isnan(loss):
+			logger.warning(f"NaN loss detected at step {step}. Stopping training for this example.")
+			return -1, total_loss_sum, float('nan')
 		
 		# Check if loss is within epsilon of zero
 		if current_loss <= epsilon:
@@ -165,7 +176,7 @@ def main() -> None:
 						help="Path to bars/imagenet_models.csv containing model column names")
 	parser.add_argument("--max_examples", type=int, default=100, help="Maximum number of examples to train on")
 	parser.add_argument("--max_steps_per_example", type=int, default=10000, help="Maximum steps to train each example")
-	parser.add_argument("--lr", type=float, default=0.01)
+	parser.add_argument("--lr", type=float, default=0.001)
 	parser.add_argument("--weight_decay", type=float, default=0)
 	parser.add_argument("--epsilon", type=float, default=1e-3, help="Train until loss reaches this epsilon (default: 1e-6)")
 	parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu")
