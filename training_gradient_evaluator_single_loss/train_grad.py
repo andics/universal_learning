@@ -155,15 +155,15 @@ def train_single_example(model: nn.Module, example_path: str, synset_to_idx: Dic
 
 def main() -> None:
 	parser = argparse.ArgumentParser(description="Train model on single examples in order of difficulty.")
-	parser.add_argument("--model_name", type=str, default="efficientvit_b1.r224_in1k")
+	parser.add_argument("--model_name", type=str, default="efficientvit_m1.r224_in1k")
 	parser.add_argument("--bars_npy", type=str, default=os.path.join("bars", "imagenet.npy"))
 	parser.add_argument("--examples_csv", type=str, default=os.path.join("bars", "imagenet_examples_ammended.csv"))
 	parser.add_argument("--root_dir", type=str, default=None)
-	parser.add_argument("--model_csv_name", type=str, default="efficientvit_base_1_224_classification_imagenet_1k",
+	parser.add_argument("--model_csv_name", type=str, default="efficientvit_medium_1_224_classification_imagenet_1k",
 						help="Model name to look up in imagenet_models.csv to select row in imagenet.npy")
 	parser.add_argument("--imagenet_models_csv", type=str, default=os.path.join("bars", "imagenet_models.csv"),
 						help="Path to bars/imagenet_models.csv containing model column names")
-	parser.add_argument("--max_examples", type=int, default=700, help="Maximum number of examples to train on")
+	parser.add_argument("--max_examples", type=int, default=100, help="Maximum number of examples to train on")
 	parser.add_argument("--max_steps_per_example", type=int, default=10000, help="Maximum steps to train each example")
 	parser.add_argument("--lr", type=float, default=0.01)
 	parser.add_argument("--weight_decay", type=float, default=0)
