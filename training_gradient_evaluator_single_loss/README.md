@@ -87,6 +87,7 @@ The script creates several output files in `outputs/{model_name}/`:
 
 - **Training criterion**: Changed from "until correct prediction" to "until loss ≤ epsilon"
 - **Classical SGD**: Uses standard SGD with fixed learning rate (no adaptive algorithms like Adam/AdamW)
+- **Single example training**: Handles BatchNorm layers properly for batch size = 1
 - **Dual metrics**: Tracks both SGD steps AND cumulative loss sum until epsilon
 - **Dual visualizations**: Creates two plots showing steps vs difficulty and loss sum vs difficulty
 - **Enhanced logging**: Step-by-step logging includes both individual loss and cumulative sum

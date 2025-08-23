@@ -109,14 +109,20 @@ def train_single_example(model: nn.Module, example_path: str, synset_to_idx: Dic
 		raise RuntimeError(f"Could not determine synset/class for path: {example_path}")
 	target = torch.tensor([synset_to_idx[wnid]], device=device)
 	
+	# Set model to train mode but handle BatchNorm layers
 	model.train()
+	# Set BatchNorm layers to eval mode to avoid batch size error
+	for module in model.modules():
+		if isinstance(module, torch.nn.BatchNorm2d) or isinstance(module, torch.nn.BatchNorm1d):
+			module.eval()
+	
 	total_loss_sum = 0.0
 	
 	for step in range(1, max_steps + 1):
 		optimizer.zero_grad(set_to_none=True)
 		
 		if scaler is not None:
-			with torch.cuda.amp.autocast():
+			with torch.amp.autocast('cuda'):
 				logits = model(x)
 				loss = criterion(logits, target)
 			scaler.scale(loss).backward()
@@ -303,7 +309,7 @@ def main() -> None:
 		
 		# Create fresh optimizer for this example
 		optimizer = torch.optim.SGD(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-		scaler = None if args.no_amp or device.type != "cuda" else torch.cuda.amp.GradScaler()
+		scaler = None if args.no_amp or device.type != "cuda" else torch.amp.GradScaler('cuda')
 		
 		# Create step-by-step log file for this example
 		safe_path = example_path.replace('/', '_').replace('\\', '_').replace(':', '_')
