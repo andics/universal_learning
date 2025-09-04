@@ -112,6 +112,14 @@ def main() -> None:
 	logger.addHandler(fh)
 	logger.addHandler(sh)
 
+	# Log all parsed args early for full reproducibility
+	try:
+		logger.info("Parsed arguments:")
+		for k, v in sorted(vars(args).items()):
+			logger.info(f"  {k} = {v}")
+	except Exception:
+		pass
+
 	# No global excepthook; rely on explicit try/except below to stop on errors and log tracebacks
 
 	# Read paths in difficulty order (easiest first)
@@ -204,6 +212,17 @@ def main() -> None:
 		device=args.device,
 		use_amp=not bool(args.no_amp),
 	)
+	# Also log resolved training configuration
+	try:
+		logger.info("Training configuration:")
+		logger.info(f"  lr = {se_config.lr}")
+		logger.info(f"  weight_decay = {se_config.weight_decay}")
+		logger.info(f"  max_steps = {se_config.max_steps}")
+		logger.info(f"  epsilon = {se_config.epsilon}")
+		logger.info(f"  device = {se_config.device}")
+		logger.info(f"  use_amp = {se_config.use_amp}")
+	except Exception:
+		pass
 	reset_state = copy.deepcopy(model.state_dict())
 
 	# Resolve mask row index from CSV of model names
