@@ -26,6 +26,7 @@ from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 
 from training_gradient_evaluator_single_loss.data import ImageNetWrongExamplesDataset, read_imagenet_paths, extract_synset_from_path
+from training_gradient_evaluator_single_loss.engine.single_example_trainer import SingleExampleTrainer, SingleExampleConfig
 
 
 def filter_existing_indices(paths: List[str], indices: List[int], root_dir: str | None) -> List[int]:
@@ -362,11 +363,7 @@ def main() -> None:
 	logger.addHandler(fh)
 	logger.addHandler(sh)
 
-	# Expose logger globally and install global exception logging
-	global CURRENT_LOGGER, CURRENT_LOG_PATH
-	CURRENT_LOGGER = logger
-	CURRENT_LOG_PATH = log_path
-	_install_global_excepthook()
+	# No global excepthook; rely on explicit try/except below to stop on errors and log tracebacks
 
 	# Read paths in difficulty order (easiest first)
 	difficulty_ordered_paths = read_imagenet_difficulty_order(args.examples_csv)
@@ -498,8 +495,12 @@ def main() -> None:
 	os.makedirs(step_logs_dir, exist_ok=True)
 
 	# Train each example individually
-	criterion = nn.CrossEntropyLoss()
 	results: List[Tuple[int, str, int, float, float, float, float, float, int]] = []
+
+	# Build SingleExampleTrainer once
+	from training_gradient_evaluator_single_loss.engine.single_example_trainer import _get_param_buckets  # noqa: F401 (ensure import path is valid)
+	trainer = SingleExampleTrainer(model, synset_to_idx, train_tfms, logger)
+	se_config = SingleExampleConfig(lr=args.lr, weight_decay=args.weight_decay, max_steps=int(args.max_steps_per_example), epsilon=float(args.epsilon), device=args.device, use_amp=(not args.no_amp))
 
 	# Load already-processed paths for resume
 	processed_paths: set[str] = set()
@@ -527,32 +528,21 @@ def main() -> None:
 			continue
 		logger.info(f"\n=== Training Example {example_idx + 1}/{len(wrong_examples_ordered)}: {example_path} ===")
 		
-		# Reset model to original weights
-		model.load_state_dict(original_state_dict)
-		logger.info("Reset model to original weights")
-		
-		# Store initial weights for distance calculation
-		initial_weights = {name: param.data.clone().cpu() for name, param in model.named_parameters()}
-		
-		# Create fresh optimizer for this example
-		optimizer = torch.optim.SGD(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-		scaler = None if args.no_amp or device.type != "cuda" else torch.amp.GradScaler('cuda')
-		
 		# Create step-by-step log file for this example
 		safe_path = example_path.replace('/', '_').replace('\\', '_').replace(':', '_')
 		step_log_file = os.path.join(step_logs_dir, f"example_{example_idx}_{safe_path}_steps.csv")
 		
-		with open(step_log_file, "w", newline="", encoding="utf-8") as step_f:
-			step_writer = csv.writer(step_f)
-			step_writer.writerow(["step", "loss", "cumulative_loss_sum"])
-			
-			# Train on this single example
-			full_path = resolve_full(example_path)
-			total_steps, total_loss_sum, final_loss, weight_distance, softmax_w1, grad_mass_w1 = train_single_example(
-				model, full_path, synset_to_idx, device, train_tfms, 
-				optimizer, criterion, scaler, logger, args.max_steps_per_example,
-				args.epsilon, step_writer, initial_weights
+		# Train on this single example (wrapped with try/except to log and stop on errors)
+		full_path = resolve_full(example_path)
+		try:
+			initial_state = {name: param.data.clone().cpu() for name, param in model.named_parameters()}
+			total_steps, total_loss_sum, final_loss, weight_distance, softmax_w1, grad_mass_w1 = trainer.train_on_example(
+				full_path, se_config, initial_state, step_log_file
 			)
+		except Exception as _e:
+			import traceback
+			logger.error("Fatal error while training on example", exc_info=True)
+			raise
 		
 		# Get the actual universal difficulty rank (1-based)
 		universal_rank = path_to_difficulty_rank[example_path] + 1
