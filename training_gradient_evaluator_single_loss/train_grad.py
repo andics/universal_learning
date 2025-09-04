@@ -153,6 +153,7 @@ def main() -> None:
 		device=args.device,
 		use_amp=(not args.no_amp),
 	)
+	reset_state = copy.deepcopy(model.state_dict())
 
 	# Resolve mask row index from CSV of model names
 	def _find_model_index(models_csv_path: str, model_name: str) -> int:
@@ -210,9 +211,8 @@ def main() -> None:
 		# Train on this single example (wrapped with try/except to log and stop on errors)
 		full_path = resolve_full(example_path)
 		try:
-			initial_state = {name: param.data.clone().cpu() for name, param in model.named_parameters()}
 			total_steps, total_loss_sum, final_loss, weight_distance, softmax_w1, grad_mass_w1 = trainer.train_on_example(
-				full_path, se_config, initial_state, step_log_file
+				full_path, se_config, reset_state, step_log_file
 			)
 		except Exception as _e:
 			import traceback

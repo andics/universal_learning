@@ -80,7 +80,7 @@ class SingleExampleTrainer:
 		self,
 		example_path: str,
 		config: SingleExampleConfig,
-		initial_state_dict: Dict[str, torch.Tensor],
+		reset_state_dict: Dict[str, torch.Tensor],
 		step_log_csv_path: str,
 	) -> Tuple[int, float, float, float, float, float]:
 		"""Run SGD on a single image until loss <= epsilon or max_steps.
@@ -90,9 +90,11 @@ class SingleExampleTrainer:
 		from training_gradient_evaluator_single_loss.data import extract_synset_from_path
 
 		device = torch.device(config.device)
-		# Reset weights
-		self.model.load_state_dict(initial_state_dict)
+		# Reset weights using full state_dict (includes buffers)
+		self.model.load_state_dict(reset_state_dict)
 		self.model.to(device)
+		# Capture initial parameter values for weight distance
+		initial_param_weights = {name: p.data.clone().cpu() for name, p in self.model.named_parameters()}
 
 		# Prepare data
 		image = Image.open(example_path).convert("RGB")
@@ -166,12 +168,12 @@ class SingleExampleTrainer:
 				step_writer.writerow([step, current_loss, total_loss_sum])
 
 				if torch.isnan(loss):
-					# Weight distance
-					final_state = {n: p.data.clone().cpu() for n, p in self.model.named_parameters()}
+					# Weight distance (use parameter tensors only)
+					final_params = {n: p.data.clone().cpu() for n, p in self.model.named_parameters()}
 					wd = 0.0
-					for n, p0 in initial_state_dict.items():
-						if n in final_state:
-							d = (final_state[n].flatten().float() - p0.flatten().float())
+					for n, p0 in initial_param_weights.items():
+						if n in final_params:
+							d = (final_params[n].flatten().float() - p0.flatten().float())
 							wd += float(torch.sum(d * d).item())
 					wd = float(wd ** 0.5)
 					with torch.no_grad():
@@ -187,11 +189,11 @@ class SingleExampleTrainer:
 					return -1, total_loss_sum, float('nan'), wd, softmax_w1, grad_mass_w1
 
 				if current_loss <= float(config.epsilon):
-					final_state = {n: p.data.clone().cpu() for n, p in self.model.named_parameters()}
+					final_params = {n: p.data.clone().cpu() for n, p in self.model.named_parameters()}
 					wd = 0.0
-					for n, p0 in initial_state_dict.items():
-						if n in final_state:
-							d = (final_state[n].flatten().float() - p0.flatten().float())
+					for n, p0 in initial_param_weights.items():
+						if n in final_params:
+							d = (final_params[n].flatten().float() - p0.flatten().float())
 							wd += float(torch.sum(d * d).item())
 					wd = float(wd ** 0.5)
 					with torch.no_grad():
@@ -209,11 +211,11 @@ class SingleExampleTrainer:
 					return step, total_loss_sum, current_loss, wd, softmax_w1, grad_mass_w1
 
 		# Finalize without reaching epsilon
-		final_state = {n: p.data.clone().cpu() for n, p in self.model.named_parameters()}
+		final_params = {n: p.data.clone().cpu() for n, p in self.model.named_parameters()}
 		wd = 0.0
-		for n, p0 in initial_state_dict.items():
-			if n in final_state:
-				d = (final_state[n].flatten().float() - p0.flatten().float())
+		for n, p0 in initial_param_weights.items():
+			if n in final_params:
+				d = (final_params[n].flatten().float() - p0.flatten().float())
 				wd += float(torch.sum(d * d).item())
 		wd = float(wd ** 0.5)
 		with torch.no_grad():
