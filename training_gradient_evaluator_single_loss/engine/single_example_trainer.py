@@ -119,7 +119,7 @@ class SingleExampleTrainer:
 				module.eval()
 
 		optimizer = torch.optim.SGD(self.model.parameters(), lr=config.lr, weight_decay=config.weight_decay)
-		scaler = torch.cuda.amp.GradScaler(enabled=(config.use_amp and device.type == "cuda"))
+		scaler = torch.amp.GradScaler('cuda', enabled=(config.use_amp and device.type == "cuda"))
 		criterion = nn.CrossEntropyLoss()
 		param_buckets = _get_param_buckets(self.model)
 
@@ -137,7 +137,7 @@ class SingleExampleTrainer:
 			for step in range(1, int(config.max_steps) + 1):
 				optimizer.zero_grad(set_to_none=True)
 				if scaler.is_enabled():
-					with torch.cuda.amp.autocast():
+					with torch.amp.autocast('cuda'):
 						logits = self.model(x)
 						loss = criterion(logits, target)
 					scaler.scale(loss).backward()

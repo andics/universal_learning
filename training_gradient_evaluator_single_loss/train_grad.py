@@ -118,6 +118,14 @@ def main() -> None:
 	difficulty_ordered_paths = read_imagenet_difficulty_order(args.examples_csv)
 	logger.info(f"Loaded {len(difficulty_ordered_paths)} examples in difficulty order")
 
+	# Ensure cuBLAS determinism if requested (must be set before cuBLAS handle creation)
+	if args.deterministic:
+		try:
+			if os.environ.get('CUBLAS_WORKSPACE_CONFIG') not in (':4096:8', ':16:8'):
+				os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
+		except Exception:
+			pass
+
 	# Build model (TIMM) and transforms
 	import timm
 	model = timm.create_model(args.model_name, pretrained=True)
