@@ -65,8 +65,8 @@ class SingleExampleConfig:
 	max_steps: int = 10000
 	epsilon: float = 1e-3
 	device: str = "cuda" if torch.cuda.is_available() else "cpu"
-	use_amp: bool = True
-	gradient_clip_norm: Optional[float] = 1.0
+	use_amp: bool = False
+	gradient_clip_norm: Optional[float] = None
 
 
 class SingleExampleTrainer:
@@ -111,11 +111,11 @@ class SingleExampleTrainer:
 			probs0 = torch.softmax(logits0, dim=-1).squeeze(0).detach().cpu().numpy()
 
 		self.model.train()
-		# Put BN in eval to avoid batch size=1 stat updates
-		bn_modules = []
+		# Put BN and Dropout in eval to avoid batch size=1 stat updates and stochasticity
+		_eval_modules = []
 		for module in self.model.modules():
-			if isinstance(module, (torch.nn.BatchNorm1d, torch.nn.BatchNorm2d, torch.nn.BatchNorm3d)):
-				bn_modules.append(module)
+			if isinstance(module, (torch.nn.BatchNorm1d, torch.nn.BatchNorm2d, torch.nn.BatchNorm3d, torch.nn.Dropout, torch.nn.Dropout2d, torch.nn.Dropout3d, torch.nn.AlphaDropout)):
+				_eval_modules.append(module)
 				module.eval()
 
 		optimizer = torch.optim.SGD(self.model.parameters(), lr=config.lr, weight_decay=config.weight_decay)
@@ -182,7 +182,7 @@ class SingleExampleTrainer:
 						probsT = torch.softmax(logitsT, dim=-1).squeeze(0).detach().cpu().numpy()
 					softmax_w1 = _total_variation_distance(probs0, probsT)
 					grad_mass_w1 = _wasserstein_equal_bins_1d(first_grad_mass if first_grad_mass is not None else np.array([1.0]), last_grad_mass if last_grad_mass is not None else np.array([1.0]))
-					for m in bn_modules:
+					for m in _eval_modules:
 						m.train()
 					if self.logger:
 						self.logger.warning(f"NaN loss detected at step {step}. Stopping training for this example.")
@@ -202,7 +202,7 @@ class SingleExampleTrainer:
 						probsT = torch.softmax(logitsT, dim=-1).squeeze(0).detach().cpu().numpy()
 					softmax_w1 = _total_variation_distance(probs0, probsT)
 					grad_mass_w1 = _wasserstein_equal_bins_1d(first_grad_mass if first_grad_mass is not None else np.array([1.0]), last_grad_mass if last_grad_mass is not None else np.array([1.0]))
-					for m in bn_modules:
+					for m in _eval_modules:
 						m.train()
 					if self.logger:
 						self.logger.info(
@@ -224,7 +224,7 @@ class SingleExampleTrainer:
 			probsT = torch.softmax(logitsT, dim=-1).squeeze(0).detach().cpu().numpy()
 		softmax_w1 = _total_variation_distance(probs0, probsT)
 		grad_mass_w1 = _wasserstein_equal_bins_1d(first_grad_mass if first_grad_mass is not None else np.array([1.0]), last_grad_mass if last_grad_mass is not None else np.array([1.0]))
-		for m in bn_modules:
+		for m in _eval_modules:
 			m.train()
 		if self.logger:
 			self.logger.info(
