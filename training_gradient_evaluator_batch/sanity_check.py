@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import json
 from tqdm import tqdm
 
-from training_gradient_evaluator.data import (
+from training_gradient_evaluator_batch.data import (
 	read_imagenet_paths,
 	extract_synset_from_path,
 )

@@ -201,7 +201,7 @@ def main() -> None:
 
     # Run post-training analysis/plot for rank comparison
     try:
-        from training_gradient_evaluator.order_analysis import analyze_and_plot
+        from training_gradient_evaluator_batch.order_analysis import analyze_and_plot
         analyze_and_plot(summary_csv, imagenet_csv=args.examples_csv)
     except Exception as e:
         print(f"Warning: analysis step failed: {e}")

@@ -22,7 +22,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-from training_gradient_evaluator.data import ImageNetWrongExamplesDataset, read_imagenet_paths, extract_synset_from_path
+from training_gradient_evaluator_batch.data import ImageNetWrongExamplesDataset, read_imagenet_paths, extract_synset_from_path
 
 
 def filter_existing_indices(paths: List[str], indices: List[int], root_dir: str | None) -> List[int]:
@@ -343,7 +343,7 @@ def main() -> None:
 			w.writerow([p, step])
 
 	try:
-		from training_gradient_evaluator.order_analysis import analyze_and_plot
+		from training_gradient_evaluator_batch.order_analysis import analyze_and_plot
 		analyze_and_plot(summary_csv, imagenet_csv=args.examples_csv)
 	except Exception as e:
 		logger.warning(f"Warning: analysis step failed: {e}")
