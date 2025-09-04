@@ -79,10 +79,10 @@ def main() -> None:
 	parser.add_argument("--epsilon", type=float, default=1e-3, help="Train until loss reaches this epsilon (default: 1e-6)")
 	parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu")
 	parser.add_argument("--output_dir", type=str, default=os.path.join("training_gradient_evaluator_single_loss", "outputs"))
-	parser.add_argument("--use_amp", action="store_true", help="Enable AMP (disabled by default for determinism)")
+	parser.add_argument("--no_amp", action="store_true", help="Disable AMP (include this flag to turn AMP off)")
 	parser.add_argument("--seed", type=int, default=1337, help="Global RNG seed for Python/NumPy/Torch")
 	parser.add_argument("--deterministic", action="store_true", help="Force PyTorch deterministic algorithms")
-	parser.add_argument("--use_eval_transforms", action="store_true", help="Use eval (deterministic) transforms instead of training augments")
+	parser.add_argument("--zero_aug_train", action="store_true", help="Use training transforms with zero augmentation (no flips/jitter/AA/RA)")
 	parser.add_argument("--hierarchy_json", type=str, default=_default_hierarchy_json_path(), 
 	                   help="Path to bars/imagenet_synset_hierarchy.json")
 	args = parser.parse_args()
@@ -157,9 +157,34 @@ def main() -> None:
 	except Exception:
 		pass
 
-	# Build transforms; prefer eval transforms for determinism if requested
+	# Build transforms; use training transforms with zero augmentation if requested
 	data_config = timm.data.resolve_model_data_config(model)
-	train_tfms = timm.data.create_transform(**data_config, is_training=not args.use_eval_transforms)
+	_use_zero_aug = bool(args.zero_aug_train)
+	if _use_zero_aug:
+		try:
+			train_tfms = timm.data.create_transform(
+				**data_config,
+				is_training=True,
+				no_aug=True,
+				hflip=0.0,
+				vflip=0.0,
+				color_jitter=0.0,
+				auto_augment=None,
+				re_prob=0.0,
+			)
+		except TypeError:
+			# Fallback if this timm version doesn't support some args; use minimal training pipeline
+			try:
+				train_tfms = timm.data.create_transform(
+					**data_config,
+					is_training=True,
+					no_aug=True,
+				)
+			except Exception:
+				# Last resort: eval transforms (deterministic)
+				train_tfms = timm.data.create_transform(**data_config, is_training=False)
+	else:
+		train_tfms = timm.data.create_transform(**data_config, is_training=True)
 
 	# Build single-example trainer and config
 	trainer = SingleExampleTrainer(model, synset_to_idx, train_tfms, logger)
@@ -169,7 +194,7 @@ def main() -> None:
 		max_steps=int(args.max_steps_per_example),
 		epsilon=float(args.epsilon),
 		device=args.device,
-		use_amp=bool(args.use_amp),
+		use_amp=not bool(args.no_amp),
 	)
 	reset_state = copy.deepcopy(model.state_dict())
 
