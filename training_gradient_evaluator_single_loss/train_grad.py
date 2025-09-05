@@ -299,6 +299,11 @@ def main() -> None:
 	# Finalize: plots and summary
 	logger.info("Creating final plots...")
 	results.build_plots(epsilon=float(args.epsilon))
+	# Always write correlations.json based on existing CSV (idempotent)
+	try:
+		results.write_correlations(overwrite=True)
+	except Exception:
+		pass
 	results.write_summary(epsilon=float(args.epsilon))
 	summary_path = os.path.join(model_out_dir, "training_summary.json")
 	logger.info(f"Training complete. Summary saved to {summary_path}")

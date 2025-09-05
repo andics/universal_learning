@@ -132,6 +132,69 @@ class ResultsWriter:
 		except Exception:
 			return
 
+	def compute_correlations(self) -> dict:
+		"""Compute the same correlations used in plots and return as a dict."""
+		try:
+			with open(self.results_csv, 'r', encoding='utf-8') as rf:
+				reader = csv.reader(rf)
+				header = next(reader, None)
+				if not header:
+					return {}
+				name_to_idx = {name: i for i, name in enumerate(header)}
+				rows = [row for row in reader if row]
+			x_steps, x_loss, x_weight, x_soft, x_grad, y_rank = [], [], [], [], [], []
+			for row in rows:
+				try:
+					st = int(float(row[name_to_idx["total_steps_to_epsilon"]]))
+					rk = int(float(row[name_to_idx["universal_difficulty_rank"]]))
+					if st <= 0:
+						continue
+					x_steps.append(st)
+					x_loss.append(float(row[name_to_idx["total_loss_sum"]]))
+					x_weight.append(float(row[name_to_idx["weight_distance"]]))
+					y_rank.append(rk)
+					if "softmax_wasserstein" in name_to_idx and row[name_to_idx["softmax_wasserstein"]] != '':
+						x_soft.append(float(row[name_to_idx["softmax_wasserstein"]]))
+					if "grad_mass_wasserstein" in name_to_idx and row[name_to_idx["grad_mass_wasserstein"]] != '':
+						x_grad.append(float(row[name_to_idx["grad_mass_wasserstein"]]))
+				except Exception:
+					continue
+			if len(y_rank) < 2:
+				return {}
+			corr_steps = float(np.corrcoef(x_steps, y_rank)[0, 1]) if len(y_rank) > 1 else 0.0
+			corr_loss = float(np.corrcoef(x_loss, y_rank)[0, 1]) if len(y_rank) > 1 else 0.0
+			corr_weight = float(np.corrcoef(x_weight, y_rank)[0, 1]) if len(y_rank) > 1 else 0.0
+			corr_soft = None
+			corr_grad = None
+			if len(x_soft) == len(y_rank) and len(x_soft) >= 2:
+				corr_soft = float(np.corrcoef(x_soft, y_rank)[0, 1])
+			if len(x_grad) == len(y_rank) and len(x_grad) >= 2:
+				corr_grad = float(np.corrcoef(x_grad, y_rank)[0, 1])
+			return {
+				"num_points": int(len(y_rank)),
+				"steps_vs_rank": corr_steps,
+				"loss_sum_vs_rank": corr_loss,
+				"weight_distance_vs_rank": corr_weight,
+				"softmax_wasserstein_vs_rank": corr_soft,
+				"grad_mass_wasserstein_vs_rank": corr_grad,
+			}
+		except Exception:
+			return {}
+
+	def write_correlations(self, overwrite: bool = True) -> None:
+		"""Write correlations.json with values matching plot correlations."""
+		out_path = os.path.join(self.model_out_dir, "correlations.json")
+		if (not overwrite) and os.path.exists(out_path):
+			return
+		data = self.compute_correlations()
+		if not data:
+			return
+		try:
+			with open(out_path, 'w', encoding='utf-8') as f:
+				json.dump(data, f, indent=2)
+		except Exception:
+			return
+
 	def write_summary(self, epsilon: float) -> None:
 		summary_path = os.path.join(self.model_out_dir, "training_summary.json")
 		try:
