@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 def default_paths() -> Tuple[str, str]:
     here = os.path.dirname(os.path.abspath(__file__))
     root = os.path.normpath(os.path.join(here, '..'))
-    outputs_root = os.path.join(root, 'training_gradient_evaluator_single_loss', 'outputs')
+    outputs_root = os.path.join(root, 'training_gradient_evaluator_single_loss', 'outputs_15sol')
     mapping_csv = os.path.join(root, 'training_gradient_evaluator_single_loss', 'model_name_mapping.csv')
     return outputs_root, mapping_csv
 

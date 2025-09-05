@@ -23,8 +23,8 @@ LOG_ERR = "/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/C
 
 # Fixed train args (do not vary these here)
 FIXED_ARGS = {
-    'bars_npy': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/imagenet.npy',
-    'examples_csv': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/imagenet_examples_ammended.csv',
+    'bars_npy': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/no_15sol_impossible_imagenet.npy',
+    'examples_csv': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/no_15sol_impossible_imagenet_examples_ammended.csv',
     'imagenet_models_csv': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/imagenet_models.csv',
     'max_examples': 1500,
     'max_steps_per_example': 10000,
@@ -35,7 +35,7 @@ FIXED_ARGS = {
     'zero_aug_train': True,
     'deterministic': True,
     'no_amp': True,
-    'output_dir': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/training_gradient_evaluator_single_loss/outputs',
+    'output_dir': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/training_gradient_evaluator_single_loss/outputs_15sol',
     'hierarchy_json': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/imagenet_synset_hierarchy.json',
 }
 
