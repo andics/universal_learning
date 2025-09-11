@@ -22,7 +22,7 @@ def load_param_counts(mapping_csv: str) -> Dict[str, float]:
     with open(mapping_csv, 'r', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         for row in reader:
-            name = (row.get('model_in_timm') or '').strip()
+            name = (row.get('modProj    del_in_timm') or '').strip()
             pcount = (row.get('parameter_count') or '').strip()
             if not name:
                 continue
