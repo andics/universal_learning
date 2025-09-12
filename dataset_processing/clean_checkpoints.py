@@ -13,7 +13,7 @@ def parse_arguments() -> argparse.Namespace:
     )
     parser.add_argument(
         "--root",
-        default="/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/image_difficulty_classifier/output",
+        default="/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/trained_models",
         help="Path to the root storage directory containing model subfolders",
     )
     parser.add_argument(
