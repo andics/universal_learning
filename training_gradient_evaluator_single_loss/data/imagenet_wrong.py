@@ -15,6 +15,8 @@ def read_imagenet_paths(csv_path: str) -> List[str]:
 		return []
 	if (text.startswith('"') and text.endswith('"')) or (text.startswith("'") and text.endswith("'")):
 		text = text[1:-1]
+	# Keep placeholders like "None" in the list to preserve ranking indices,
+	# but filter them out when resolving actual images for training elsewhere.
 	return [p.strip() for p in text.split(",") if p.strip()]
 
 
@@ -95,6 +97,8 @@ class ImageNetWrongExamplesDataset(Dataset):
 
 	def _resolve_path(self, idx: int) -> str:
 		p = self.image_paths[idx]
+		if isinstance(p, str) and p.strip().lower() in {"none", "null"}:
+			raise FileNotFoundError("Encountered placeholder path 'None' in dataset; this should not be loaded.")
 		if self.root_dir and not os.path.isabs(p):
 			return os.path.join(self.root_dir, p)
 		return p

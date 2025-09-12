@@ -15,8 +15,8 @@ try:
     if path_main not in sys.path:
         sys.path.append(path_main)
     os.chdir(path_main)
-except Exception:
-	pass
+except Exception as _e:
+	print(f"[WARN] Failed to set working dir/sys.path to Programming root: {_e}", file=sys.stderr)
 
 import numpy as np
 import logging
@@ -76,13 +76,16 @@ def main() -> None:
 	parser.add_argument("--max_steps_per_example", type=int, default=10000, help="Maximum steps to train each example")
 	parser.add_argument("--lr", type=float, default=0.001)
 	parser.add_argument("--weight_decay", type=float, default=0)
-	parser.add_argument("--epsilon", type=float, default=1e-3, help="Train until loss reaches this epsilon (default: 1e-6)")
+	parser.add_argument("--epsilon", type=float, default=1e-3, help="Train until loss reaches this epsilon")
 	parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu")
 	parser.add_argument("--output_dir", type=str, default=os.path.join("training_gradient_evaluator_single_loss", "outputs"))
 	parser.add_argument("--no_amp", action="store_true", help="Disable AMP (include this flag to turn AMP off)")
+	parser.add_argument("--amp_dtype", type=str, default=None, choices=["float16", "bfloat16"], help="AMP dtype to use when AMP is enabled")
 	parser.add_argument("--seed", type=int, default=1337, help="Global RNG seed for Python/NumPy/Torch")
 	parser.add_argument("--deterministic", action="store_true", help="Force PyTorch deterministic algorithms")
-	parser.add_argument("--zero_aug_train", action="store_true", help="Use training transforms with zero augmentation (no flips/jitter/AA/RA)")
+	# Always use zero augmentation via timm regardless of this flag; kept for backward compatibility
+	parser.add_argument("--zero_aug_train", action="store_true", help="(Deprecated) Zero augmentation is always enforced via timm")
+	parser.add_argument("--grad_clip_norm", type=float, default=1.0, help="Gradient clipping max norm (use <=0 to disable)")
 	parser.add_argument("--hierarchy_json", type=str, default=_default_hierarchy_json_path(), 
 	                   help="Path to bars/imagenet_synset_hierarchy.json")
 	args = parser.parse_args()
@@ -113,12 +116,9 @@ def main() -> None:
 	logger.addHandler(sh)
 
 	# Log all parsed args early for full reproducibility
-	try:
-		logger.info("Parsed arguments:")
-		for k, v in sorted(vars(args).items()):
-			logger.info(f"  {k} = {v}")
-	except Exception:
-		pass
+	logger.info("Parsed arguments:")
+	for k, v in sorted(vars(args).items()):
+		logger.info(f"  {k} = {v}")
 
 	# No global excepthook; rely on explicit try/except below to stop on errors and log tracebacks
 
@@ -132,7 +132,7 @@ def main() -> None:
 			if os.environ.get('CUBLAS_WORKSPACE_CONFIG') not in (':4096:8', ':16:8'):
 				os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
 		except Exception:
-			pass
+			logger.exception("Failed to set CUBLAS_WORKSPACE_CONFIG for determinism")
 
 	# Build model (TIMM) and transforms
 	import timm
@@ -144,7 +144,7 @@ def main() -> None:
 		logger.info(f"Loaded TIMM pretrained weights for {args.model_name}")
 		logger.info(f"pretrained_cfg.url={url} hf_hub_id={hf_id}")
 	except Exception as _e:
-		logger.info(f"Note: could not display pretrained cfg details: {_e}")
+		logger.warning(f"Could not display pretrained cfg details: {_e}")
 	
 	model = model.to(device)
 	# Note: DataParallel disabled for single example training to avoid batch size issues
@@ -171,39 +171,40 @@ def main() -> None:
 			torch.backends.cudnn.benchmark = False
 			torch.use_deterministic_algorithms(True, warn_only=True)
 	except Exception:
-		pass
+		logger.exception("Failed to set deterministic seeds/backends")
 
-	# Build transforms; use training transforms with zero augmentation if requested
+	# Build transforms; enforce zero augmentation via timm only
 	data_config = timm.data.resolve_model_data_config(model)
-	_use_zero_aug = bool(args.zero_aug_train)
-	if _use_zero_aug:
-		try:
-			train_tfms = timm.data.create_transform(
-				**data_config,
-				is_training=True,
-				no_aug=True,
-				hflip=0.0,
-				vflip=0.0,
-				color_jitter=0.0,
-				auto_augment=None,
-				re_prob=0.0,
-			)
-		except TypeError:
-			# Fallback if this timm version doesn't support some args; use minimal training pipeline
-			try:
-				train_tfms = timm.data.create_transform(
-					**data_config,
-					is_training=True,
-					no_aug=True,
-				)
-			except Exception:
-				# Last resort: eval transforms (deterministic)
-				train_tfms = timm.data.create_transform(**data_config, is_training=False)
-	else:
-		train_tfms = timm.data.create_transform(**data_config, is_training=True)
+	try:
+		train_tfms = timm.data.create_transform(
+			**data_config,
+			is_training=True,
+			no_aug=True,
+			hflip=0.0,
+			vflip=0.0,
+			color_jitter=0.0,
+			auto_augment=None,
+			re_prob=0.0,
+		)
+	except Exception:
+		logger.exception("Failed to create zero-augmentation transforms via timm")
+		raise
 
 	# Build single-example trainer and config
 	trainer = SingleExampleTrainer(model, synset_to_idx, train_tfms, logger)
+	# Determine AMP dtype default: prefer bfloat16 if supported on CUDA
+	_auto_amp_dtype = None
+	if not bool(args.no_amp) and torch.cuda.is_available():
+		try:
+			if torch.cuda.is_bf16_supported():
+				_auto_amp_dtype = "bfloat16"
+			else:
+				_auto_amp_dtype = "float16"
+		except Exception:
+			_auto_amp_dtype = "float16"
+	if args.amp_dtype is not None:
+		_auto_amp_dtype = args.amp_dtype
+
 	se_config = SingleExampleConfig(
 		lr=args.lr,
 		weight_decay=args.weight_decay,
@@ -211,18 +212,19 @@ def main() -> None:
 		epsilon=float(args.epsilon),
 		device=args.device,
 		use_amp=not bool(args.no_amp),
+		gradient_clip_norm=(args.grad_clip_norm if args.grad_clip_norm and args.grad_clip_norm > 0 else None),
+		amp_dtype=_auto_amp_dtype,
 	)
 	# Also log resolved training configuration
-	try:
-		logger.info("Training configuration:")
-		logger.info(f"  lr = {se_config.lr}")
-		logger.info(f"  weight_decay = {se_config.weight_decay}")
-		logger.info(f"  max_steps = {se_config.max_steps}")
-		logger.info(f"  epsilon = {se_config.epsilon}")
-		logger.info(f"  device = {se_config.device}")
-		logger.info(f"  use_amp = {se_config.use_amp}")
-	except Exception:
-		pass
+	logger.info("Training configuration:")
+	logger.info(f"  lr = {se_config.lr}")
+	logger.info(f"  weight_decay = {se_config.weight_decay}")
+	logger.info(f"  max_steps = {se_config.max_steps}")
+	logger.info(f"  epsilon = {se_config.epsilon}")
+	logger.info(f"  device = {se_config.device}")
+	logger.info(f"  use_amp = {se_config.use_amp}")
+	logger.info(f"  amp_dtype = {se_config.amp_dtype}")
+	logger.info(f"  gradient_clip_norm = {se_config.gradient_clip_norm}")
 	reset_state = copy.deepcopy(model.state_dict())
 
 	# Resolve mask row index from CSV of model names
@@ -254,6 +256,18 @@ def main() -> None:
 	wrong_examples_ordered = selector.select_wrong_examples(wrong_indices, all_paths, difficulty_ordered_paths, args.root_dir, args.max_examples)
 	logger.info(f"Selected {len(wrong_examples_ordered)} wrong examples for training (sorted by difficulty)")
 	path_to_difficulty_rank = {path: i for i, path in enumerate(difficulty_ordered_paths)}
+	# Output full list of rank indices that will be trained on
+	train_indices = [path_to_difficulty_rank[p] for p in wrong_examples_ordered if p in path_to_difficulty_rank]
+	try:
+		logger.info("Training examples (rank indices, 0-based): " + ", ".join(str(int(i)) for i in train_indices))
+		train_examples_csv = os.path.join(model_out_dir, "train_examples.csv")
+		with open(train_examples_csv, 'w', newline='', encoding='utf-8') as tf:
+			w = csv.writer(tf)
+			w.writerow(["rank_index"])
+			for idx in train_indices:
+				w.writerow([int(idx)])
+	except Exception as _e:
+		logger.exception("Failed to write train_examples.csv or log training indices")
 	
 	# Results manager
 	results = ResultsWriter(model_out_dir)
@@ -274,9 +288,10 @@ def main() -> None:
 			continue
 		logger.info(f"\n=== Training Example {example_idx + 1}/{len(wrong_examples_ordered)}: {example_path} ===")
 		
-		# Create step-by-step log file for this example
+		# Create step-by-step log file for this example, include rank in filename
 		safe_path = example_path.replace('/', '_').replace('\\', '_').replace(':', '_')
-		step_log_file = os.path.join(step_logs_dir, f"example_{example_idx}_{safe_path}_steps.csv")
+		_rank = path_to_difficulty_rank.get(example_path, -1)
+		step_log_file = os.path.join(step_logs_dir, f"example_{example_idx}_rank_{_rank:05d}_{safe_path}_steps.csv")
 		
 		# Train on this single example (wrapped with try/except to log and stop on errors)
 		full_path = resolve_full(example_path)
@@ -303,7 +318,7 @@ def main() -> None:
 	try:
 		results.write_correlations(overwrite=True)
 	except Exception:
-		pass
+		logger.exception("Failed writing correlations.json; continuing")
 	results.write_summary(epsilon=float(args.epsilon))
 	summary_path = os.path.join(model_out_dir, "training_summary.json")
 	logger.info(f"Training complete. Summary saved to {summary_path}")

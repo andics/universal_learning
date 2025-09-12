@@ -67,6 +67,7 @@ class SingleExampleConfig:
 	device: str = "cuda" if torch.cuda.is_available() else "cpu"
 	use_amp: bool = False
 	gradient_clip_norm: Optional[float] = None
+	amp_dtype: Optional[str] = None  # one of {"float16", "bfloat16", None}
 
 
 class SingleExampleTrainer:
@@ -119,7 +120,9 @@ class SingleExampleTrainer:
 				module.eval()
 
 		optimizer = torch.optim.SGD(self.model.parameters(), lr=config.lr, weight_decay=config.weight_decay)
-		scaler = torch.amp.GradScaler('cuda', enabled=(config.use_amp and device.type == "cuda"))
+		# AMP setup: prefer GradScaler for float16; do not use GradScaler for bfloat16
+		use_scaler = bool(config.use_amp and device.type == "cuda" and (config.amp_dtype or "float16") == "float16")
+		scaler = torch.amp.GradScaler('cuda', enabled=use_scaler)
 		criterion = nn.CrossEntropyLoss()
 		param_buckets = _get_param_buckets(self.model)
 
@@ -136,21 +139,33 @@ class SingleExampleTrainer:
 
 			for step in range(1, int(config.max_steps) + 1):
 				optimizer.zero_grad(set_to_none=True)
-				if scaler.is_enabled():
-					with torch.amp.autocast('cuda'):
+				if scaler.is_enabled() or (config.use_amp and device.type == "cuda" and (config.amp_dtype or "float16") == "bfloat16"):
+					# Autocast with requested dtype (float16 or bfloat16)
+					_autocast_dtype = torch.bfloat16 if (config.amp_dtype or "float16") == "bfloat16" else torch.float16
+					with torch.amp.autocast('cuda', dtype=_autocast_dtype):
 						logits = self.model(x)
 						loss = criterion(logits, target)
-					scaler.scale(loss).backward()
-					# Capture grad mass then clip, step
-					scaler.unscale_(optimizer)
-					gmass = _compute_grad_mass_distribution(self.model, param_buckets)
-					if first_grad_mass is None:
-						first_grad_mass = gmass
-					last_grad_mass = gmass
-					if config.gradient_clip_norm:
-						torch.nn.utils.clip_grad_norm_(self.model.parameters(), config.gradient_clip_norm)
-					scaler.step(optimizer)
-					scaler.update()
+					if scaler.is_enabled():
+						scaler.scale(loss).backward()
+						# Capture grad mass then clip, step
+						scaler.unscale_(optimizer)
+						gmass = _compute_grad_mass_distribution(self.model, param_buckets)
+						if first_grad_mass is None:
+							first_grad_mass = gmass
+						last_grad_mass = gmass
+						if config.gradient_clip_norm:
+							torch.nn.utils.clip_grad_norm_(self.model.parameters(), config.gradient_clip_norm)
+						scaler.step(optimizer)
+						scaler.update()
+					else:
+						loss.backward()
+						gmass = _compute_grad_mass_distribution(self.model, param_buckets)
+						if first_grad_mass is None:
+							first_grad_mass = gmass
+						last_grad_mass = gmass
+						if config.gradient_clip_norm:
+							torch.nn.utils.clip_grad_norm_(self.model.parameters(), config.gradient_clip_norm)
+						optimizer.step()
 				else:
 					logits = self.model(x)
 					loss = criterion(logits, target)
