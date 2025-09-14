@@ -64,11 +64,11 @@ def load_wnid_to_index_from_torchvision() -> Dict[str, int] | None:
 
 def main() -> None:
 	parser = argparse.ArgumentParser(description="Train model on single examples in order of difficulty.")
-	parser.add_argument("--model_name", type=str, default="efficientvit_m3.r224_in1k")
-	parser.add_argument("--bars_npy", type=str, default=os.path.join("bars", "imagenet.npy"))
-	parser.add_argument("--examples_csv", type=str, default=os.path.join("bars", "imagenet_examples_ammended.csv"))
+	parser.add_argument("--model_name", type=str, default="efficientvit_b0.r224_in1k")
+	parser.add_argument("--bars_npy", type=str, default=os.path.join("bars", "geq6wrong_21017_geq6correct_1525_imagenet.npy"))
+	parser.add_argument("--examples_csv", type=str, default=os.path.join("bars", "geq6wrong_21017_geq6correct_1525_imagenet_examples_ammended.csv"))
 	parser.add_argument("--root_dir", type=str, default=None)
-	parser.add_argument("--model_csv_name", type=str, default="efficientvit_medium_3_224_classification_imagenet_1k",
+	parser.add_argument("--model_csv_name", type=str, default="efficientvit_base_0_224_classification_imagenet_1k",
 						help="Model name to look up in imagenet_models.csv to select row in imagenet.npy")
 	parser.add_argument("--imagenet_models_csv", type=str, default=os.path.join("bars", "imagenet_models.csv"),
 						help="Path to bars/imagenet_models.csv containing model column names")

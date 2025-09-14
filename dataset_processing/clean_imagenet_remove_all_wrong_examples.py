@@ -195,7 +195,7 @@ def main():
     if os.path.basename(args.out_npy) in default_npy_name_candidates:
         args.out_npy = os.path.join(
             out_npy_dir,
-            f"geq{args.min_wrong}wrong_geq{args.min_correct}correct_imagenet.npy",
+            f"geq{args.min_wrong}wrong_{wrong_removed_count}_geq{args.min_correct}correct_{correct_removed_count}_imagenet.npy",
         )
 
     # Build keep mask and save masked outputs (preserve original length)
