@@ -326,10 +326,14 @@ def main() -> None:
 			continue
 		logger.info(f"\n=== Training Example {example_idx + 1}/{len(wrong_examples_ordered)}: {example_path} ===")
 		
-		# Create step-by-step log file for this example, include rank in filename
-		safe_path = example_path.replace('/', '_').replace('\\', '_').replace(':', '_')
+		# Create step-by-step log file for this example, include rank and only parent dir + filename
+		parent_name = os.path.basename(os.path.dirname(example_path))
+		file_name = os.path.basename(example_path)
+		short_id = f"{parent_name}_{file_name}" if parent_name else file_name
+		# Sanitize just in case
+		short_id = short_id.replace('/', '_').replace('\\', '_').replace(':', '_')
 		_rank = path_to_difficulty_rank.get(example_path, -1)
-		step_log_file = os.path.join(step_logs_dir, f"example_{example_idx}_rank_{_rank:05d}_{safe_path}_steps.csv")
+		step_log_file = os.path.join(step_logs_dir, f"example_{example_idx}_rank_{_rank:05d}_{short_id}_steps.csv")
 		
 		# Train on this single example (wrapped with try/except to log and stop on errors)
 		full_path = resolve_full(example_path)
@@ -343,7 +347,7 @@ def main() -> None:
 			# Save per-layer pre-vs-post (diagonal) CKA values as JSON for every example
 			try:
 				cka_diag = {str(layer_names[i]): float(M[i, i]) for i in range(len(layer_names))}
-				cka_json_name = f"rank_{_rank:05d}_{safe_path}.json"
+				cka_json_name = f"rank_{_rank:05d}_{short_id}.json"
 				cka_json_path = os.path.join(cka_json_dir, cka_json_name)
 				with open(cka_json_path, 'w', encoding='utf-8') as jf:
 					json.dump(cka_diag, jf, ensure_ascii=False, indent=2)
@@ -351,7 +355,7 @@ def main() -> None:
 				logger.exception("Failed to write CKA JSON for example", exc_info=True)
 			# Save plot only if spaced by at least 1000 ranks from last saved plot
 			if last_cka_plot_rank is None or (_rank - int(last_cka_plot_rank)) >= 1000:
-				cka_filename = f"rank_{_rank:05d}_{safe_path}.png"
+				cka_filename = f"rank_{_rank:05d}_{short_id}.png"
 				cka_out = os.path.join(cka_dir, cka_filename)
 				CKAEvaluator.save_plot(M, layer_names, cka_out)
 				last_cka_plot_rank = int(_rank)
