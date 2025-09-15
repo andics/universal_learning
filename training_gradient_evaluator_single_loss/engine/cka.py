@@ -123,6 +123,38 @@ class CKAEvaluator:
 				M[i, j] = CKAEvaluator._linear_cka(Xi, Yj)
 		return M, common
 
+	def compute_global_cka(self, post_model: nn.Module, image_paths: List[str]) -> float:
+		"""Concatenate per-layer features across all common layers and compute a single linear CKA.
+		This summarizes representational similarity across the whole network for the given batch.
+		"""
+		post_feats = self._collect_layer_representations(post_model, image_paths)
+		common = sorted(set(self._pre_features.keys()) & set(post_feats.keys()))
+		if not common:
+			return float('nan')
+		X_parts: List[np.ndarray] = []
+		Y_parts: List[np.ndarray] = []
+		# Ensure consistent sample counts; use minimum across layers if needed
+		N = None
+		for name in common:
+			Xi = self._pre_features[name]
+			Yi = post_feats[name]
+			if N is None:
+				N = min(Xi.shape[0], Yi.shape[0])
+			else:
+				N = min(int(N), Xi.shape[0], Yi.shape[0])
+		if N is None or N <= 0:
+			return float('nan')
+		for name in common:
+			Xi = self._pre_features[name][:N]
+			Yi = post_feats[name][:N]
+			# Align feature dims if they differ
+			Di = min(Xi.shape[1], Yi.shape[1])
+			X_parts.append(Xi[:, :Di])
+			Y_parts.append(Yi[:, :Di])
+		X_concat = np.concatenate(X_parts, axis=1)
+		Y_concat = np.concatenate(Y_parts, axis=1)
+		return CKAEvaluator._linear_cka(X_concat, Y_concat)
+
 	@staticmethod
 	def save_plot(M: np.ndarray, layer_names: List[str], out_path: str) -> None:
 		plt.figure(figsize=(max(6, len(layer_names) * 0.3), max(5, len(layer_names) * 0.3)))

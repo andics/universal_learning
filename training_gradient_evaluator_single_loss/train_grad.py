@@ -322,6 +322,7 @@ def main() -> None:
 			)
 			# After training this one example, compute CKA and save plot
 			M, layer_names = cka.compute_matrix(model, cka_paths)
+			global_cka = cka.compute_global_cka(model, cka_paths)
 			# Build filename: rank then the original path rendered safely
 			cka_filename = f"rank_{_rank:05d}_{safe_path}.png"
 			cka_out = os.path.join(cka_dir, cka_filename)
@@ -333,8 +334,8 @@ def main() -> None:
 		
 		# Get the actual universal difficulty rank (1-based)
 		universal_rank = path_to_difficulty_rank[example_path] + 1
-		# Append to CSV once
-		results.append([example_idx, example_path, total_steps, total_loss_sum, final_loss, weight_distance, softmax_w1, grad_mass_w1, universal_rank])
+		# Append to CSV once (including global CKA)
+		results.append([example_idx, example_path, total_steps, total_loss_sum, final_loss, weight_distance, softmax_w1, grad_mass_w1, universal_rank, global_cka])
 		
 		logger.info(f"Example {example_idx + 1} completed: {total_steps} steps, loss sum: {total_loss_sum:.4f}, final loss: {final_loss:.8f}, weight distance: {weight_distance:.4f} (universal rank: {universal_rank})")
 

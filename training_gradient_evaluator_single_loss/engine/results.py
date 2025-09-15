@@ -10,7 +10,8 @@ import matplotlib.pyplot as plt
 class ResultsWriter:
 	HEADER = [
 		"example_index", "path", "total_steps_to_epsilon", "total_loss_sum", "final_loss",
-		"weight_distance", "softmax_wasserstein", "grad_mass_wasserstein", "universal_difficulty_rank"
+		"weight_distance", "softmax_wasserstein", "grad_mass_wasserstein", "universal_difficulty_rank",
+		"global_linear_cka"
 	]
 
 	def __init__(self, model_out_dir: str) -> None:
