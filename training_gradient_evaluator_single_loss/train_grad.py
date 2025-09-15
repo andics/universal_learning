@@ -84,6 +84,8 @@ def main() -> None:
 	parser.add_argument("--amp_dtype", type=str, default=None, choices=["float16", "bfloat16"], help="AMP dtype to use when AMP is enabled")
 	parser.add_argument("--seed", type=int, default=1337, help="Global RNG seed for Python/NumPy/Torch")
 	parser.add_argument("--deterministic", action="store_true", help="Force PyTorch deterministic algorithms")
+	# Fraction of parameterized layers to compute CKA on (default 5%)
+	parser.add_argument("--cka_layer_fraction", type=float, default=0.05, help="Fraction of parameterized layers to sample for CKA hooks (0-1]. Default: 0.05 (5%)")
 	# Always use zero augmentation via timm regardless of this flag; kept for backward compatibility
 	parser.add_argument("--zero_aug_train", action="store_true", help="(Deprecated) Zero augmentation is always enforced via timm")
 	parser.add_argument("--grad_clip_norm", type=float, default=1.0, help="Gradient clipping max norm (use <=0 to disable)")
@@ -298,7 +300,7 @@ def main() -> None:
 				break
 	if len(cka_paths) < 5:
 		logger.warning("Fewer than 50 valid images available for CKA reference; proceeding with %d", len(cka_paths))
-	# Select 5% of parameterized layers (min 1) for CKA hooks
+	# Select a fraction of parameterized layers (min 1) for CKA hooks
 	try:
 		eligible_layers: List[str] = []
 		for _lname, _module in model.named_modules():
@@ -316,12 +318,18 @@ def main() -> None:
 			cka_layer_whitelist = None
 			logger.warning("No eligible layers found for CKA hooks; defaulting to all layers")
 		else:
-			k = max(1, int(round(0.05 * num_layers)))
+			# Validate and clamp fraction to (0, 1]
+			frac = float(args.cka_layer_fraction)
+			if not (frac > 0.0):
+				frac = 0.05
+			elif frac > 1.0:
+				frac = 1.0
+			k = max(1, int(round(frac * num_layers)))
 			try:
 				cka_layer_whitelist = set(random.sample(eligible_layers, k))
 			except Exception:
 				cka_layer_whitelist = set(eligible_layers[:k])
-			logger.info(f"CKA layer subset: selecting {len(cka_layer_whitelist)}/{num_layers} layers (~5%)")
+			logger.info(f"CKA layer subset: selecting {len(cka_layer_whitelist)}/{num_layers} layers (~{int(round(frac*100))}%)")
 			# Persist chosen layers for reproducibility
 			try:
 				with open(os.path.join(model_out_dir, "cka_layers_chosen.txt"), 'w', encoding='utf-8') as _f:
