@@ -51,58 +51,83 @@ class ExampleSelector:
 			return []
 
 		import numpy as np
-		# Bin by ranking position with fixed bin size (e.g., 100 ranks per bin)
-		bin_size = 100
-		N_ranks = max(len(difficulty_ordered_paths), 1)
-		num_bins = int(np.ceil(N_ranks / float(bin_size)))
-		# Map each valid example to its rank bin
-		bins: Dict[int, list[int]] = {b: [] for b in range(num_bins)}
-		for idx, _, rank in valid:
-			b = int(rank // bin_size)
-			b = max(0, min(num_bins - 1, b))
-			bins[b].append(idx)
-
-		# Determine how many to sample in total (avoid replacement if possible)
 		n_valid = len(valid)
 		k_total = min(int(max_examples), n_valid)
-		# Initial per-bin targets distributed as evenly as possible
-		base = k_total // num_bins
-		rem = k_total % num_bins
-		target = [base + (1 if b < rem else 0) for b in range(num_bins)]
-		capacity = [len(bins[b]) for b in range(num_bins)]
-		assign = [min(target[b], capacity[b]) for b in range(num_bins)]
-		leftover = k_total - int(sum(assign))
-		# Redistribute leftover to bins with remaining capacity (round-robin)
-		while leftover > 0:
-			progress = False
-			for b in range(num_bins):
-				if assign[b] < capacity[b]:
-					assign[b] += 1
-					leftover -= 1
-					progress = True
-					if leftover == 0:
-						break
-			if not progress:
-				break
+		if k_total <= 0:
+			return []
+		# If requesting more than available, take all sorted by rank
+		if k_total >= n_valid:
+			pairs = [(p, r) for _, p, r in sorted(valid, key=lambda t: t[2])]
+			with open(self.persist_path, 'w', encoding='utf-8') as f:
+				json.dump([[p, int(r)] for p, r in pairs], f, indent=2)
+			return [p for p, _ in pairs]
 
-		# Sample within each bin without replacement using seed for determinism
-		rng = np.random.default_rng(self.seed)
-		chosen_global_indices: list[int] = []
-		for b in range(num_bins):
-			cnt = int(assign[b])
-			if cnt <= 0 or capacity[b] <= 0:
-				continue
-			candidates = np.array(bins[b], dtype=int)
-			if cnt >= capacity[b]:
-				# Take all candidates in deterministic shuffled order
-				order = rng.permutation(capacity[b])
-				chosen_global_indices.extend(candidates[order].tolist())
+		# Prepare arrays of ranks and indices
+		valid_sorted = sorted(valid, key=lambda t: t[2])
+		indices_sorted = np.array([idx for idx, _, _ in valid_sorted], dtype=int)
+		ranks_sorted = np.array([r for _, _, r in valid_sorted], dtype=float)
+
+		# For small selections, pick evenly spaced quantiles across the sorted ranks
+		if k_total <= 50:
+			positions = np.linspace(0, n_valid - 1, num=k_total)
+			chosen_pos = []
+			used = set()
+			for pos in positions:
+				cand = int(round(pos))
+				# Ensure uniqueness by moving to nearest unused neighbor
+				left = cand
+				right = cand
+				while left >= 0 or right < n_valid:
+					pick = None
+					if left >= 0 and left not in used:
+						pick = left
+					elif right < n_valid and right not in used:
+						pick = right
+					if pick is not None:
+						chosen_pos.append(pick)
+						used.add(pick)
+						break
+					left -= 1
+					right += 1
+			chosen_pos.sort()
+			chosen_global_indices = indices_sorted[chosen_pos].tolist()
+		else:
+			# Inverse-density weighted sampling for near-uniform coverage across rank
+			# Try Gaussian KDE if available; fallback to histogram-based density
+			weights = None
+			try:
+				from scipy.stats import gaussian_kde  # type: ignore
+				# Normalize ranks to [0, 1] for numerical stability
+				r0 = float(ranks_sorted.min())
+				r1 = float(ranks_sorted.max())
+				span = max(r1 - r0, 1.0)
+				x = (ranks_sorted - r0) / span
+				kde = gaussian_kde(x)
+				dens = kde(x)
+				weights = 1.0 / (dens + 1e-8)
+			except Exception:
+				# Histogram fallback (Sturges' rule for bin count)
+				bins = int(np.ceil(np.log2(n_valid) + 1))
+				bins = max(5, bins)
+				counts, bin_edges = np.histogram(ranks_sorted, bins=bins)
+				# Avoid zero counts
+				counts = counts + (counts == 0)
+				bin_idx = np.digitize(ranks_sorted, bin_edges[:-1], right=False) - 1
+				bin_idx = np.clip(bin_idx, 0, len(counts) - 1)
+				weights = 1.0 / counts[bin_idx].astype(float)
+			# Sample without replacement according to normalized weights
+			w = np.asarray(weights, dtype=float)
+			w_sum = w.sum()
+			if not np.isfinite(w_sum) or w_sum <= 0:
+				w = np.ones_like(w) / len(w)
 			else:
-				pick = rng.choice(candidates, size=cnt, replace=False)
-				chosen_global_indices.extend(pick.tolist())
+				w = w / w_sum
+			rng = np.random.default_rng(self.seed)
+			pick_pos = rng.choice(np.arange(n_valid), size=k_total, replace=False, p=w)
+			chosen_pos = np.sort(pick_pos)
+			chosen_global_indices = indices_sorted[chosen_pos].tolist()
 
 		# Map back to (path, rank) pairs for persistence
-		# Build index -> (path, rank)
 		idx_to_path_rank = {idx: (p, r) for idx, p, r in valid}
 		pairs = [idx_to_path_rank[i] for i in chosen_global_indices]
 		with open(self.persist_path, 'w', encoding='utf-8') as f:
