@@ -297,6 +297,7 @@ def main() -> None:
 		logger.warning("Fewer than 50 valid images available for CKA reference; proceeding with %d", len(cka_paths))
 	cka = CKAEvaluator(model, train_tfms, device)
 	cka.build_reference(cka_paths)
+	last_cka_plot_rank = None  # type: ignore
 
 	# Train each example individually
 
@@ -323,10 +324,12 @@ def main() -> None:
 			# After training this one example, compute CKA and save plot
 			M, layer_names = cka.compute_matrix(model, cka_paths)
 			global_cka = cka.compute_global_cka(model, cka_paths)
-			# Build filename: rank then the original path rendered safely
-			cka_filename = f"rank_{_rank:05d}_{safe_path}.png"
-			cka_out = os.path.join(cka_dir, cka_filename)
-			CKAEvaluator.save_plot(M, layer_names, cka_out)
+			# Save plot only if spaced by at least 1000 ranks from last saved plot
+			if last_cka_plot_rank is None or (_rank - int(last_cka_plot_rank)) >= 1000:
+				cka_filename = f"rank_{_rank:05d}_{safe_path}.png"
+				cka_out = os.path.join(cka_dir, cka_filename)
+				CKAEvaluator.save_plot(M, layer_names, cka_out)
+				last_cka_plot_rank = int(_rank)
 		except Exception as _e:
 			import traceback
 			logger.error("Fatal error while training on example", exc_info=True)
