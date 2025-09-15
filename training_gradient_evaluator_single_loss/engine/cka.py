@@ -38,9 +38,8 @@ class CKAEvaluator:
 
 	def _collect_layer_representations(self, model: nn.Module, image_paths: List[str]) -> Dict[str, np.ndarray]:
 		from PIL import Image
+		prev_training = model.training
 		model.eval()
-		for p in model.parameters():
-			p.requires_grad_(False)
 		handles = []
 		captured: Dict[str, torch.Tensor] = {}
 
@@ -79,6 +78,10 @@ class CKAEvaluator:
 
 		for h in handles:
 			h.remove()
+
+		# Restore model's original training state
+		if prev_training:
+			model.train()
 
 		return {k: v.float().numpy() for k, v in captured.items()}
 
