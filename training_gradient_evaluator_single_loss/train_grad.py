@@ -258,8 +258,8 @@ def main() -> None:
 			raise
 	if mask.ndim != 2 or resolved_mask_row_index < 0 or resolved_mask_row_index >= mask.shape[0]:
 		raise ValueError(f"Unexpected mask shape {mask.shape} or bad row {resolved_mask_row_index}")
-	correct_mask = mask[resolved_mask_row_index].astype(bool)
-	wrong_mask = ~correct_mask
+	correct_mask = mask[resolved_mask_row_index]
+	wrong_mask = [~bool(i) if i is not None else False for i in correct_mask]
 	wrong_indices = np.nonzero(wrong_mask)[0].tolist()
 	
 	# Resolve wrong example list with selection manager
