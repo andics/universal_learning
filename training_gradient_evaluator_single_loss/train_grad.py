@@ -283,6 +283,9 @@ def main() -> None:
 	# Precompute CKA reference batch (50 images) and pre-training features
 	cka_dir = os.path.join(model_out_dir, "CKA_plots")
 	os.makedirs(cka_dir, exist_ok=True)
+	# Directory to store per-example CKA JSONs (diagonal: same layer pre vs post)
+	cka_json_dir = os.path.join(model_out_dir, "CKA_jsons")
+	os.makedirs(cka_json_dir, exist_ok=True)
 	# Select first 50 existing images from the global difficulty order for reproducibility
 	cka_paths: List[str] = []
 	for p in difficulty_ordered_paths:
@@ -297,6 +300,19 @@ def main() -> None:
 		logger.warning("Fewer than 50 valid images available for CKA reference; proceeding with %d", len(cka_paths))
 	cka = CKAEvaluator(model, train_tfms, device)
 	cka.build_reference(cka_paths)
+	# Save CKA for the untrained (pre-training) model against itself
+	try:
+		M0, layer_names0 = cka.compute_matrix(model, cka_paths)
+		# Plot
+		no_train_png = os.path.join(cka_dir, "CKA_no_training.png")
+		CKAEvaluator.save_plot(M0, layer_names0, no_train_png)
+		# JSON (diagonal per-layer CKA values)
+		cka0_diag = {str(layer_names0[i]): float(M0[i, i]) for i in range(len(layer_names0))}
+		no_train_json = os.path.join(cka_json_dir, "CKA_no_training.json")
+		with open(no_train_json, 'w', encoding='utf-8') as jf:
+			json.dump(cka0_diag, jf, ensure_ascii=False, indent=2)
+	except Exception:
+		logger.exception("Failed to write baseline CKA_no_training plot/JSON", exc_info=True)
 	last_cka_plot_rank = None  # type: ignore
 
 	# Train each example individually
@@ -321,9 +337,18 @@ def main() -> None:
 			total_steps, total_loss_sum, final_loss, weight_distance, softmax_w1, grad_mass_w1 = trainer.train_on_example(
 				full_path, se_config, reset_state, step_log_file
 			)
-			# After training this one example, compute CKA and save plot
+			# After training this one example, compute CKA and save JSON/plot
 			M, layer_names = cka.compute_matrix(model, cka_paths)
 			global_cka = cka.compute_global_cka(model, cka_paths)
+			# Save per-layer pre-vs-post (diagonal) CKA values as JSON for every example
+			try:
+				cka_diag = {str(layer_names[i]): float(M[i, i]) for i in range(len(layer_names))}
+				cka_json_name = f"rank_{_rank:05d}_{safe_path}.json"
+				cka_json_path = os.path.join(cka_json_dir, cka_json_name)
+				with open(cka_json_path, 'w', encoding='utf-8') as jf:
+					json.dump(cka_diag, jf, ensure_ascii=False, indent=2)
+			except Exception as _e:
+				logger.exception("Failed to write CKA JSON for example", exc_info=True)
 			# Save plot only if spaced by at least 1000 ranks from last saved plot
 			if last_cka_plot_rank is None or (_rank - int(last_cka_plot_rank)) >= 1000:
 				cka_filename = f"rank_{_rank:05d}_{safe_path}.png"

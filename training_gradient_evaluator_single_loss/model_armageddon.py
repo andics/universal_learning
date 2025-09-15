@@ -28,7 +28,7 @@ FIXED_ARGS = {
     'imagenet_models_csv': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/imagenet_models.csv',
     'max_examples': 1500,
     'max_steps_per_example': 10000,
-    'lr': 0.001,
+    'lr': 0.0001,
     'weight_decay': 0,
     'epsilon': 0.001,
     'device': 'cuda',
