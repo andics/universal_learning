@@ -298,7 +298,40 @@ def main() -> None:
 				break
 	if len(cka_paths) < 5:
 		logger.warning("Fewer than 50 valid images available for CKA reference; proceeding with %d", len(cka_paths))
-	cka = CKAEvaluator(model, train_tfms, device)
+	# Select 5% of parameterized layers (min 1) for CKA hooks
+	try:
+		eligible_layers: List[str] = []
+		for _lname, _module in model.named_modules():
+			if _lname == "":
+				continue
+			try:
+				_has_params = any(True for _ in _module.parameters(recurse=False))
+			except Exception:
+				_has_params = False
+			if not _has_params:
+				continue
+			eligible_layers.append(_lname)
+		num_layers = len(eligible_layers)
+		if num_layers <= 0:
+			cka_layer_whitelist = None
+			logger.warning("No eligible layers found for CKA hooks; defaulting to all layers")
+		else:
+			k = max(1, int(round(0.05 * num_layers)))
+			try:
+				cka_layer_whitelist = set(random.sample(eligible_layers, k))
+			except Exception:
+				cka_layer_whitelist = set(eligible_layers[:k])
+			logger.info(f"CKA layer subset: selecting {len(cka_layer_whitelist)}/{num_layers} layers (~5%)")
+			# Persist chosen layers for reproducibility
+			try:
+				with open(os.path.join(model_out_dir, "cka_layers_chosen.txt"), 'w', encoding='utf-8') as _f:
+					_f.write("\n".join(sorted(cka_layer_whitelist)))
+			except Exception:
+				logger.exception("Failed to write cka_layers_chosen.txt", exc_info=True)
+	except Exception:
+		logger.exception("Failed while selecting CKA layer subset; defaulting to all layers", exc_info=True)
+		cka_layer_whitelist = None
+	cka = CKAEvaluator(model, train_tfms, device, layer_whitelist=cka_layer_whitelist)
 	cka.build_reference(cka_paths)
 	# Save CKA for the untrained (pre-training) model against itself
 	try:

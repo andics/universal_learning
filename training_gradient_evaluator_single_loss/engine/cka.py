@@ -1,5 +1,5 @@
 import os
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional, Set
 
 import numpy as np
 import torch
@@ -16,11 +16,12 @@ class CKAEvaluator:
 	- After training, call compute_and_save(post_model, image_paths, out_png) to compute CKA grid and save.
 	"""
 
-	def __init__(self, model: nn.Module, transform, device: torch.device) -> None:
+	def __init__(self, model: nn.Module, transform, device: torch.device, layer_whitelist: Optional[Set[str]] = None) -> None:
 		self.model = model
 		self.transform = transform
 		self.device = device
 		self._pre_features: Dict[str, np.ndarray] = {}
+		self._layer_whitelist: Optional[Set[str]] = (set(layer_whitelist) if layer_whitelist is not None else None)
 
 	def _reduce_representation(self, t: torch.Tensor) -> torch.Tensor:
 		if not isinstance(t, torch.Tensor):
@@ -58,6 +59,8 @@ class CKAEvaluator:
 		# Register hooks on modules that have direct parameters
 		for name, module in model.named_modules():
 			if name == "":
+				continue
+			if self._layer_whitelist is not None and name not in self._layer_whitelist:
 				continue
 			try:
 				_has_params = any(True for _ in module.parameters(recurse=False))
