@@ -30,6 +30,7 @@ from training_gradient_evaluator_single_loss.engine.single_example_trainer impor
 from training_gradient_evaluator_single_loss.engine.selection import ExampleSelector
 from training_gradient_evaluator_single_loss.engine.results import ResultsWriter
 from training_gradient_evaluator_single_loss.utils.imagenet import default_hierarchy_json_path as _default_hierarchy_json_path, load_imagenet_hierarchy, read_imagenet_difficulty_order
+from training_gradient_evaluator_single_loss.engine.cka import CKAEvaluator
 
 
 def filter_existing_indices(paths: List[str], indices: List[int], root_dir: str | None) -> List[int]:
@@ -259,7 +260,8 @@ def main() -> None:
 	if mask.ndim != 2 or resolved_mask_row_index < 0 or resolved_mask_row_index >= mask.shape[0]:
 		raise ValueError(f"Unexpected mask shape {mask.shape} or bad row {resolved_mask_row_index}")
 	correct_mask = mask[resolved_mask_row_index]
-	wrong_mask = [~bool(i) if i is not None else False for i in correct_mask]
+	# Build a boolean wrong mask that treats None placeholders as non-selectable (False)
+	wrong_mask = np.array([False if i is None else (not bool(i)) for i in correct_mask], dtype=bool)
 	wrong_indices = np.nonzero(wrong_mask)[0].tolist()
 	
 	# Resolve wrong example list with selection manager
@@ -291,8 +293,26 @@ def main() -> None:
 	step_logs_dir = os.path.join(model_out_dir, "step_logs")
 	os.makedirs(step_logs_dir, exist_ok=True)
 
+	# Precompute CKA reference batch (50 images) and pre-training features
+	cka_dir = os.path.join(model_out_dir, "CKA_plots")
+	os.makedirs(cka_dir, exist_ok=True)
+	# Select first 50 existing images from the global difficulty order for reproducibility
+	cka_paths: List[str] = []
+	for p in difficulty_ordered_paths:
+		if isinstance(p, str) and p.strip().lower() in {"none", "null"}:
+			continue
+		full = os.path.join(args.root_dir, p) if args.root_dir and not os.path.isabs(p) else p
+		if os.path.exists(full):
+			cka_paths.append(full)
+			if len(cka_paths) >= 50:
+				break
+	if len(cka_paths) < 5:
+		logger.warning("Fewer than 50 valid images available for CKA reference; proceeding with %d", len(cka_paths))
+	cka = CKAEvaluator(model, train_tfms, device)
+	cka.build_reference(cka_paths)
+
 	# Train each example individually
-	
+
 	# Load already-processed paths for resume
 	processed_paths = selector.load_processed_paths(results_csv)
 
@@ -313,6 +333,12 @@ def main() -> None:
 			total_steps, total_loss_sum, final_loss, weight_distance, softmax_w1, grad_mass_w1 = trainer.train_on_example(
 				full_path, se_config, reset_state, step_log_file
 			)
+			# After training this one example, compute CKA and save plot
+			M, layer_names = cka.compute_matrix(model, cka_paths)
+			# Build filename: rank then the original path rendered safely
+			cka_filename = f"rank_{_rank:05d}_{safe_path}.png"
+			cka_out = os.path.join(cka_dir, cka_filename)
+			CKAEvaluator.save_plot(M, layer_names, cka_out)
 		except Exception as _e:
 			import traceback
 			logger.error("Fatal error while training on example", exc_info=True)

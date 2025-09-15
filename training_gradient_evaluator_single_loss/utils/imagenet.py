@@ -30,7 +30,10 @@ def read_imagenet_difficulty_order(csv_path: str) -> List[str]:
 	text = text.lstrip("\ufeff").strip()
 	if (text.startswith('"') and text.endswith('"')) or (text.startswith("'") and text.endswith("'")):
 		text = text[1:-1]
-	paths = [p.strip() for p in text.split(",") if p.strip()]
+	# Preserve literal placeholder tokens like "None" so they count toward ranking indices.
+	parts = [p.strip() for p in text.split(",")]
+	# Remove only empty tokens, not the literal word "None" or "null".
+	paths = [p for p in parts if p != ""]
 	return paths
 
 
