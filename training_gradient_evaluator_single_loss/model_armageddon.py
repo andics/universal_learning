@@ -16,15 +16,15 @@ RESOURCES = '-R rusage[mem=256000] -R affinity[thread*24] -R select[hname!=hgn50
 PROG_ROOT = "/home/projects/bagon/andreyg"
 SEQ_ARR = "../shared/seq_arr.sh"
 TRAIN_PY = "/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/training_gradient_evaluator_single_loss/train_grad.py"
-MAPPING_CSV = "/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/training_gradient_evaluator_single_loss/model_name_mapping.csv"
+MAPPING_CSV = "/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/imagenet_model_name_mapping.csv"
 
 LOG_OUT = "/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Cluster_runtime/model_training/useCase_out_%J.log"
 LOG_ERR = "/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Cluster_runtime/model_training/useCase_err_%J.log"
 
 # Fixed train args (do not vary these here)
 FIXED_ARGS = {
-    'bars_npy': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/no_15sol_impossible_imagenet.npy',
-    'examples_csv': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/no_15sol_impossible_imagenet_examples_ammended.csv',
+    'bars_npy': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/geq6wrong_21017_geq6correct_1525_imagenet.npy',
+    'examples_csv': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/geq6wrong_21017_geq6correct_1525_imagenet_examples_ammended.csv',
     'imagenet_models_csv': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/imagenet_models.csv',
     'max_examples': 1500,
     'max_steps_per_example': 10000,
@@ -36,8 +36,7 @@ FIXED_ARGS = {
     'zero_aug_train': True,
     'deterministic': True,
     'grad_clip_norm': 1.0,
-    'no_amp': True,
-    'output_dir': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/training_gradient_evaluator_single_loss/outputs_15sol',
+    'output_dir': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/training_gradient_evaluator_single_loss/outputs_lr_0.0001',
     'hierarchy_json': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/imagenet_synset_hierarchy.json',
 }
 
@@ -60,7 +59,7 @@ def build_bsub_command(train_args: str, job_name: str) -> str:
         f'-o {LOG_OUT} -e {LOG_ERR} -J "{job_name}" -H '
         f'python3 {TRAIN_PY} {train_args}'
     )
-    return f"{SEQ_ARR} -c \"{base}\" -e 2 -d ended"
+    return f"{SEQ_ARR} -c \"{base}\" -e 4 -d ended"
 
 
 def load_model_rows(csv_path: str):
@@ -103,5 +102,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
