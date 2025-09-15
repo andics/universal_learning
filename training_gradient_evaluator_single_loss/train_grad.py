@@ -242,21 +242,8 @@ def main() -> None:
 	logger.info(f"Resolved model_csv_name='{args.model_csv_name}' to mask_row_index={resolved_mask_row_index}")
 
 	# Load mask to find wrong examples (be robust to object arrays saved with pickle)
-	try:
-		mask = np.load(args.bars_npy)
-	except ValueError as _e:
-		if "Object arrays cannot be loaded when allow_pickle=False" in str(_e):
-			logger.warning("bars_npy appears to be an object array; reloading with allow_pickle=True and normalizing")
-			mask = np.load(args.bars_npy, allow_pickle=True)
-			# Normalize potential object-array into a concrete 2D ndarray
-			if isinstance(mask, np.ndarray) and mask.dtype == object:
-				try:
-					mask = np.array(mask.tolist())
-				except Exception:
-					# Fallback: stack inner sequences row-wise
-					mask = np.stack([np.asarray(x) for x in mask], axis=0)
-		else:
-			raise
+	mask = np.load(args.bars_npy, allow_pickle=True)
+
 	if mask.ndim != 2 or resolved_mask_row_index < 0 or resolved_mask_row_index >= mask.shape[0]:
 		raise ValueError(f"Unexpected mask shape {mask.shape} or bad row {resolved_mask_row_index}")
 	correct_mask = mask[resolved_mask_row_index]
