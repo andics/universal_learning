@@ -8,7 +8,7 @@ from datetime import datetime
 
 # Fixed environment settings taken from your example command
 CONTAINER = 'ops:5000/universal_learning_2.4:1'
-QUEUE = 'waic-long'
+QUEUE = 'waic-risk'
 GPU_SPEC = 'num=1:j_exclusive=yes'
 RESOURCES = '-R rusage[mem=256000] -R affinity[thread*24] -R select[hname!=hgn50] -R select[hname!=ibdgx010]'
 
@@ -16,7 +16,7 @@ RESOURCES = '-R rusage[mem=256000] -R affinity[thread*24] -R select[hname!=hgn50
 PROG_ROOT = "/home/projects/bagon/andreyg"
 SEQ_ARR = "../shared/seq_arr.sh"
 TRAIN_PY = "/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/training_gradient_evaluator_single_loss/train_grad.py"
-MAPPING_CSV = "/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/imagenet_model_name_mapping.csv"
+MAPPING_CSV = "/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/imagenet_model_name_mapping_subset_of_8.csv"
 
 LOG_OUT = "/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Cluster_runtime/model_training/useCase_out_%J.log"
 LOG_ERR = "/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Cluster_runtime/model_training/useCase_err_%J.log"
@@ -36,7 +36,8 @@ FIXED_ARGS = {
     'zero_aug_train': True,
     'deterministic': True,
     'grad_clip_norm': 1.0,
-    'output_dir': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/training_gradient_evaluator_single_loss/outputs_lr_0.0001',
+    'explicit_examples_for_training': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/imagenet_common_false_examples_subset_of_8.json',
+    'output_dir': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/training_gradient_evaluator_single_loss/outputs_subset_of_8_lr_0.0001_1500_examples',
     'hierarchy_json': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/imagenet_synset_hierarchy.json',
 }
 

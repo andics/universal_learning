@@ -1,0 +1,65 @@
+2025-09-15 22:51:54,219 - INFO - Parsed arguments:
+2025-09-15 22:51:54,219 - INFO -   amp_dtype = None
+2025-09-15 22:51:54,219 - INFO -   bars_npy = /home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/geq6wrong_21017_geq6correct_1525_imagenet.npy
+2025-09-15 22:51:54,219 - INFO -   cka_layer_fraction = 0.05
+2025-09-15 22:51:54,219 - INFO -   deterministic = True
+2025-09-15 22:51:54,219 - INFO -   device = cuda
+2025-09-15 22:51:54,219 - INFO -   epsilon = 0.001
+2025-09-15 22:51:54,219 - INFO -   examples_csv = /home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/geq6wrong_21017_geq6correct_1525_imagenet_examples_ammended.csv
+2025-09-15 22:51:54,219 - INFO -   grad_clip_norm = 1.0
+2025-09-15 22:51:54,219 - INFO -   hierarchy_json = /home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/imagenet_synset_hierarchy.json
+2025-09-15 22:51:54,219 - INFO -   imagenet_models_csv = /home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/imagenet_models.csv
+2025-09-15 22:51:54,219 - INFO -   lr = 0.0005
+2025-09-15 22:51:54,219 - INFO -   max_examples = 150
+2025-09-15 22:51:54,219 - INFO -   max_steps_per_example = 10000
+2025-09-15 22:51:54,219 - INFO -   model_csv_name = mobilenetv3_small_050_224_lamb_imagenet_1k
+2025-09-15 22:51:54,219 - INFO -   model_name = mobilenetv3_small_050.lamb_in1k
+2025-09-15 22:51:54,219 - INFO -   no_amp = False
+2025-09-15 22:51:54,219 - INFO -   output_dir = /home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/training_gradient_evaluator_single_loss/outputs_lr_0.0005_150_examples
+2025-09-15 22:51:54,219 - INFO -   root_dir = None
+2025-09-15 22:51:54,219 - INFO -   seed = 1337
+2025-09-15 22:51:54,219 - INFO -   weight_decay = 0.0
+2025-09-15 22:51:54,219 - INFO -   zero_aug_train = True
+2025-09-15 22:51:54,246 - INFO - Loaded 50000 examples in difficulty order
+2025-09-15 22:51:54,919 - INFO - Loaded TIMM pretrained weights for mobilenetv3_small_050.lamb_in1k
+2025-09-15 22:51:54,919 - INFO - pretrained_cfg.url=https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/mobilenetv3_small_050_lambc-4b7bbe87.pth hf_hub_id=timm/mobilenetv3_small_050.lamb_in1k
+2025-09-15 22:51:55,230 - INFO - Stored original model weights for reset
+2025-09-15 22:51:55,253 - INFO - Training configuration:
+2025-09-15 22:51:55,253 - INFO -   lr = 0.0005
+2025-09-15 22:51:55,253 - INFO -   weight_decay = 0.0
+2025-09-15 22:51:55,253 - INFO -   max_steps = 10000
+2025-09-15 22:51:55,253 - INFO -   epsilon = 0.001
+2025-09-15 22:51:55,253 - INFO -   device = cuda
+2025-09-15 22:51:55,253 - INFO -   use_amp = True
+2025-09-15 22:51:55,253 - INFO -   amp_dtype = bfloat16
+2025-09-15 22:51:55,253 - INFO -   gradient_clip_norm = 1.0
+2025-09-15 22:51:55,271 - INFO - Resolved model_csv_name='mobilenetv3_small_050_224_lamb_imagenet_1k' to mask_row_index=1022
+2025-09-15 22:52:07,537 - INFO - Selected 150 wrong examples for training (sorted by difficulty)
+2025-09-15 22:52:07,541 - INFO - Training examples (rank indices, 0-based): 21055, 21169, 21182, 21338, 21703, 21721, 22204, 22259, 22771, 22795, 22863, 22951, 23156, 23181, 23297, 23638, 23700, 24024, 24070, 24363, 24365, 24573, 24722, 24827, 25001, 25189, 25282, 25449, 25778, 25940, 26146, 26189, 26561, 26856, 26865, 27056, 27995, 28022, 28179, 28434, 28631, 28776, 29017, 29110, 29149, 29348, 29725, 29852, 29881, 30325, 30564, 30777, 31038, 31049, 31316, 31502, 32054, 32119, 32330, 32769, 32908, 32917, 32964, 32965, 33109, 33183, 33278, 33306, 33472, 33559, 33643, 33777, 33859, 33908, 33980, 34044, 34237, 34351, 34470, 34575, 34760, 35326, 36276, 36298, 36373, 36435, 36602, 36712, 36804, 37026, 37081, 37163, 37261, 37347, 38390, 38483, 38515, 38603, 38865, 39042, 39399, 39466, 39485, 39590, 39630, 39986, 40000, 40376, 40405, 40471, 40488, 40626, 40971, 41053, 41132, 41769, 42157, 42167, 42243, 42356, 42611, 42736, 42746, 42801, 42860, 42898, 42960, 42985, 43495, 43758, 44010, 44137, 44153, 44285, 44298, 44898, 44990, 45045, 46029, 46297, 46465, 46913, 46958, 47251, 47737, 47810, 47926, 47957, 47988, 48080
+2025-09-15 22:52:07,559 - INFO - CKA layer subset: selecting 4/88 layers (~5%)
+2025-09-15 22:52:08,808 - INFO - 
+=== Training Example 1/150: /home/projects/bagon/shared/imagenet512/val/n01824575/ILSVRC2012_val_00003450.JPEG ===
+2025-09-15 22:52:31,426 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n01824575/ILSVRC2012_val_00003450.JPEG reached epsilon at step 540, loss sum: 63.4824, final loss: 0.00094223, weight distance: 0.0623
+2025-09-15 22:52:32,389 - INFO - Example 1 completed: 540 steps, loss sum: 63.4824, final loss: 0.00094223, weight distance: 0.0623 (universal rank: 21056)
+2025-09-15 22:52:32,390 - INFO - 
+=== Training Example 2/150: /home/projects/bagon/shared/imagenet512/val/n01692333/ILSVRC2012_val_00031550.JPEG ===
+2025-09-15 22:52:58,403 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n01692333/ILSVRC2012_val_00031550.JPEG reached epsilon at step 620, loss sum: 191.6436, final loss: 0.00099945, weight distance: 0.1018
+2025-09-15 22:52:59,892 - INFO - Example 2 completed: 620 steps, loss sum: 191.6436, final loss: 0.00099945, weight distance: 0.1018 (universal rank: 21170)
+2025-09-15 22:52:59,892 - INFO - 
+=== Training Example 3/150: /home/projects/bagon/shared/imagenet512/val/n02087394/ILSVRC2012_val_00001047.JPEG ===
+2025-09-15 22:53:49,155 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02087394/ILSVRC2012_val_00001047.JPEG reached epsilon at step 1183, loss sum: 43.3485, final loss: 0.00097275, weight distance: 0.1238
+2025-09-15 22:53:49,859 - INFO - Example 3 completed: 1183 steps, loss sum: 43.3485, final loss: 0.00097275, weight distance: 0.1238 (universal rank: 21183)
+2025-09-15 22:53:49,859 - INFO - 
+=== Training Example 4/150: /home/projects/bagon/shared/imagenet512/val/n02117135/ILSVRC2012_val_00035999.JPEG ===
+2025-09-15 22:54:05,373 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02117135/ILSVRC2012_val_00035999.JPEG reached epsilon at step 372, loss sum: 30.8074, final loss: 0.00099945, weight distance: 0.0766
+2025-09-15 22:54:06,378 - INFO - Example 4 completed: 372 steps, loss sum: 30.8074, final loss: 0.00099945, weight distance: 0.0766 (universal rank: 21339)
+2025-09-15 22:54:06,378 - INFO - 
+=== Training Example 5/150: /home/projects/bagon/shared/imagenet512/val/n02017213/ILSVRC2012_val_00029206.JPEG ===
+2025-09-15 22:54:28,788 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02017213/ILSVRC2012_val_00029206.JPEG reached epsilon at step 537, loss sum: 93.1639, final loss: 0.00094223, weight distance: 0.0876
+2025-09-15 22:54:29,486 - INFO - Example 5 completed: 537 steps, loss sum: 93.1639, final loss: 0.00094223, weight distance: 0.0876 (universal rank: 21704)
+2025-09-15 22:54:29,486 - INFO - 
+=== Training Example 6/150: /home/projects/bagon/shared/imagenet512/val/n02106550/ILSVRC2012_val_00037152.JPEG ===
+2025-09-15 22:55:22,539 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02106550/ILSVRC2012_val_00037152.JPEG reached epsilon at step 1275, loss sum: 229.1691, final loss: 0.00095367, weight distance: 0.1382
+2025-09-15 22:55:23,244 - INFO - Example 6 completed: 1275 steps, loss sum: 229.1691, final loss: 0.00095367, weight distance: 0.1382 (universal rank: 21722)
+2025-09-15 22:55:23,244 - INFO - 
+=== Training Example 7/150: /home/projects/bagon/shared/imagenet512/val/n02074367/ILSVRC2012_val_00016382.JPEG ===
