@@ -91,6 +91,9 @@ def main() -> None:
 	parser.add_argument("--grad_clip_norm", type=float, default=1.0, help="Gradient clipping max norm (use <=0 to disable)")
 	parser.add_argument("--hierarchy_json", type=str, default=_default_hierarchy_json_path(), 
 	                   help="Path to bars/imagenet_synset_hierarchy.json")
+	# Optional explicit training examples JSON (same structure as produced by dataset_processing script)
+	parser.add_argument("--explicit_examples_for_training", type=str, default=None,
+						help="Path to JSON with explicit examples to train on; if provided, selection is restricted to these examples")
 	args = parser.parse_args()
 
 	os.makedirs(args.output_dir, exist_ok=True)
@@ -254,11 +257,57 @@ def main() -> None:
 	wrong_indices = np.nonzero(wrong_mask)[0].tolist()
 	
 	# Resolve wrong example list with selection manager
+
+	def _load_explicit_examples(json_path: str, all_paths_list: List[str], difficulty_list: List[str]) -> set[str]:
+		"""Load explicit examples from JSON; accept list of dicts with 'image_path' or 'path',
+		list of strings (paths), or list of integers (ranks). Return a set of paths.
+		"""
+		with open(json_path, 'r', encoding='utf-8') as jf:
+			data = json.load(jf)
+		allowed: set[str] = set()
+		if isinstance(data, list):
+			for item in data:
+				try:
+					if isinstance(item, dict):
+						p = item.get('image_path') or item.get('path')
+						if isinstance(p, str):
+							allowed.add(p)
+							continue
+						r = item.get('image_rank') if isinstance(item, dict) else None
+						if isinstance(r, int) and 0 <= r < len(difficulty_list):
+							allowed.add(difficulty_list[r])
+							continue
+					elif isinstance(item, str):
+						allowed.add(item)
+					elif isinstance(item, int):
+						if 0 <= item < len(difficulty_list):
+							allowed.add(difficulty_list[item])
+				except Exception:
+					continue
+		# Keep only those present in difficulty-ordered list to ensure consistent ranking
+		allowed &= set(difficulty_list)
+		return allowed
 	def resolve_full(p: str) -> str:
 		return os.path.join(args.root_dir, p) if args.root_dir and not os.path.isabs(p) else p
 	all_paths = read_imagenet_paths(args.examples_csv)
-	selector = ExampleSelector(model_out_dir, seed=42)
-	wrong_examples_ordered = selector.select_wrong_examples(wrong_indices, all_paths, difficulty_ordered_paths, args.root_dir, args.max_examples)
+	selector = ExampleSelector(model_out_dir, seed=int(args.seed))
+
+	# If an explicit examples JSON is provided, restrict candidate pool to those examples
+	candidate_indices: List[int]
+	if args.explicit_examples_for_training:
+		try:
+			allowed_paths = _load_explicit_examples(args.explicit_examples_for_training, all_paths, difficulty_ordered_paths)
+			# Build indices into all_paths for allowed paths
+			path_to_index: Dict[str, int] = {p: i for i, p in enumerate(all_paths)}
+			candidate_indices = [path_to_index[p] for p in allowed_paths if p in path_to_index]
+			logger.info(f"Restricting candidate pool to {len(candidate_indices)} explicit examples from JSON")
+		except Exception as _e:
+			logger.exception("Failed to load explicit_examples_for_training; falling back to default wrong-only selection")
+			candidate_indices = wrong_indices
+	else:
+		candidate_indices = wrong_indices
+
+	wrong_examples_ordered = selector.select_wrong_examples(candidate_indices, all_paths, difficulty_ordered_paths, args.root_dir, args.max_examples)
 	logger.info(f"Selected {len(wrong_examples_ordered)} wrong examples for training (sorted by difficulty)")
 	path_to_difficulty_rank = {path: i for i, path in enumerate(difficulty_ordered_paths)}
 	# Output full list of rank indices that will be trained on
