@@ -26,7 +26,7 @@ FIXED_ARGS = {
     'bars_npy': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/geq6wrong_21017_geq6correct_1525_imagenet.npy',
     'examples_csv': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/geq6wrong_21017_geq6correct_1525_imagenet_examples_ammended.csv',
     'imagenet_models_csv': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/imagenet_models.csv',
-    'max_examples': 1500,
+    'max_examples': 500,
     'max_steps_per_example': 10000,
     'lr': 0.0001,
     'weight_decay': 0,
@@ -35,9 +35,10 @@ FIXED_ARGS = {
     'seed': 1337,
     'zero_aug_train': True,
     'deterministic': True,
+    'cka_layer_fraction': 0.05,
     'grad_clip_norm': 1.0,
     'explicit_examples_for_training': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/imagenet_common_false_examples_subset_of_8.json',
-    'output_dir': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/training_gradient_evaluator_single_loss/outputs_subset_of_8_lr_0.0001_1500_examples',
+    'output_dir': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/training_gradient_evaluator_single_loss/outputs_subset_of_8_lr_0.0001_500_examples',
     'hierarchy_json': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/imagenet_synset_hierarchy.json',
 }
 
