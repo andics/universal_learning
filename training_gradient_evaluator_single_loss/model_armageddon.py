@@ -8,7 +8,7 @@ from datetime import datetime
 
 # Fixed environment settings taken from your example command
 CONTAINER = 'ops:5000/universal_learning_2.4:1'
-QUEUE = 'waic-risk'
+QUEUE = 'waic-short'
 GPU_SPEC = 'num=1:j_exclusive=yes'
 RESOURCES = '-R rusage[mem=256000] -R affinity[thread*24] -R select[hname!=hgn50] -R select[hname!=ibdgx010]'
 
@@ -26,7 +26,7 @@ FIXED_ARGS = {
     'bars_npy': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/geq6wrong_21017_geq6correct_1525_imagenet.npy',
     'examples_csv': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/geq6wrong_21017_geq6correct_1525_imagenet_examples_ammended.csv',
     'imagenet_models_csv': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/imagenet_models.csv',
-    'max_examples': 500,
+    'max_examples': 1500,
     'max_steps_per_example': 10000,
     'lr': 0.0001,
     'weight_decay': 0,
@@ -35,10 +35,10 @@ FIXED_ARGS = {
     'seed': 1337,
     'zero_aug_train': True,
     'deterministic': True,
-    'cka_layer_fraction': 0.05,
+    'cka_layer_fraction': 0.00,
     'grad_clip_norm': 1.0,
     'explicit_examples_for_training': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/imagenet_common_false_examples_subset_of_8.json',
-    'output_dir': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/training_gradient_evaluator_single_loss/outputs_subset_of_8_lr_0.0001_500_examples',
+    'output_dir': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/training_gradient_evaluator_single_loss/outputs_subset_of_8_lr_0.0001_1500_examples_no_cka',
     'hierarchy_json': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/imagenet_synset_hierarchy.json',
 }
 
@@ -61,7 +61,7 @@ def build_bsub_command(train_args: str, job_name: str) -> str:
         f'-o {LOG_OUT} -e {LOG_ERR} -J "{job_name}" -H '
         f'python3 {TRAIN_PY} {train_args}'
     )
-    return f"{SEQ_ARR} -c \"{base}\" -e 4 -d ended"
+    return f"{SEQ_ARR} -c \"{base}\" -e 14 -d ended"
 
 
 def load_model_rows(csv_path: str):

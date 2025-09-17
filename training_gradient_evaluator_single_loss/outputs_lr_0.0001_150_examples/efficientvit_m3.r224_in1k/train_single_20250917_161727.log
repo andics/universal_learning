@@ -1,0 +1,980 @@
+2025-09-17 16:17:27,728 - INFO - Parsed arguments:
+2025-09-17 16:17:27,728 - INFO -   amp_dtype = None
+2025-09-17 16:17:27,728 - INFO -   bars_npy = /home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/geq6wrong_21017_geq6correct_1525_imagenet.npy
+2025-09-17 16:17:27,728 - INFO -   cka_layer_fraction = 0.05
+2025-09-17 16:17:27,728 - INFO -   deterministic = True
+2025-09-17 16:17:27,728 - INFO -   device = cuda
+2025-09-17 16:17:27,728 - INFO -   epsilon = 0.001
+2025-09-17 16:17:27,728 - INFO -   examples_csv = /home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/geq6wrong_21017_geq6correct_1525_imagenet_examples_ammended.csv
+2025-09-17 16:17:27,728 - INFO -   explicit_examples_for_training = None
+2025-09-17 16:17:27,728 - INFO -   grad_clip_norm = 1.0
+2025-09-17 16:17:27,728 - INFO -   hierarchy_json = /home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/imagenet_synset_hierarchy.json
+2025-09-17 16:17:27,728 - INFO -   imagenet_models_csv = /home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/imagenet_models.csv
+2025-09-17 16:17:27,728 - INFO -   lr = 0.0001
+2025-09-17 16:17:27,728 - INFO -   max_examples = 1500
+2025-09-17 16:17:27,728 - INFO -   max_steps_per_example = 10000
+2025-09-17 16:17:27,728 - INFO -   model_csv_name = efficientvit_medium_3_224_classification_imagenet_1k
+2025-09-17 16:17:27,728 - INFO -   model_name = efficientvit_m3.r224_in1k
+2025-09-17 16:17:27,728 - INFO -   no_amp = False
+2025-09-17 16:17:27,728 - INFO -   output_dir = /home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/training_gradient_evaluator_single_loss/outputs_lr_0.0001_150_examples
+2025-09-17 16:17:27,728 - INFO -   root_dir = None
+2025-09-17 16:17:27,728 - INFO -   seed = 1337
+2025-09-17 16:17:27,728 - INFO -   weight_decay = 0.0
+2025-09-17 16:17:27,728 - INFO -   zero_aug_train = True
+2025-09-17 16:17:27,755 - INFO - Loaded 50000 examples in difficulty order
+2025-09-17 16:17:28,655 - INFO - Loaded TIMM pretrained weights for efficientvit_m3.r224_in1k
+2025-09-17 16:17:28,655 - INFO - pretrained_cfg.url= hf_hub_id=timm/efficientvit_m3.r224_in1k
+2025-09-17 16:17:29,049 - INFO - Stored original model weights for reset
+2025-09-17 16:17:29,088 - INFO - Training configuration:
+2025-09-17 16:17:29,088 - INFO -   lr = 0.0001
+2025-09-17 16:17:29,088 - INFO -   weight_decay = 0.0
+2025-09-17 16:17:29,088 - INFO -   max_steps = 10000
+2025-09-17 16:17:29,088 - INFO -   epsilon = 0.001
+2025-09-17 16:17:29,088 - INFO -   device = cuda
+2025-09-17 16:17:29,088 - INFO -   use_amp = True
+2025-09-17 16:17:29,088 - INFO -   amp_dtype = bfloat16
+2025-09-17 16:17:29,088 - INFO -   gradient_clip_norm = 1.0
+2025-09-17 16:17:29,162 - INFO - Resolved model_csv_name='efficientvit_medium_3_224_classification_imagenet_1k' to mask_row_index=959
+2025-09-17 16:17:37,681 - INFO - Selected 1500 wrong examples for training (sorted by difficulty)
+2025-09-17 16:17:37,686 - INFO - Training examples (rank indices, 0-based): 21065, 21168, 21175, 21268, 21417, 21428, 21434, 21470, 21537, 21744, 21899, 21996, 21998, 22029, 22034, 22049, 22132, 22285, 22295, 22319, 22450, 22480, 22542, 22609, 22610, 22762, 22772, 22886, 22935, 22944, 22962, 22975, 23017, 23289, 23323, 23328, 23424, 23425, 23441, 23468, 23596, 23625, 23702, 23719, 23767, 23911, 23957, 23984, 23997, 24014, 24061, 24068, 24114, 24312, 24331, 24346, 24374, 24431, 24435, 24438, 24449, 24457, 24500, 24579, 24589, 24593, 24605, 24615, 24623, 24649, 24669, 24695, 24707, 24710, 24739, 24740, 24741, 24800, 24802, 24828, 24981, 24995, 24998, 25003, 25014, 25016, 25023, 25024, 25035, 25080, 25108, 25174, 25193, 25208, 25239, 25241, 25280, 25288, 25307, 25315, 25322, 25333, 25431, 25443, 25465, 25469, 25487, 25507, 25568, 25667, 25676, 25689, 25692, 25721, 25722, 25729, 25745, 25761, 25770, 25779, 25815, 25822, 25844, 25911, 25958, 25980, 25985, 25988, 26000, 26010, 26015, 26027, 26037, 26175, 26180, 26192, 26208, 26256, 26258, 26260, 26276, 26282, 26314, 26369, 26382, 26424, 26443, 26455, 26499, 26571, 26582, 26639, 26657, 26669, 26680, 26764, 26849, 26851, 26958, 27057, 27131, 27137, 27146, 27297, 27298, 27356, 27358, 27360, 27368, 27377, 27380, 27382, 27404, 27458, 27471, 27484, 27488, 27490, 27491, 27499, 27505, 27516, 27532, 27535, 27549, 27620, 27668, 27689, 27690, 27695, 27705, 27719, 27733, 27754, 27794, 27846, 27848, 27872, 27892, 27902, 27911, 27913, 27946, 27959, 27985, 28008, 28021, 28085, 28093, 28113, 28117, 28180, 28197, 28236, 28253, 28254, 28280, 28291, 28308, 28394, 28396, 28532, 28550, 28551, 28555, 28607, 28620, 28651, 28666, 28678, 28771, 28785, 28871, 28881, 28883, 28887, 28937, 28959, 28995, 29001, 29002, 29054, 29056, 29111, 29112, 29122, 29126, 29131, 29158, 29164, 29180, 29221, 29256, 29270, 29285, 29287, 29313, 29326, 29330, 29340, 29353, 29360, 29367, 29378, 29385, 29423, 29427, 29449, 29475, 29476, 29488, 29538, 29543, 29563, 29584, 29587, 29592, 29605, 29613, 29643, 29645, 29672, 29690, 29697, 29719, 29771, 29772, 29782, 29794, 29803, 29826, 29864, 29877, 29884, 29886, 29899, 29900, 29905, 29908, 29912, 29926, 29935, 29951, 29956, 29958, 29975, 30000, 30048, 30068, 30099, 30136, 30137, 30141, 30155, 30175, 30228, 30239, 30255, 30306, 30314, 30416, 30434, 30436, 30443, 30481, 30518, 30530, 30542, 30546, 30547, 30573, 30587, 30660, 30689, 30696, 30730, 30733, 30743, 30781, 30790, 30878, 30915, 30916, 30917, 30927, 31014, 31056, 31085, 31089, 31119, 31123, 31138, 31185, 31201, 31209, 31215, 31224, 31267, 31268, 31290, 31306, 31321, 31364, 31379, 31382, 31386, 31404, 31407, 31427, 31432, 31446, 31461, 31471, 31473, 31501, 31503, 31514, 31522, 31546, 31552, 31553, 31571, 31574, 31579, 31593, 31597, 31606, 31611, 31646, 31656, 31725, 31727, 31767, 31781, 31783, 31793, 31797, 31804, 31821, 31842, 31844, 31886, 31904, 31908, 31909, 31960, 31969, 31971, 31975, 31998, 32004, 32007, 32013, 32015, 32048, 32076, 32104, 32119, 32136, 32150, 32152, 32173, 32183, 32191, 32221, 32231, 32241, 32242, 32306, 32324, 32333, 32350, 32353, 32383, 32405, 32418, 32422, 32425, 32431, 32432, 32434, 32437, 32478, 32483, 32532, 32538, 32544, 32545, 32549, 32564, 32588, 32640, 32645, 32646, 32647, 32648, 32651, 32660, 32668, 32694, 32695, 32697, 32702, 32707, 32742, 32779, 32807, 32808, 32811, 32826, 32848, 32862, 32866, 32878, 32894, 32916, 32928, 32955, 33025, 33029, 33031, 33035, 33054, 33064, 33072, 33096, 33097, 33110, 33115, 33119, 33146, 33163, 33174, 33195, 33209, 33211, 33212, 33227, 33247, 33249, 33276, 33287, 33288, 33298, 33303, 33309, 33335, 33353, 33371, 33387, 33418, 33464, 33532, 33535, 33546, 33557, 33572, 33575, 33587, 33596, 33612, 33657, 33690, 33697, 33703, 33718, 33729, 33743, 33747, 33765, 33779, 33836, 33841, 33842, 33847, 33856, 33896, 33905, 33907, 33927, 33928, 33929, 33961, 33997, 34009, 34031, 34036, 34039, 34044, 34054, 34057, 34086, 34106, 34120, 34124, 34136, 34145, 34153, 34162, 34170, 34172, 34178, 34199, 34215, 34251, 34269, 34283, 34293, 34298, 34305, 34308, 34318, 34321, 34350, 34359, 34362, 34419, 34440, 34454, 34463, 34484, 34489, 34495, 34501, 34504, 34517, 34607, 34608, 34631, 34680, 34703, 34711, 34712, 34719, 34728, 34736, 34740, 34750, 34771, 34803, 34815, 34818, 34820, 34824, 34854, 34879, 34884, 34898, 34913, 34935, 34940, 35003, 35017, 35026, 35092, 35114, 35120, 35126, 35140, 35150, 35165, 35170, 35192, 35212, 35215, 35242, 35268, 35327, 35328, 35361, 35370, 35379, 35401, 35413, 35427, 35456, 35473, 35501, 35524, 35527, 35550, 35553, 35558, 35561, 35577, 35589, 35590, 35598, 35602, 35631, 35683, 35712, 35728, 35809, 35814, 35820, 35853, 35854, 35875, 35887, 35905, 35943, 35966, 35981, 35995, 36020, 36022, 36034, 36035, 36049, 36055, 36090, 36100, 36109, 36111, 36122, 36132, 36140, 36162, 36166, 36198, 36209, 36247, 36260, 36263, 36270, 36279, 36283, 36344, 36345, 36392, 36400, 36439, 36448, 36464, 36465, 36468, 36473, 36480, 36488, 36512, 36519, 36524, 36540, 36550, 36556, 36569, 36600, 36649, 36705, 36710, 36717, 36728, 36737, 36758, 36796, 36802, 36817, 36819, 36824, 36844, 36864, 36877, 36886, 36887, 36900, 36916, 36923, 36938, 36948, 36960, 36987, 37000, 37016, 37017, 37082, 37092, 37126, 37142, 37182, 37199, 37213, 37267, 37268, 37272, 37282, 37298, 37348, 37353, 37364, 37365, 37390, 37397, 37411, 37423, 37443, 37460, 37487, 37506, 37511, 37516, 37523, 37529, 37536, 37543, 37559, 37602, 37624, 37628, 37629, 37642, 37645, 37651, 37669, 37677, 37691, 37715, 37733, 37736, 37762, 37793, 37798, 37800, 37830, 37832, 37848, 37852, 37858, 37884, 37889, 37895, 37924, 37949, 37969, 37975, 37979, 38008, 38013, 38032, 38049, 38083, 38088, 38093, 38102, 38106, 38117, 38134, 38198, 38243, 38245, 38256, 38278, 38286, 38308, 38311, 38320, 38338, 38339, 38352, 38357, 38361, 38395, 38398, 38426, 38476, 38512, 38528, 38529, 38530, 38538, 38566, 38648, 38653, 38670, 38682, 38709, 38722, 38723, 38741, 38745, 38759, 38767, 38774, 38783, 38784, 38788, 38825, 38830, 38841, 38855, 38868, 38901, 38914, 38926, 38945, 38992, 39015, 39032, 39046, 39051, 39080, 39090, 39092, 39120, 39146, 39158, 39184, 39186, 39201, 39205, 39248, 39256, 39266, 39269, 39270, 39272, 39275, 39290, 39300, 39305, 39309, 39330, 39368, 39380, 39385, 39427, 39455, 39473, 39490, 39491, 39510, 39526, 39532, 39547, 39555, 39563, 39564, 39578, 39581, 39600, 39614, 39639, 39656, 39687, 39701, 39712, 39718, 39733, 39758, 39767, 39796, 39797, 39807, 39819, 39821, 39835, 39883, 39886, 39889, 39902, 39940, 39950, 39956, 39968, 39987, 40025, 40044, 40055, 40104, 40105, 40109, 40120, 40127, 40148, 40163, 40189, 40196, 40200, 40209, 40212, 40251, 40313, 40392, 40419, 40434, 40472, 40502, 40527, 40528, 40577, 40578, 40591, 40607, 40620, 40638, 40678, 40691, 40693, 40733, 40743, 40749, 40762, 40823, 40828, 40844, 40864, 40874, 40883, 40890, 40917, 40957, 40966, 41038, 41079, 41101, 41103, 41130, 41144, 41151, 41160, 41186, 41215, 41220, 41232, 41254, 41309, 41311, 41322, 41323, 41334, 41355, 41363, 41378, 41384, 41403, 41423, 41436, 41449, 41456, 41495, 41526, 41532, 41553, 41555, 41562, 41567, 41609, 41636, 41656, 41658, 41667, 41684, 41752, 41756, 41769, 41774, 41782, 41805, 41808, 41843, 41848, 41856, 41878, 41897, 41949, 41957, 41979, 41989, 42000, 42019, 42037, 42049, 42061, 42074, 42093, 42112, 42143, 42151, 42198, 42202, 42221, 42226, 42236, 42238, 42273, 42278, 42313, 42321, 42348, 42350, 42357, 42384, 42408, 42413, 42418, 42459, 42514, 42566, 42599, 42602, 42608, 42630, 42649, 42658, 42668, 42678, 42687, 42736, 42754, 42755, 42761, 42776, 42783, 42791, 42799, 42813, 42824, 42828, 42836, 42844, 42847, 42864, 42869, 42875, 42885, 42906, 42908, 42915, 42919, 42941, 42943, 42950, 42966, 43001, 43016, 43023, 43036, 43037, 43040, 43119, 43124, 43161, 43209, 43210, 43233, 43241, 43251, 43261, 43272, 43278, 43291, 43301, 43319, 43334, 43365, 43385, 43407, 43415, 43417, 43427, 43430, 43437, 43438, 43449, 43518, 43525, 43535, 43573, 43603, 43609, 43625, 43634, 43639, 43650, 43656, 43671, 43675, 43691, 43713, 43716, 43723, 43766, 43773, 43800, 43817, 43826, 43858, 43871, 43918, 43932, 43941, 43944, 43956, 43994, 43995, 44024, 44035, 44041, 44049, 44091, 44111, 44133, 44139, 44144, 44148, 44159, 44170, 44175, 44194, 44217, 44225, 44227, 44233, 44252, 44262, 44290, 44294, 44300, 44304, 44323, 44324, 44357, 44360, 44383, 44398, 44403, 44405, 44424, 44436, 44439, 44445, 44453, 44485, 44488, 44489, 44508, 44545, 44569, 44573, 44584, 44602, 44609, 44610, 44616, 44634, 44659, 44669, 44674, 44676, 44690, 44749, 44774, 44775, 44799, 44807, 44823, 44826, 44831, 44848, 44850, 44853, 44859, 44870, 44885, 44886, 44904, 44947, 44952, 44968, 44979, 44980, 44982, 45005, 45016, 45020, 45022, 45025, 45032, 45042, 45072, 45078, 45085, 45086, 45088, 45090, 45092, 45146, 45183, 45194, 45195, 45218, 45221, 45235, 45256, 45272, 45276, 45286, 45344, 45393, 45397, 45440, 45467, 45484, 45491, 45493, 45502, 45504, 45505, 45514, 45542, 45547, 45589, 45594, 45604, 45612, 45616, 45650, 45667, 45747, 45755, 45771, 45773, 45782, 45815, 45819, 45834, 45846, 45859, 45868, 45905, 45914, 45922, 45936, 45959, 45984, 45998, 46001, 46012, 46041, 46061, 46072, 46085, 46086, 46101, 46107, 46108, 46116, 46130, 46144, 46159, 46160, 46171, 46175, 46232, 46256, 46258, 46259, 46268, 46278, 46286, 46295, 46339, 46363, 46382, 46423, 46436, 46449, 46470, 46479, 46488, 46501, 46529, 46532, 46533, 46535, 46545, 46593, 46609, 46624, 46632, 46633, 46635, 46641, 46656, 46670, 46701, 46711, 46712, 46740, 46765, 46773, 46775, 46796, 46847, 46852, 46875, 46878, 46879, 46886, 46906, 46931, 46950, 46951, 46954, 46960, 47003, 47009, 47022, 47029, 47038, 47052, 47092, 47095, 47098, 47113, 47115, 47159, 47163, 47172, 47173, 47176, 47178, 47179, 47193, 47196, 47199, 47208, 47222, 47278, 47282, 47292, 47309, 47316, 47363, 47415, 47419, 47427, 47431, 47460, 47465, 47493, 47497, 47498, 47526, 47553, 47579, 47585, 47590, 47596, 47597, 47599, 47603, 47642, 47652, 47659, 47679, 47700, 47721, 47725, 47729, 47732, 47740, 47742, 47753, 47774, 47793, 47800, 47830, 47838, 47854, 47876, 47883, 47894, 47920, 47922, 47945, 47952, 47953, 47954, 47967, 47985, 47989, 48006, 48007, 48014, 48057, 48079, 48080, 48082, 48085, 48089, 48099, 48109, 48122, 48127, 48128, 48135, 48146, 48152, 48160, 48163, 48174, 48184, 48191, 48197, 48201, 48219, 48232, 48238, 48239, 48254, 48271, 48273, 48286, 48305, 48313, 48316, 48332, 48333, 48353, 48354, 48355, 48359, 48364, 48375, 48379, 48382, 48399, 48401, 48407, 48410, 48416, 48428, 48433, 48441, 48455, 48457, 48461, 48462, 48467
+2025-09-17 16:17:37,716 - INFO - CKA layer subset: selecting 11/228 layers (~5%)
+2025-09-17 16:17:39,541 - INFO - Skipping already processed example 0: /home/projects/bagon/shared/imagenet512/val/n02018207/ILSVRC2012_val_00006231.JPEG
+2025-09-17 16:17:39,541 - INFO - Skipping already processed example 1: /home/projects/bagon/shared/imagenet512/val/n02088094/ILSVRC2012_val_00014386.JPEG
+2025-09-17 16:17:39,541 - INFO - Skipping already processed example 2: /home/projects/bagon/shared/imagenet512/val/n03724870/ILSVRC2012_val_00046114.JPEG
+2025-09-17 16:17:39,541 - INFO - Skipping already processed example 3: /home/projects/bagon/shared/imagenet512/val/n04258138/ILSVRC2012_val_00015162.JPEG
+2025-09-17 16:17:39,541 - INFO - Skipping already processed example 4: /home/projects/bagon/shared/imagenet512/val/n02422699/ILSVRC2012_val_00049120.JPEG
+2025-09-17 16:17:39,541 - INFO - Skipping already processed example 5: /home/projects/bagon/shared/imagenet512/val/n04429376/ILSVRC2012_val_00004328.JPEG
+2025-09-17 16:17:39,541 - INFO - Skipping already processed example 6: /home/projects/bagon/shared/imagenet512/val/n03388043/ILSVRC2012_val_00032020.JPEG
+2025-09-17 16:17:39,541 - INFO - Skipping already processed example 7: /home/projects/bagon/shared/imagenet512/val/n02097047/ILSVRC2012_val_00008905.JPEG
+2025-09-17 16:17:39,541 - INFO - Skipping already processed example 8: /home/projects/bagon/shared/imagenet512/val/n02096051/ILSVRC2012_val_00022374.JPEG
+2025-09-17 16:17:39,541 - INFO - Skipping already processed example 9: /home/projects/bagon/shared/imagenet512/val/n03720891/ILSVRC2012_val_00030357.JPEG
+2025-09-17 16:17:39,541 - INFO - Skipping already processed example 10: /home/projects/bagon/shared/imagenet512/val/n03355925/ILSVRC2012_val_00038515.JPEG
+2025-09-17 16:17:39,541 - INFO - Skipping already processed example 11: /home/projects/bagon/shared/imagenet512/val/n01735189/ILSVRC2012_val_00018284.JPEG
+2025-09-17 16:17:39,541 - INFO - Skipping already processed example 12: /home/projects/bagon/shared/imagenet512/val/n04483307/ILSVRC2012_val_00019354.JPEG
+2025-09-17 16:17:39,541 - INFO - Skipping already processed example 13: /home/projects/bagon/shared/imagenet512/val/n01806567/ILSVRC2012_val_00028765.JPEG
+2025-09-17 16:17:39,541 - INFO - Skipping already processed example 14: /home/projects/bagon/shared/imagenet512/val/n04204238/ILSVRC2012_val_00027294.JPEG
+2025-09-17 16:17:39,541 - INFO - Skipping already processed example 15: /home/projects/bagon/shared/imagenet512/val/n01560419/ILSVRC2012_val_00011331.JPEG
+2025-09-17 16:17:39,541 - INFO - Skipping already processed example 16: /home/projects/bagon/shared/imagenet512/val/n03443371/ILSVRC2012_val_00044121.JPEG
+2025-09-17 16:17:39,541 - INFO - Skipping already processed example 17: /home/projects/bagon/shared/imagenet512/val/n02481823/ILSVRC2012_val_00022194.JPEG
+2025-09-17 16:17:39,541 - INFO - Skipping already processed example 18: /home/projects/bagon/shared/imagenet512/val/n01795545/ILSVRC2012_val_00042859.JPEG
+2025-09-17 16:17:39,541 - INFO - Skipping already processed example 19: /home/projects/bagon/shared/imagenet512/val/n02009912/ILSVRC2012_val_00013589.JPEG
+2025-09-17 16:17:39,541 - INFO - Skipping already processed example 20: /home/projects/bagon/shared/imagenet512/val/n01735189/ILSVRC2012_val_00032161.JPEG
+2025-09-17 16:17:39,541 - INFO - Skipping already processed example 21: /home/projects/bagon/shared/imagenet512/val/n04265275/ILSVRC2012_val_00044635.JPEG
+2025-09-17 16:17:39,541 - INFO - Skipping already processed example 22: /home/projects/bagon/shared/imagenet512/val/n02100735/ILSVRC2012_val_00002297.JPEG
+2025-09-17 16:17:39,541 - INFO - Skipping already processed example 23: /home/projects/bagon/shared/imagenet512/val/n01688243/ILSVRC2012_val_00015403.JPEG
+2025-09-17 16:17:39,541 - INFO - Skipping already processed example 24: /home/projects/bagon/shared/imagenet512/val/n04296562/ILSVRC2012_val_00016122.JPEG
+2025-09-17 16:17:39,541 - INFO - Skipping already processed example 25: /home/projects/bagon/shared/imagenet512/val/n02107142/ILSVRC2012_val_00033067.JPEG
+2025-09-17 16:17:39,541 - INFO - Skipping already processed example 26: /home/projects/bagon/shared/imagenet512/val/n02091635/ILSVRC2012_val_00000079.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 27: /home/projects/bagon/shared/imagenet512/val/n03770679/ILSVRC2012_val_00016492.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 28: /home/projects/bagon/shared/imagenet512/val/n02094114/ILSVRC2012_val_00001379.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 29: /home/projects/bagon/shared/imagenet512/val/n03637318/ILSVRC2012_val_00033621.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 30: /home/projects/bagon/shared/imagenet512/val/n03958227/ILSVRC2012_val_00041533.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 31: /home/projects/bagon/shared/imagenet512/val/n02113799/ILSVRC2012_val_00026858.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 32: /home/projects/bagon/shared/imagenet512/val/n03218198/ILSVRC2012_val_00002266.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 33: /home/projects/bagon/shared/imagenet512/val/n04336792/ILSVRC2012_val_00002814.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 34: /home/projects/bagon/shared/imagenet512/val/n04515003/ILSVRC2012_val_00028612.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 35: /home/projects/bagon/shared/imagenet512/val/n04310018/ILSVRC2012_val_00028485.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 36: /home/projects/bagon/shared/imagenet512/val/n10565667/ILSVRC2012_val_00004546.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 37: /home/projects/bagon/shared/imagenet512/val/n02690373/ILSVRC2012_val_00001390.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 38: /home/projects/bagon/shared/imagenet512/val/n12620546/ILSVRC2012_val_00035279.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 39: /home/projects/bagon/shared/imagenet512/val/n02096177/ILSVRC2012_val_00023164.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 40: /home/projects/bagon/shared/imagenet512/val/n03944341/ILSVRC2012_val_00029275.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 41: /home/projects/bagon/shared/imagenet512/val/n02086079/ILSVRC2012_val_00009403.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 42: /home/projects/bagon/shared/imagenet512/val/n04162706/ILSVRC2012_val_00009975.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 43: /home/projects/bagon/shared/imagenet512/val/n03874599/ILSVRC2012_val_00042881.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 44: /home/projects/bagon/shared/imagenet512/val/n02782093/ILSVRC2012_val_00027395.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 45: /home/projects/bagon/shared/imagenet512/val/n02132136/ILSVRC2012_val_00039777.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 46: /home/projects/bagon/shared/imagenet512/val/n01770393/ILSVRC2012_val_00001887.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 47: /home/projects/bagon/shared/imagenet512/val/n02410509/ILSVRC2012_val_00032942.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 48: /home/projects/bagon/shared/imagenet512/val/n02090721/ILSVRC2012_val_00023769.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 49: /home/projects/bagon/shared/imagenet512/val/n02807133/ILSVRC2012_val_00043987.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 50: /home/projects/bagon/shared/imagenet512/val/n02093428/ILSVRC2012_val_00014719.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 51: /home/projects/bagon/shared/imagenet512/val/n03874293/ILSVRC2012_val_00008933.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 52: /home/projects/bagon/shared/imagenet512/val/n07875152/ILSVRC2012_val_00046458.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 53: /home/projects/bagon/shared/imagenet512/val/n01737021/ILSVRC2012_val_00047243.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 54: /home/projects/bagon/shared/imagenet512/val/n02134084/ILSVRC2012_val_00030704.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 55: /home/projects/bagon/shared/imagenet512/val/n02017213/ILSVRC2012_val_00009554.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 56: /home/projects/bagon/shared/imagenet512/val/n02107142/ILSVRC2012_val_00043534.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 57: /home/projects/bagon/shared/imagenet512/val/n02093991/ILSVRC2012_val_00016668.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 58: /home/projects/bagon/shared/imagenet512/val/n07695742/ILSVRC2012_val_00025390.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 59: /home/projects/bagon/shared/imagenet512/val/n09332890/ILSVRC2012_val_00012261.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 60: /home/projects/bagon/shared/imagenet512/val/n10148035/ILSVRC2012_val_00003405.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 61: /home/projects/bagon/shared/imagenet512/val/n02840245/ILSVRC2012_val_00047802.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 62: /home/projects/bagon/shared/imagenet512/val/n03482405/ILSVRC2012_val_00011587.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 63: /home/projects/bagon/shared/imagenet512/val/n01698640/ILSVRC2012_val_00048542.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 64: /home/projects/bagon/shared/imagenet512/val/n03935335/ILSVRC2012_val_00032699.JPEG
+2025-09-17 16:17:39,542 - INFO - Skipping already processed example 65: /home/projects/bagon/shared/imagenet512/val/n01682714/ILSVRC2012_val_00044996.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 66: /home/projects/bagon/shared/imagenet512/val/n10565667/ILSVRC2012_val_00017929.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 67: /home/projects/bagon/shared/imagenet512/val/n04604644/ILSVRC2012_val_00025517.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 68: /home/projects/bagon/shared/imagenet512/val/n02115913/ILSVRC2012_val_00003403.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 69: /home/projects/bagon/shared/imagenet512/val/n03271574/ILSVRC2012_val_00039769.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 70: /home/projects/bagon/shared/imagenet512/val/n02120505/ILSVRC2012_val_00043918.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 71: /home/projects/bagon/shared/imagenet512/val/n02104029/ILSVRC2012_val_00012318.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 72: /home/projects/bagon/shared/imagenet512/val/n04049303/ILSVRC2012_val_00034588.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 73: /home/projects/bagon/shared/imagenet512/val/n02105056/ILSVRC2012_val_00035891.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 74: /home/projects/bagon/shared/imagenet512/val/n03388549/ILSVRC2012_val_00048243.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 75: /home/projects/bagon/shared/imagenet512/val/n03259280/ILSVRC2012_val_00008773.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 76: /home/projects/bagon/shared/imagenet512/val/n04070727/ILSVRC2012_val_00006658.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 77: /home/projects/bagon/shared/imagenet512/val/n01494475/ILSVRC2012_val_00009978.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 78: /home/projects/bagon/shared/imagenet512/val/n04328186/ILSVRC2012_val_00025757.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 79: /home/projects/bagon/shared/imagenet512/val/n04347754/ILSVRC2012_val_00017481.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 80: /home/projects/bagon/shared/imagenet512/val/n02108915/ILSVRC2012_val_00034420.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 81: /home/projects/bagon/shared/imagenet512/val/n04447861/ILSVRC2012_val_00037291.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 82: /home/projects/bagon/shared/imagenet512/val/n01749939/ILSVRC2012_val_00029525.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 83: /home/projects/bagon/shared/imagenet512/val/n04604644/ILSVRC2012_val_00035406.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 84: /home/projects/bagon/shared/imagenet512/val/n02009229/ILSVRC2012_val_00002003.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 85: /home/projects/bagon/shared/imagenet512/val/n01697457/ILSVRC2012_val_00042304.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 86: /home/projects/bagon/shared/imagenet512/val/n07760859/ILSVRC2012_val_00004953.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 87: /home/projects/bagon/shared/imagenet512/val/n02128385/ILSVRC2012_val_00049471.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 88: /home/projects/bagon/shared/imagenet512/val/n02422699/ILSVRC2012_val_00042401.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 89: /home/projects/bagon/shared/imagenet512/val/n02108422/ILSVRC2012_val_00044795.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 90: /home/projects/bagon/shared/imagenet512/val/n04081281/ILSVRC2012_val_00046156.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 91: /home/projects/bagon/shared/imagenet512/val/n02109525/ILSVRC2012_val_00042090.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 92: /home/projects/bagon/shared/imagenet512/val/n01818515/ILSVRC2012_val_00046534.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 93: /home/projects/bagon/shared/imagenet512/val/n03942813/ILSVRC2012_val_00037206.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 94: /home/projects/bagon/shared/imagenet512/val/n07693725/ILSVRC2012_val_00040941.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 95: /home/projects/bagon/shared/imagenet512/val/n02447366/ILSVRC2012_val_00044044.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 96: /home/projects/bagon/shared/imagenet512/val/n04532106/ILSVRC2012_val_00013500.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 97: /home/projects/bagon/shared/imagenet512/val/n03483316/ILSVRC2012_val_00013907.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 98: /home/projects/bagon/shared/imagenet512/val/n02493509/ILSVRC2012_val_00033277.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 99: /home/projects/bagon/shared/imagenet512/val/n01855032/ILSVRC2012_val_00011488.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 100: /home/projects/bagon/shared/imagenet512/val/n07880968/ILSVRC2012_val_00031146.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 101: /home/projects/bagon/shared/imagenet512/val/n01950731/ILSVRC2012_val_00040586.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 102: /home/projects/bagon/shared/imagenet512/val/n02027492/ILSVRC2012_val_00005771.JPEG
+2025-09-17 16:17:39,543 - INFO - Skipping already processed example 103: /home/projects/bagon/shared/imagenet512/val/n02106550/ILSVRC2012_val_00019107.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 104: /home/projects/bagon/shared/imagenet512/val/n02088094/ILSVRC2012_val_00029232.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 105: /home/projects/bagon/shared/imagenet512/val/n02123597/ILSVRC2012_val_00036526.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 106: /home/projects/bagon/shared/imagenet512/val/n02397096/ILSVRC2012_val_00001712.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 107: /home/projects/bagon/shared/imagenet512/val/n02097209/ILSVRC2012_val_00010720.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 108: /home/projects/bagon/shared/imagenet512/val/n02018207/ILSVRC2012_val_00014805.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 109: /home/projects/bagon/shared/imagenet512/val/n07892512/ILSVRC2012_val_00016904.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 110: /home/projects/bagon/shared/imagenet512/val/n04040759/ILSVRC2012_val_00016784.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 111: /home/projects/bagon/shared/imagenet512/val/n02087394/ILSVRC2012_val_00006900.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 112: /home/projects/bagon/shared/imagenet512/val/n03706229/ILSVRC2012_val_00026009.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 113: /home/projects/bagon/shared/imagenet512/val/n02795169/ILSVRC2012_val_00030281.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 114: /home/projects/bagon/shared/imagenet512/val/n04606251/ILSVRC2012_val_00041352.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 115: /home/projects/bagon/shared/imagenet512/val/n02410509/ILSVRC2012_val_00002433.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 116: /home/projects/bagon/shared/imagenet512/val/n04428191/ILSVRC2012_val_00025874.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 117: /home/projects/bagon/shared/imagenet512/val/n02108000/ILSVRC2012_val_00044430.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 118: /home/projects/bagon/shared/imagenet512/val/n02490219/ILSVRC2012_val_00023852.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 119: /home/projects/bagon/shared/imagenet512/val/n03534580/ILSVRC2012_val_00035174.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 120: /home/projects/bagon/shared/imagenet512/val/n02708093/ILSVRC2012_val_00015820.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 121: /home/projects/bagon/shared/imagenet512/val/n02095570/ILSVRC2012_val_00037033.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 122: /home/projects/bagon/shared/imagenet512/val/n02130308/ILSVRC2012_val_00033042.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 123: /home/projects/bagon/shared/imagenet512/val/n03483316/ILSVRC2012_val_00005824.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 124: /home/projects/bagon/shared/imagenet512/val/n01694178/ILSVRC2012_val_00038375.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 125: /home/projects/bagon/shared/imagenet512/val/n02125311/ILSVRC2012_val_00027069.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 126: /home/projects/bagon/shared/imagenet512/val/n04273569/ILSVRC2012_val_00008080.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 127: /home/projects/bagon/shared/imagenet512/val/n01664065/ILSVRC2012_val_00015924.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 128: /home/projects/bagon/shared/imagenet512/val/n02095314/ILSVRC2012_val_00012471.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 129: /home/projects/bagon/shared/imagenet512/val/n03272010/ILSVRC2012_val_00019195.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 130: /home/projects/bagon/shared/imagenet512/val/n02977058/ILSVRC2012_val_00003667.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 131: /home/projects/bagon/shared/imagenet512/val/n03673027/ILSVRC2012_val_00034696.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 132: /home/projects/bagon/shared/imagenet512/val/n01824575/ILSVRC2012_val_00015739.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 133: /home/projects/bagon/shared/imagenet512/val/n02492660/ILSVRC2012_val_00011058.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 134: /home/projects/bagon/shared/imagenet512/val/n02090622/ILSVRC2012_val_00018654.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 135: /home/projects/bagon/shared/imagenet512/val/n03259280/ILSVRC2012_val_00009837.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 136: /home/projects/bagon/shared/imagenet512/val/n04116512/ILSVRC2012_val_00029357.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 137: /home/projects/bagon/shared/imagenet512/val/n01796340/ILSVRC2012_val_00039113.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 138: /home/projects/bagon/shared/imagenet512/val/n03538406/ILSVRC2012_val_00038904.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 139: /home/projects/bagon/shared/imagenet512/val/n02423022/ILSVRC2012_val_00034438.JPEG
+2025-09-17 16:17:39,544 - INFO - Skipping already processed example 140: /home/projects/bagon/shared/imagenet512/val/n01694178/ILSVRC2012_val_00032934.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 141: /home/projects/bagon/shared/imagenet512/val/n02097209/ILSVRC2012_val_00023893.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 142: /home/projects/bagon/shared/imagenet512/val/n03733805/ILSVRC2012_val_00005136.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 143: /home/projects/bagon/shared/imagenet512/val/n07614500/ILSVRC2012_val_00034087.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 144: /home/projects/bagon/shared/imagenet512/val/n01632458/ILSVRC2012_val_00011657.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 145: /home/projects/bagon/shared/imagenet512/val/n03777754/ILSVRC2012_val_00017077.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 146: /home/projects/bagon/shared/imagenet512/val/n07583066/ILSVRC2012_val_00029534.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 147: /home/projects/bagon/shared/imagenet512/val/n02088238/ILSVRC2012_val_00049819.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 148: /home/projects/bagon/shared/imagenet512/val/n07932039/ILSVRC2012_val_00038359.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 149: /home/projects/bagon/shared/imagenet512/val/n03494278/ILSVRC2012_val_00023742.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 150: /home/projects/bagon/shared/imagenet512/val/n02804610/ILSVRC2012_val_00005838.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 151: /home/projects/bagon/shared/imagenet512/val/n04592741/ILSVRC2012_val_00009292.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 152: /home/projects/bagon/shared/imagenet512/val/n04200800/ILSVRC2012_val_00017800.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 153: /home/projects/bagon/shared/imagenet512/val/n02107683/ILSVRC2012_val_00041233.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 154: /home/projects/bagon/shared/imagenet512/val/n02134084/ILSVRC2012_val_00020441.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 155: /home/projects/bagon/shared/imagenet512/val/n01739381/ILSVRC2012_val_00015794.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 156: /home/projects/bagon/shared/imagenet512/val/n02879718/ILSVRC2012_val_00043316.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 157: /home/projects/bagon/shared/imagenet512/val/n03089624/ILSVRC2012_val_00018244.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 158: /home/projects/bagon/shared/imagenet512/val/n03970156/ILSVRC2012_val_00006502.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 159: /home/projects/bagon/shared/imagenet512/val/n04553703/ILSVRC2012_val_00031261.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 160: /home/projects/bagon/shared/imagenet512/val/n02486410/ILSVRC2012_val_00036528.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 161: /home/projects/bagon/shared/imagenet512/val/n02124075/ILSVRC2012_val_00023393.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 162: /home/projects/bagon/shared/imagenet512/val/n02916936/ILSVRC2012_val_00007944.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 163: /home/projects/bagon/shared/imagenet512/val/n03649909/ILSVRC2012_val_00029725.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 164: /home/projects/bagon/shared/imagenet512/val/n04317175/ILSVRC2012_val_00040387.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 165: /home/projects/bagon/shared/imagenet512/val/n02655020/ILSVRC2012_val_00043722.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 166: /home/projects/bagon/shared/imagenet512/val/n04252077/ILSVRC2012_val_00006217.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 167: /home/projects/bagon/shared/imagenet512/val/n07711569/ILSVRC2012_val_00032485.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 168: /home/projects/bagon/shared/imagenet512/val/n04612504/ILSVRC2012_val_00039131.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 169: /home/projects/bagon/shared/imagenet512/val/n02134418/ILSVRC2012_val_00043326.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 170: /home/projects/bagon/shared/imagenet512/val/n03874293/ILSVRC2012_val_00028877.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 171: /home/projects/bagon/shared/imagenet512/val/n03250847/ILSVRC2012_val_00036029.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 172: /home/projects/bagon/shared/imagenet512/val/n01728572/ILSVRC2012_val_00016095.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 173: /home/projects/bagon/shared/imagenet512/val/n02481823/ILSVRC2012_val_00042086.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 174: /home/projects/bagon/shared/imagenet512/val/n02097298/ILSVRC2012_val_00003232.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 175: /home/projects/bagon/shared/imagenet512/val/n02268443/ILSVRC2012_val_00028381.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 176: /home/projects/bagon/shared/imagenet512/val/n07714571/ILSVRC2012_val_00029321.JPEG
+2025-09-17 16:17:39,545 - INFO - Skipping already processed example 177: /home/projects/bagon/shared/imagenet512/val/n03884397/ILSVRC2012_val_00044369.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 178: /home/projects/bagon/shared/imagenet512/val/n02110806/ILSVRC2012_val_00013318.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 179: /home/projects/bagon/shared/imagenet512/val/n03124043/ILSVRC2012_val_00007876.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 180: /home/projects/bagon/shared/imagenet512/val/n02109525/ILSVRC2012_val_00007813.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 181: /home/projects/bagon/shared/imagenet512/val/n02077923/ILSVRC2012_val_00027024.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 182: /home/projects/bagon/shared/imagenet512/val/n03916031/ILSVRC2012_val_00043438.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 183: /home/projects/bagon/shared/imagenet512/val/n02457408/ILSVRC2012_val_00027033.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 184: /home/projects/bagon/shared/imagenet512/val/n01728920/ILSVRC2012_val_00047238.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 185: /home/projects/bagon/shared/imagenet512/val/n09421951/ILSVRC2012_val_00036544.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 186: /home/projects/bagon/shared/imagenet512/val/n15075141/ILSVRC2012_val_00027666.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 187: /home/projects/bagon/shared/imagenet512/val/n04325704/ILSVRC2012_val_00022281.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 188: /home/projects/bagon/shared/imagenet512/val/n02978881/ILSVRC2012_val_00001437.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 189: /home/projects/bagon/shared/imagenet512/val/n02093991/ILSVRC2012_val_00021206.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 190: /home/projects/bagon/shared/imagenet512/val/n03388183/ILSVRC2012_val_00034555.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 191: /home/projects/bagon/shared/imagenet512/val/n03888605/ILSVRC2012_val_00007281.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 192: /home/projects/bagon/shared/imagenet512/val/n02092339/ILSVRC2012_val_00025015.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 193: /home/projects/bagon/shared/imagenet512/val/n02777292/ILSVRC2012_val_00032435.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 194: /home/projects/bagon/shared/imagenet512/val/n04033995/ILSVRC2012_val_00046461.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 195: /home/projects/bagon/shared/imagenet512/val/n02494079/ILSVRC2012_val_00031195.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 196: /home/projects/bagon/shared/imagenet512/val/n02977058/ILSVRC2012_val_00034150.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 197: /home/projects/bagon/shared/imagenet512/val/n02256656/ILSVRC2012_val_00028068.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 198: /home/projects/bagon/shared/imagenet512/val/n01984695/ILSVRC2012_val_00017162.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 199: /home/projects/bagon/shared/imagenet512/val/n02099712/ILSVRC2012_val_00021183.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 200: /home/projects/bagon/shared/imagenet512/val/n04208210/ILSVRC2012_val_00013536.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 201: /home/projects/bagon/shared/imagenet512/val/n03899768/ILSVRC2012_val_00024680.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 202: /home/projects/bagon/shared/imagenet512/val/n03347037/ILSVRC2012_val_00020741.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 203: /home/projects/bagon/shared/imagenet512/val/n01530575/ILSVRC2012_val_00047878.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 204: /home/projects/bagon/shared/imagenet512/val/n03871628/ILSVRC2012_val_00049476.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 205: /home/projects/bagon/shared/imagenet512/val/n04443257/ILSVRC2012_val_00029878.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 206: /home/projects/bagon/shared/imagenet512/val/n02111889/ILSVRC2012_val_00023884.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 207: /home/projects/bagon/shared/imagenet512/val/n02437312/ILSVRC2012_val_00021903.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 208: /home/projects/bagon/shared/imagenet512/val/n03764736/ILSVRC2012_val_00021194.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 209: /home/projects/bagon/shared/imagenet512/val/n02088632/ILSVRC2012_val_00022179.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 210: /home/projects/bagon/shared/imagenet512/val/n02074367/ILSVRC2012_val_00037898.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 211: /home/projects/bagon/shared/imagenet512/val/n03908618/ILSVRC2012_val_00011919.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 212: /home/projects/bagon/shared/imagenet512/val/n04612504/ILSVRC2012_val_00012489.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 213: /home/projects/bagon/shared/imagenet512/val/n02777292/ILSVRC2012_val_00024313.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 214: /home/projects/bagon/shared/imagenet512/val/n09835506/ILSVRC2012_val_00016865.JPEG
+2025-09-17 16:17:39,546 - INFO - Skipping already processed example 215: /home/projects/bagon/shared/imagenet512/val/n07932039/ILSVRC2012_val_00015882.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 216: /home/projects/bagon/shared/imagenet512/val/n03538406/ILSVRC2012_val_00022325.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 217: /home/projects/bagon/shared/imagenet512/val/n02132136/ILSVRC2012_val_00018469.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 218: /home/projects/bagon/shared/imagenet512/val/n02102318/ILSVRC2012_val_00026356.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 219: /home/projects/bagon/shared/imagenet512/val/n04067472/ILSVRC2012_val_00032026.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 220: /home/projects/bagon/shared/imagenet512/val/n03773504/ILSVRC2012_val_00031707.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 221: /home/projects/bagon/shared/imagenet512/val/n03742115/ILSVRC2012_val_00024554.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 222: /home/projects/bagon/shared/imagenet512/val/n02168699/ILSVRC2012_val_00045848.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 223: /home/projects/bagon/shared/imagenet512/val/n02107908/ILSVRC2012_val_00040909.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 224: /home/projects/bagon/shared/imagenet512/val/n03649909/ILSVRC2012_val_00023077.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 225: /home/projects/bagon/shared/imagenet512/val/n02093428/ILSVRC2012_val_00030915.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 226: /home/projects/bagon/shared/imagenet512/val/n02027492/ILSVRC2012_val_00015908.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 227: /home/projects/bagon/shared/imagenet512/val/n02106030/ILSVRC2012_val_00039035.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 228: /home/projects/bagon/shared/imagenet512/val/n03967562/ILSVRC2012_val_00048703.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 229: /home/projects/bagon/shared/imagenet512/val/n03776460/ILSVRC2012_val_00026255.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 230: /home/projects/bagon/shared/imagenet512/val/n02112706/ILSVRC2012_val_00009435.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 231: /home/projects/bagon/shared/imagenet512/val/n03218198/ILSVRC2012_val_00042495.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 232: /home/projects/bagon/shared/imagenet512/val/n02445715/ILSVRC2012_val_00026215.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 233: /home/projects/bagon/shared/imagenet512/val/n03680355/ILSVRC2012_val_00019948.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 234: /home/projects/bagon/shared/imagenet512/val/n04332243/ILSVRC2012_val_00008949.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 235: /home/projects/bagon/shared/imagenet512/val/n04404412/ILSVRC2012_val_00035390.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 236: /home/projects/bagon/shared/imagenet512/val/n04366367/ILSVRC2012_val_00035017.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 237: /home/projects/bagon/shared/imagenet512/val/n01739381/ILSVRC2012_val_00017557.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 238: /home/projects/bagon/shared/imagenet512/val/n04456115/ILSVRC2012_val_00002331.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 239: /home/projects/bagon/shared/imagenet512/val/n03627232/ILSVRC2012_val_00023148.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 240: /home/projects/bagon/shared/imagenet512/val/n02099429/ILSVRC2012_val_00028965.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 241: /home/projects/bagon/shared/imagenet512/val/n02104029/ILSVRC2012_val_00043543.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 242: /home/projects/bagon/shared/imagenet512/val/n03838899/ILSVRC2012_val_00020445.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 243: /home/projects/bagon/shared/imagenet512/val/n03840681/ILSVRC2012_val_00031740.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 244: /home/projects/bagon/shared/imagenet512/val/n02488291/ILSVRC2012_val_00014947.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 245: /home/projects/bagon/shared/imagenet512/val/n02093754/ILSVRC2012_val_00044399.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 246: /home/projects/bagon/shared/imagenet512/val/n02397096/ILSVRC2012_val_00046916.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 247: /home/projects/bagon/shared/imagenet512/val/n03216828/ILSVRC2012_val_00008942.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 248: /home/projects/bagon/shared/imagenet512/val/n02692877/ILSVRC2012_val_00018562.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 249: /home/projects/bagon/shared/imagenet512/val/n01534433/ILSVRC2012_val_00017384.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 250: /home/projects/bagon/shared/imagenet512/val/n02094433/ILSVRC2012_val_00017964.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 251: /home/projects/bagon/shared/imagenet512/val/n01980166/ILSVRC2012_val_00028730.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 252: /home/projects/bagon/shared/imagenet512/val/n02091467/ILSVRC2012_val_00007835.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 253: /home/projects/bagon/shared/imagenet512/val/n01980166/ILSVRC2012_val_00038232.JPEG
+2025-09-17 16:17:39,547 - INFO - Skipping already processed example 254: /home/projects/bagon/shared/imagenet512/val/n02093647/ILSVRC2012_val_00027241.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 255: /home/projects/bagon/shared/imagenet512/val/n03126707/ILSVRC2012_val_00000637.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 256: /home/projects/bagon/shared/imagenet512/val/n07693725/ILSVRC2012_val_00040367.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 257: /home/projects/bagon/shared/imagenet512/val/n02090721/ILSVRC2012_val_00044944.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 258: /home/projects/bagon/shared/imagenet512/val/n04325704/ILSVRC2012_val_00042656.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 259: /home/projects/bagon/shared/imagenet512/val/n03929660/ILSVRC2012_val_00027002.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 260: /home/projects/bagon/shared/imagenet512/val/n04435653/ILSVRC2012_val_00003912.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 261: /home/projects/bagon/shared/imagenet512/val/n03496892/ILSVRC2012_val_00013315.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 262: /home/projects/bagon/shared/imagenet512/val/n03690938/ILSVRC2012_val_00001814.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 263: /home/projects/bagon/shared/imagenet512/val/n02492035/ILSVRC2012_val_00004842.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 264: /home/projects/bagon/shared/imagenet512/val/n02514041/ILSVRC2012_val_00012982.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 265: /home/projects/bagon/shared/imagenet512/val/n02787622/ILSVRC2012_val_00046445.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 266: /home/projects/bagon/shared/imagenet512/val/n02835271/ILSVRC2012_val_00001311.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 267: /home/projects/bagon/shared/imagenet512/val/n02101556/ILSVRC2012_val_00015116.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 268: /home/projects/bagon/shared/imagenet512/val/n02058221/ILSVRC2012_val_00022688.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 269: /home/projects/bagon/shared/imagenet512/val/n04371430/ILSVRC2012_val_00026046.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 270: /home/projects/bagon/shared/imagenet512/val/n03127925/ILSVRC2012_val_00004481.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 271: /home/projects/bagon/shared/imagenet512/val/n02088094/ILSVRC2012_val_00015249.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 272: /home/projects/bagon/shared/imagenet512/val/n03794056/ILSVRC2012_val_00018129.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 273: /home/projects/bagon/shared/imagenet512/val/n02112137/ILSVRC2012_val_00006416.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 274: /home/projects/bagon/shared/imagenet512/val/n02747177/ILSVRC2012_val_00024193.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 275: /home/projects/bagon/shared/imagenet512/val/n03216828/ILSVRC2012_val_00018083.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 276: /home/projects/bagon/shared/imagenet512/val/n03291819/ILSVRC2012_val_00037625.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 277: /home/projects/bagon/shared/imagenet512/val/n01644373/ILSVRC2012_val_00034542.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 278: /home/projects/bagon/shared/imagenet512/val/n02730930/ILSVRC2012_val_00001061.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 279: /home/projects/bagon/shared/imagenet512/val/n03832673/ILSVRC2012_val_00010133.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 280: /home/projects/bagon/shared/imagenet512/val/n04118538/ILSVRC2012_val_00033102.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 281: /home/projects/bagon/shared/imagenet512/val/n01984695/ILSVRC2012_val_00040612.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 282: /home/projects/bagon/shared/imagenet512/val/n03792972/ILSVRC2012_val_00045159.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 283: /home/projects/bagon/shared/imagenet512/val/n04398044/ILSVRC2012_val_00015109.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 284: /home/projects/bagon/shared/imagenet512/val/n03026506/ILSVRC2012_val_00042060.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 285: /home/projects/bagon/shared/imagenet512/val/n04074963/ILSVRC2012_val_00031904.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 286: /home/projects/bagon/shared/imagenet512/val/n07875152/ILSVRC2012_val_00015691.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 287: /home/projects/bagon/shared/imagenet512/val/n04482393/ILSVRC2012_val_00016774.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 288: /home/projects/bagon/shared/imagenet512/val/n03637318/ILSVRC2012_val_00032059.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 289: /home/projects/bagon/shared/imagenet512/val/n04251144/ILSVRC2012_val_00002946.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 290: /home/projects/bagon/shared/imagenet512/val/n03180011/ILSVRC2012_val_00004712.JPEG
+2025-09-17 16:17:39,548 - INFO - Skipping already processed example 291: /home/projects/bagon/shared/imagenet512/val/n02112706/ILSVRC2012_val_00029152.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 292: /home/projects/bagon/shared/imagenet512/val/n04429376/ILSVRC2012_val_00045464.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 293: /home/projects/bagon/shared/imagenet512/val/n02492660/ILSVRC2012_val_00041501.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 294: /home/projects/bagon/shared/imagenet512/val/n04033995/ILSVRC2012_val_00023638.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 295: /home/projects/bagon/shared/imagenet512/val/n02101388/ILSVRC2012_val_00005276.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 296: /home/projects/bagon/shared/imagenet512/val/n02871525/ILSVRC2012_val_00018114.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 297: /home/projects/bagon/shared/imagenet512/val/n02133161/ILSVRC2012_val_00019862.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 298: /home/projects/bagon/shared/imagenet512/val/n02113712/ILSVRC2012_val_00010575.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 299: /home/projects/bagon/shared/imagenet512/val/n02137549/ILSVRC2012_val_00048500.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 300: /home/projects/bagon/shared/imagenet512/val/n01484850/ILSVRC2012_val_00036737.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 301: /home/projects/bagon/shared/imagenet512/val/n02981792/ILSVRC2012_val_00017536.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 302: /home/projects/bagon/shared/imagenet512/val/n02097474/ILSVRC2012_val_00039144.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 303: /home/projects/bagon/shared/imagenet512/val/n03871628/ILSVRC2012_val_00042397.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 304: /home/projects/bagon/shared/imagenet512/val/n04371774/ILSVRC2012_val_00008853.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 305: /home/projects/bagon/shared/imagenet512/val/n02096437/ILSVRC2012_val_00018262.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 306: /home/projects/bagon/shared/imagenet512/val/n02808304/ILSVRC2012_val_00048417.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 307: /home/projects/bagon/shared/imagenet512/val/n04179913/ILSVRC2012_val_00001715.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 308: /home/projects/bagon/shared/imagenet512/val/n04330267/ILSVRC2012_val_00046493.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 309: /home/projects/bagon/shared/imagenet512/val/n02939185/ILSVRC2012_val_00008625.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 310: /home/projects/bagon/shared/imagenet512/val/n02692877/ILSVRC2012_val_00033803.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 311: /home/projects/bagon/shared/imagenet512/val/n03445924/ILSVRC2012_val_00040651.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 312: /home/projects/bagon/shared/imagenet512/val/n02113799/ILSVRC2012_val_00038393.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 313: /home/projects/bagon/shared/imagenet512/val/n01981276/ILSVRC2012_val_00035209.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 314: /home/projects/bagon/shared/imagenet512/val/n01689811/ILSVRC2012_val_00044698.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 315: /home/projects/bagon/shared/imagenet512/val/n03259280/ILSVRC2012_val_00025349.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 316: /home/projects/bagon/shared/imagenet512/val/n03000684/ILSVRC2012_val_00006578.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 317: /home/projects/bagon/shared/imagenet512/val/n02804414/ILSVRC2012_val_00015853.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 318: /home/projects/bagon/shared/imagenet512/val/n03400231/ILSVRC2012_val_00015489.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 319: /home/projects/bagon/shared/imagenet512/val/n03388043/ILSVRC2012_val_00023645.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 320: /home/projects/bagon/shared/imagenet512/val/n04229816/ILSVRC2012_val_00008480.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 321: /home/projects/bagon/shared/imagenet512/val/n07860988/ILSVRC2012_val_00019221.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 322: /home/projects/bagon/shared/imagenet512/val/n01531178/ILSVRC2012_val_00028063.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 323: /home/projects/bagon/shared/imagenet512/val/n03825788/ILSVRC2012_val_00048296.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 324: /home/projects/bagon/shared/imagenet512/val/n03372029/ILSVRC2012_val_00026483.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 325: /home/projects/bagon/shared/imagenet512/val/n02091635/ILSVRC2012_val_00022137.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 326: /home/projects/bagon/shared/imagenet512/val/n07930864/ILSVRC2012_val_00029908.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 327: /home/projects/bagon/shared/imagenet512/val/n02106166/ILSVRC2012_val_00001900.JPEG
+2025-09-17 16:17:39,549 - INFO - Skipping already processed example 328: /home/projects/bagon/shared/imagenet512/val/n02100583/ILSVRC2012_val_00026937.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 329: /home/projects/bagon/shared/imagenet512/val/n02086910/ILSVRC2012_val_00021961.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 330: /home/projects/bagon/shared/imagenet512/val/n04376876/ILSVRC2012_val_00028876.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 331: /home/projects/bagon/shared/imagenet512/val/n03876231/ILSVRC2012_val_00020604.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 332: /home/projects/bagon/shared/imagenet512/val/n04258138/ILSVRC2012_val_00004067.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 333: /home/projects/bagon/shared/imagenet512/val/n03485794/ILSVRC2012_val_00035523.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 334: /home/projects/bagon/shared/imagenet512/val/n03657121/ILSVRC2012_val_00039878.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 335: /home/projects/bagon/shared/imagenet512/val/n03047690/ILSVRC2012_val_00006708.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 336: /home/projects/bagon/shared/imagenet512/val/n03291819/ILSVRC2012_val_00004047.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 337: /home/projects/bagon/shared/imagenet512/val/n07697537/ILSVRC2012_val_00029037.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 338: /home/projects/bagon/shared/imagenet512/val/n04604644/ILSVRC2012_val_00000437.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 339: /home/projects/bagon/shared/imagenet512/val/n03344393/ILSVRC2012_val_00026840.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 340: /home/projects/bagon/shared/imagenet512/val/n03602883/ILSVRC2012_val_00025597.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 341: /home/projects/bagon/shared/imagenet512/val/n02115641/ILSVRC2012_val_00047670.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 342: /home/projects/bagon/shared/imagenet512/val/n03803284/ILSVRC2012_val_00012090.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 343: /home/projects/bagon/shared/imagenet512/val/n03920288/ILSVRC2012_val_00010434.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 344: /home/projects/bagon/shared/imagenet512/val/n01632777/ILSVRC2012_val_00020772.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 345: /home/projects/bagon/shared/imagenet512/val/n03017168/ILSVRC2012_val_00031533.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 346: /home/projects/bagon/shared/imagenet512/val/n03041632/ILSVRC2012_val_00038320.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 347: /home/projects/bagon/shared/imagenet512/val/n02095314/ILSVRC2012_val_00016508.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 348: /home/projects/bagon/shared/imagenet512/val/n02443484/ILSVRC2012_val_00018383.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 349: /home/projects/bagon/shared/imagenet512/val/n04540053/ILSVRC2012_val_00048430.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 350: /home/projects/bagon/shared/imagenet512/val/n03995372/ILSVRC2012_val_00021738.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 351: /home/projects/bagon/shared/imagenet512/val/n03676483/ILSVRC2012_val_00039467.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 352: /home/projects/bagon/shared/imagenet512/val/n02802426/ILSVRC2012_val_00046810.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 353: /home/projects/bagon/shared/imagenet512/val/n04592741/ILSVRC2012_val_00037034.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 354: /home/projects/bagon/shared/imagenet512/val/n02085620/ILSVRC2012_val_00041642.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 355: /home/projects/bagon/shared/imagenet512/val/n03868242/ILSVRC2012_val_00006450.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 356: /home/projects/bagon/shared/imagenet512/val/n03854065/ILSVRC2012_val_00005635.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 357: /home/projects/bagon/shared/imagenet512/val/n01728920/ILSVRC2012_val_00041379.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 358: /home/projects/bagon/shared/imagenet512/val/n03498962/ILSVRC2012_val_00047936.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 359: /home/projects/bagon/shared/imagenet512/val/n02093256/ILSVRC2012_val_00031334.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 360: /home/projects/bagon/shared/imagenet512/val/n03877845/ILSVRC2012_val_00029258.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 361: /home/projects/bagon/shared/imagenet512/val/n02823750/ILSVRC2012_val_00037183.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 362: /home/projects/bagon/shared/imagenet512/val/n02099712/ILSVRC2012_val_00040210.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 363: /home/projects/bagon/shared/imagenet512/val/n02799071/ILSVRC2012_val_00037792.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 364: /home/projects/bagon/shared/imagenet512/val/n09428293/ILSVRC2012_val_00002495.JPEG
+2025-09-17 16:17:39,550 - INFO - Skipping already processed example 365: /home/projects/bagon/shared/imagenet512/val/n09193705/ILSVRC2012_val_00044456.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 366: /home/projects/bagon/shared/imagenet512/val/n04162706/ILSVRC2012_val_00008838.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 367: /home/projects/bagon/shared/imagenet512/val/n02105251/ILSVRC2012_val_00022548.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 368: /home/projects/bagon/shared/imagenet512/val/n04317175/ILSVRC2012_val_00048835.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 369: /home/projects/bagon/shared/imagenet512/val/n02536864/ILSVRC2012_val_00040881.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 370: /home/projects/bagon/shared/imagenet512/val/n04204238/ILSVRC2012_val_00037278.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 371: /home/projects/bagon/shared/imagenet512/val/n03250847/ILSVRC2012_val_00020232.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 372: /home/projects/bagon/shared/imagenet512/val/n01924916/ILSVRC2012_val_00004904.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 373: /home/projects/bagon/shared/imagenet512/val/n02408429/ILSVRC2012_val_00000306.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 374: /home/projects/bagon/shared/imagenet512/val/n02840245/ILSVRC2012_val_00020410.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 375: /home/projects/bagon/shared/imagenet512/val/n02841315/ILSVRC2012_val_00014836.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 376: /home/projects/bagon/shared/imagenet512/val/n02281787/ILSVRC2012_val_00032927.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 377: /home/projects/bagon/shared/imagenet512/val/n03187595/ILSVRC2012_val_00017123.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 378: /home/projects/bagon/shared/imagenet512/val/n03916031/ILSVRC2012_val_00014886.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 379: /home/projects/bagon/shared/imagenet512/val/n03400231/ILSVRC2012_val_00009196.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 380: /home/projects/bagon/shared/imagenet512/val/n02504458/ILSVRC2012_val_00033235.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 381: /home/projects/bagon/shared/imagenet512/val/n02536864/ILSVRC2012_val_00044563.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 382: /home/projects/bagon/shared/imagenet512/val/n01580077/ILSVRC2012_val_00013753.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 383: /home/projects/bagon/shared/imagenet512/val/n03814639/ILSVRC2012_val_00020176.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 384: /home/projects/bagon/shared/imagenet512/val/n04355338/ILSVRC2012_val_00031232.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 385: /home/projects/bagon/shared/imagenet512/val/n03793489/ILSVRC2012_val_00045856.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 386: /home/projects/bagon/shared/imagenet512/val/n03388549/ILSVRC2012_val_00032201.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 387: /home/projects/bagon/shared/imagenet512/val/n02526121/ILSVRC2012_val_00023785.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 388: /home/projects/bagon/shared/imagenet512/val/n03045698/ILSVRC2012_val_00041131.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 389: /home/projects/bagon/shared/imagenet512/val/n03481172/ILSVRC2012_val_00026993.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 390: /home/projects/bagon/shared/imagenet512/val/n03481172/ILSVRC2012_val_00025034.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 391: /home/projects/bagon/shared/imagenet512/val/n03532672/ILSVRC2012_val_00018267.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 392: /home/projects/bagon/shared/imagenet512/val/n04238763/ILSVRC2012_val_00000266.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 393: /home/projects/bagon/shared/imagenet512/val/n02114855/ILSVRC2012_val_00004178.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 394: /home/projects/bagon/shared/imagenet512/val/n01728920/ILSVRC2012_val_00013751.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 395: /home/projects/bagon/shared/imagenet512/val/n02883205/ILSVRC2012_val_00036568.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 396: /home/projects/bagon/shared/imagenet512/val/n02033041/ILSVRC2012_val_00013660.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 397: /home/projects/bagon/shared/imagenet512/val/n02101388/ILSVRC2012_val_00011777.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 398: /home/projects/bagon/shared/imagenet512/val/n02108000/ILSVRC2012_val_00026161.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 399: /home/projects/bagon/shared/imagenet512/val/n02259212/ILSVRC2012_val_00044153.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 400: /home/projects/bagon/shared/imagenet512/val/n02417914/ILSVRC2012_val_00004814.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 401: /home/projects/bagon/shared/imagenet512/val/n01855672/ILSVRC2012_val_00030245.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 402: /home/projects/bagon/shared/imagenet512/val/n04447861/ILSVRC2012_val_00028452.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 403: /home/projects/bagon/shared/imagenet512/val/n03476991/ILSVRC2012_val_00017903.JPEG
+2025-09-17 16:17:39,551 - INFO - Skipping already processed example 404: /home/projects/bagon/shared/imagenet512/val/n03935335/ILSVRC2012_val_00029449.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 405: /home/projects/bagon/shared/imagenet512/val/n02281406/ILSVRC2012_val_00049742.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 406: /home/projects/bagon/shared/imagenet512/val/n02815834/ILSVRC2012_val_00022163.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 407: /home/projects/bagon/shared/imagenet512/val/n02777292/ILSVRC2012_val_00003803.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 408: /home/projects/bagon/shared/imagenet512/val/n02086910/ILSVRC2012_val_00032120.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 409: /home/projects/bagon/shared/imagenet512/val/n07590611/ILSVRC2012_val_00026099.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 410: /home/projects/bagon/shared/imagenet512/val/n04536866/ILSVRC2012_val_00039680.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 411: /home/projects/bagon/shared/imagenet512/val/n03843555/ILSVRC2012_val_00010931.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 412: /home/projects/bagon/shared/imagenet512/val/n01667778/ILSVRC2012_val_00034770.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 413: /home/projects/bagon/shared/imagenet512/val/n03825788/ILSVRC2012_val_00023059.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 414: /home/projects/bagon/shared/imagenet512/val/n02138441/ILSVRC2012_val_00032737.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 415: /home/projects/bagon/shared/imagenet512/val/n02672831/ILSVRC2012_val_00044113.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 416: /home/projects/bagon/shared/imagenet512/val/n03947888/ILSVRC2012_val_00007351.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 417: /home/projects/bagon/shared/imagenet512/val/n02086079/ILSVRC2012_val_00004065.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 418: /home/projects/bagon/shared/imagenet512/val/n04141975/ILSVRC2012_val_00043471.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 419: /home/projects/bagon/shared/imagenet512/val/n03791053/ILSVRC2012_val_00036916.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 420: /home/projects/bagon/shared/imagenet512/val/n03496892/ILSVRC2012_val_00045846.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 421: /home/projects/bagon/shared/imagenet512/val/n01688243/ILSVRC2012_val_00017015.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 422: /home/projects/bagon/shared/imagenet512/val/n03977966/ILSVRC2012_val_00046876.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 423: /home/projects/bagon/shared/imagenet512/val/n04209239/ILSVRC2012_val_00024446.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 424: /home/projects/bagon/shared/imagenet512/val/n02823750/ILSVRC2012_val_00014945.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 425: /home/projects/bagon/shared/imagenet512/val/n01498041/ILSVRC2012_val_00042547.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 426: /home/projects/bagon/shared/imagenet512/val/n03272010/ILSVRC2012_val_00010371.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 427: /home/projects/bagon/shared/imagenet512/val/n02165105/ILSVRC2012_val_00046267.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 428: /home/projects/bagon/shared/imagenet512/val/n03692522/ILSVRC2012_val_00022747.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 429: /home/projects/bagon/shared/imagenet512/val/n01930112/ILSVRC2012_val_00045183.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 430: /home/projects/bagon/shared/imagenet512/val/n02493793/ILSVRC2012_val_00046736.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 431: /home/projects/bagon/shared/imagenet512/val/n01943899/ILSVRC2012_val_00046625.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 432: /home/projects/bagon/shared/imagenet512/val/n04118776/ILSVRC2012_val_00046198.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 433: /home/projects/bagon/shared/imagenet512/val/n03450230/ILSVRC2012_val_00007147.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 434: /home/projects/bagon/shared/imagenet512/val/n03125729/ILSVRC2012_val_00025398.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 435: /home/projects/bagon/shared/imagenet512/val/n02229544/ILSVRC2012_val_00030715.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 436: /home/projects/bagon/shared/imagenet512/val/n03733805/ILSVRC2012_val_00019776.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 437: /home/projects/bagon/shared/imagenet512/val/n02091032/ILSVRC2012_val_00042781.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 438: /home/projects/bagon/shared/imagenet512/val/n03777754/ILSVRC2012_val_00033899.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 439: /home/projects/bagon/shared/imagenet512/val/n03983396/ILSVRC2012_val_00008313.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 440: /home/projects/bagon/shared/imagenet512/val/n02870880/ILSVRC2012_val_00016924.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 441: /home/projects/bagon/shared/imagenet512/val/n03109150/ILSVRC2012_val_00015270.JPEG
+2025-09-17 16:17:39,552 - INFO - Skipping already processed example 442: /home/projects/bagon/shared/imagenet512/val/n02526121/ILSVRC2012_val_00001595.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 443: /home/projects/bagon/shared/imagenet512/val/n02037110/ILSVRC2012_val_00045300.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 444: /home/projects/bagon/shared/imagenet512/val/n03970156/ILSVRC2012_val_00004123.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 445: /home/projects/bagon/shared/imagenet512/val/n02094114/ILSVRC2012_val_00019305.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 446: /home/projects/bagon/shared/imagenet512/val/n02099849/ILSVRC2012_val_00001711.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 447: /home/projects/bagon/shared/imagenet512/val/n03041632/ILSVRC2012_val_00014960.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 448: /home/projects/bagon/shared/imagenet512/val/n03201208/ILSVRC2012_val_00036955.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 449: /home/projects/bagon/shared/imagenet512/val/n02124075/ILSVRC2012_val_00028628.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 450: /home/projects/bagon/shared/imagenet512/val/n04179913/ILSVRC2012_val_00010330.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 451: /home/projects/bagon/shared/imagenet512/val/n07697313/ILSVRC2012_val_00040186.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 452: /home/projects/bagon/shared/imagenet512/val/n03602883/ILSVRC2012_val_00032873.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 453: /home/projects/bagon/shared/imagenet512/val/n02105641/ILSVRC2012_val_00025395.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 454: /home/projects/bagon/shared/imagenet512/val/n01675722/ILSVRC2012_val_00039886.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 455: /home/projects/bagon/shared/imagenet512/val/n03724870/ILSVRC2012_val_00038076.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 456: /home/projects/bagon/shared/imagenet512/val/n02102318/ILSVRC2012_val_00030798.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 457: /home/projects/bagon/shared/imagenet512/val/n03961711/ILSVRC2012_val_00027431.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 458: /home/projects/bagon/shared/imagenet512/val/n03110669/ILSVRC2012_val_00020854.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 459: /home/projects/bagon/shared/imagenet512/val/n02125311/ILSVRC2012_val_00006112.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 460: /home/projects/bagon/shared/imagenet512/val/n03770679/ILSVRC2012_val_00006759.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 461: /home/projects/bagon/shared/imagenet512/val/n03478589/ILSVRC2012_val_00008825.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 462: /home/projects/bagon/shared/imagenet512/val/n04254777/ILSVRC2012_val_00039001.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 463: /home/projects/bagon/shared/imagenet512/val/n04200800/ILSVRC2012_val_00031651.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 464: /home/projects/bagon/shared/imagenet512/val/n01749939/ILSVRC2012_val_00021593.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 465: /home/projects/bagon/shared/imagenet512/val/n04371430/ILSVRC2012_val_00048868.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 466: /home/projects/bagon/shared/imagenet512/val/n02111277/ILSVRC2012_val_00025805.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 467: /home/projects/bagon/shared/imagenet512/val/n02108915/ILSVRC2012_val_00027220.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 468: /home/projects/bagon/shared/imagenet512/val/n02093256/ILSVRC2012_val_00046547.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 469: /home/projects/bagon/shared/imagenet512/val/n02105412/ILSVRC2012_val_00034997.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 470: /home/projects/bagon/shared/imagenet512/val/n04317175/ILSVRC2012_val_00046901.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 471: /home/projects/bagon/shared/imagenet512/val/n04596742/ILSVRC2012_val_00032337.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 472: /home/projects/bagon/shared/imagenet512/val/n01530575/ILSVRC2012_val_00045611.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 473: /home/projects/bagon/shared/imagenet512/val/n04355933/ILSVRC2012_val_00043739.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 474: /home/projects/bagon/shared/imagenet512/val/n03602883/ILSVRC2012_val_00027850.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 475: /home/projects/bagon/shared/imagenet512/val/n02992529/ILSVRC2012_val_00039425.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 476: /home/projects/bagon/shared/imagenet512/val/n02795169/ILSVRC2012_val_00034952.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 477: /home/projects/bagon/shared/imagenet512/val/n02088364/ILSVRC2012_val_00020762.JPEG
+2025-09-17 16:17:39,553 - INFO - Skipping already processed example 478: /home/projects/bagon/shared/imagenet512/val/n04086273/ILSVRC2012_val_00011273.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 479: /home/projects/bagon/shared/imagenet512/val/n03924679/ILSVRC2012_val_00014276.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 480: /home/projects/bagon/shared/imagenet512/val/n07711569/ILSVRC2012_val_00000183.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 481: /home/projects/bagon/shared/imagenet512/val/n03400231/ILSVRC2012_val_00022472.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 482: /home/projects/bagon/shared/imagenet512/val/n04461696/ILSVRC2012_val_00028140.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 483: /home/projects/bagon/shared/imagenet512/val/n02123045/ILSVRC2012_val_00023779.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 484: /home/projects/bagon/shared/imagenet512/val/n02127052/ILSVRC2012_val_00034892.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 485: /home/projects/bagon/shared/imagenet512/val/n03796401/ILSVRC2012_val_00032190.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 486: /home/projects/bagon/shared/imagenet512/val/n04311004/ILSVRC2012_val_00033764.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 487: /home/projects/bagon/shared/imagenet512/val/n02100583/ILSVRC2012_val_00043763.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 488: /home/projects/bagon/shared/imagenet512/val/n02087394/ILSVRC2012_val_00003615.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 489: /home/projects/bagon/shared/imagenet512/val/n03197337/ILSVRC2012_val_00039590.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 490: /home/projects/bagon/shared/imagenet512/val/n02017213/ILSVRC2012_val_00019045.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 491: /home/projects/bagon/shared/imagenet512/val/n07760859/ILSVRC2012_val_00042440.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 492: /home/projects/bagon/shared/imagenet512/val/n02112706/ILSVRC2012_val_00012446.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 493: /home/projects/bagon/shared/imagenet512/val/n02988304/ILSVRC2012_val_00003491.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 494: /home/projects/bagon/shared/imagenet512/val/n02091032/ILSVRC2012_val_00006054.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 495: /home/projects/bagon/shared/imagenet512/val/n04026417/ILSVRC2012_val_00023254.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 496: /home/projects/bagon/shared/imagenet512/val/n07932039/ILSVRC2012_val_00011790.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 497: /home/projects/bagon/shared/imagenet512/val/n02113624/ILSVRC2012_val_00013506.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 498: /home/projects/bagon/shared/imagenet512/val/n01749939/ILSVRC2012_val_00012768.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 499: /home/projects/bagon/shared/imagenet512/val/n04258138/ILSVRC2012_val_00017908.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 500: /home/projects/bagon/shared/imagenet512/val/n04596742/ILSVRC2012_val_00012519.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 501: /home/projects/bagon/shared/imagenet512/val/n03216828/ILSVRC2012_val_00013529.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 502: /home/projects/bagon/shared/imagenet512/val/n01496331/ILSVRC2012_val_00006554.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 503: /home/projects/bagon/shared/imagenet512/val/n04409515/ILSVRC2012_val_00033609.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 504: /home/projects/bagon/shared/imagenet512/val/n02088094/ILSVRC2012_val_00030323.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 505: /home/projects/bagon/shared/imagenet512/val/n02111277/ILSVRC2012_val_00005626.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 506: /home/projects/bagon/shared/imagenet512/val/n04254120/ILSVRC2012_val_00040688.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 507: /home/projects/bagon/shared/imagenet512/val/n03692522/ILSVRC2012_val_00040860.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 508: /home/projects/bagon/shared/imagenet512/val/n02109047/ILSVRC2012_val_00035579.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 509: /home/projects/bagon/shared/imagenet512/val/n04371430/ILSVRC2012_val_00002800.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 510: /home/projects/bagon/shared/imagenet512/val/n02092002/ILSVRC2012_val_00029451.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 511: /home/projects/bagon/shared/imagenet512/val/n02708093/ILSVRC2012_val_00008814.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 512: /home/projects/bagon/shared/imagenet512/val/n03291819/ILSVRC2012_val_00003352.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 513: /home/projects/bagon/shared/imagenet512/val/n02105056/ILSVRC2012_val_00032013.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 514: /home/projects/bagon/shared/imagenet512/val/n02106662/ILSVRC2012_val_00038218.JPEG
+2025-09-17 16:17:39,554 - INFO - Skipping already processed example 515: /home/projects/bagon/shared/imagenet512/val/n04597913/ILSVRC2012_val_00021192.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 516: /home/projects/bagon/shared/imagenet512/val/n02776631/ILSVRC2012_val_00031045.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 517: /home/projects/bagon/shared/imagenet512/val/n04483307/ILSVRC2012_val_00020248.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 518: /home/projects/bagon/shared/imagenet512/val/n03482405/ILSVRC2012_val_00049590.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 519: /home/projects/bagon/shared/imagenet512/val/n01847000/ILSVRC2012_val_00012721.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 520: /home/projects/bagon/shared/imagenet512/val/n03764736/ILSVRC2012_val_00026864.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 521: /home/projects/bagon/shared/imagenet512/val/n02058221/ILSVRC2012_val_00016571.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 522: /home/projects/bagon/shared/imagenet512/val/n03476991/ILSVRC2012_val_00022994.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 523: /home/projects/bagon/shared/imagenet512/val/n03733281/ILSVRC2012_val_00034428.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 524: /home/projects/bagon/shared/imagenet512/val/n04579145/ILSVRC2012_val_00008601.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 525: /home/projects/bagon/shared/imagenet512/val/n01756291/ILSVRC2012_val_00007991.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 526: /home/projects/bagon/shared/imagenet512/val/n12620546/ILSVRC2012_val_00008895.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 527: /home/projects/bagon/shared/imagenet512/val/n02096437/ILSVRC2012_val_00015570.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 528: /home/projects/bagon/shared/imagenet512/val/n02099712/ILSVRC2012_val_00045151.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 529: /home/projects/bagon/shared/imagenet512/val/n03393912/ILSVRC2012_val_00022885.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 530: /home/projects/bagon/shared/imagenet512/val/n01744401/ILSVRC2012_val_00002645.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 531: /home/projects/bagon/shared/imagenet512/val/n02100735/ILSVRC2012_val_00020830.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 532: /home/projects/bagon/shared/imagenet512/val/n03690938/ILSVRC2012_val_00008609.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 533: /home/projects/bagon/shared/imagenet512/val/n01914609/ILSVRC2012_val_00031644.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 534: /home/projects/bagon/shared/imagenet512/val/n03476991/ILSVRC2012_val_00015961.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 535: /home/projects/bagon/shared/imagenet512/val/n02321529/ILSVRC2012_val_00048044.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 536: /home/projects/bagon/shared/imagenet512/val/n02169497/ILSVRC2012_val_00008140.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 537: /home/projects/bagon/shared/imagenet512/val/n03314780/ILSVRC2012_val_00034822.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 538: /home/projects/bagon/shared/imagenet512/val/n01784675/ILSVRC2012_val_00003981.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 539: /home/projects/bagon/shared/imagenet512/val/n03498962/ILSVRC2012_val_00021394.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 540: /home/projects/bagon/shared/imagenet512/val/n03902125/ILSVRC2012_val_00027286.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 541: /home/projects/bagon/shared/imagenet512/val/n04486054/ILSVRC2012_val_00025313.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 542: /home/projects/bagon/shared/imagenet512/val/n02676566/ILSVRC2012_val_00040818.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 543: /home/projects/bagon/shared/imagenet512/val/n04141076/ILSVRC2012_val_00030435.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 544: /home/projects/bagon/shared/imagenet512/val/n02093859/ILSVRC2012_val_00037450.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 545: /home/projects/bagon/shared/imagenet512/val/n02417914/ILSVRC2012_val_00009996.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 546: /home/projects/bagon/shared/imagenet512/val/n03126707/ILSVRC2012_val_00000485.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 547: /home/projects/bagon/shared/imagenet512/val/n07248320/ILSVRC2012_val_00045383.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 548: /home/projects/bagon/shared/imagenet512/val/n02086079/ILSVRC2012_val_00038786.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 549: /home/projects/bagon/shared/imagenet512/val/n02488291/ILSVRC2012_val_00028982.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 550: /home/projects/bagon/shared/imagenet512/val/n01978455/ILSVRC2012_val_00023601.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 551: /home/projects/bagon/shared/imagenet512/val/n04372370/ILSVRC2012_val_00031983.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 552: /home/projects/bagon/shared/imagenet512/val/n07248320/ILSVRC2012_val_00000980.JPEG
+2025-09-17 16:17:39,555 - INFO - Skipping already processed example 553: /home/projects/bagon/shared/imagenet512/val/n01986214/ILSVRC2012_val_00016568.JPEG
+2025-09-17 16:17:39,556 - INFO - 
+=== Training Example 555/1500: /home/projects/bagon/shared/imagenet512/val/n02346627/ILSVRC2012_val_00047422.JPEG ===
+2025-09-17 16:23:05,334 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02346627/ILSVRC2012_val_00047422.JPEG reached epsilon at step 2881, loss sum: 672.6313, final loss: 0.00098419, weight distance: 0.0841
+2025-09-17 16:23:06,598 - INFO - Example 555 completed: 2881 steps, loss sum: 672.6313, final loss: 0.00098419, weight distance: 0.0841 (universal rank: 34125)
+2025-09-17 16:23:06,598 - INFO - 
+=== Training Example 556/1500: /home/projects/bagon/shared/imagenet512/val/n03666591/ILSVRC2012_val_00044595.JPEG ===
+2025-09-17 16:30:43,800 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03666591/ILSVRC2012_val_00044595.JPEG reached epsilon at step 4132, loss sum: 222.1801, final loss: 0.00099945, weight distance: 0.1025
+2025-09-17 16:30:44,689 - INFO - Example 556 completed: 4132 steps, loss sum: 222.1801, final loss: 0.00099945, weight distance: 0.1025 (universal rank: 34137)
+2025-09-17 16:30:44,689 - INFO - 
+=== Training Example 557/1500: /home/projects/bagon/shared/imagenet512/val/n01530575/ILSVRC2012_val_00000651.JPEG ===
+2025-09-17 16:47:04,564 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n01530575/ILSVRC2012_val_00000651.JPEG reached epsilon at step 8882, loss sum: 209.5892, final loss: 0.00099945, weight distance: 0.0671
+2025-09-17 16:47:05,397 - INFO - Example 557 completed: 8882 steps, loss sum: 209.5892, final loss: 0.00099945, weight distance: 0.0671 (universal rank: 34146)
+2025-09-17 16:47:05,397 - INFO - 
+=== Training Example 558/1500: /home/projects/bagon/shared/imagenet512/val/n03527444/ILSVRC2012_val_00037761.JPEG ===
+2025-09-17 16:50:59,743 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03527444/ILSVRC2012_val_00037761.JPEG reached epsilon at step 2136, loss sum: 144.0569, final loss: 0.00099945, weight distance: 0.0615
+2025-09-17 16:51:00,546 - INFO - Example 558 completed: 2136 steps, loss sum: 144.0569, final loss: 0.00099945, weight distance: 0.0615 (universal rank: 34154)
+2025-09-17 16:51:00,546 - INFO - 
+=== Training Example 559/1500: /home/projects/bagon/shared/imagenet512/val/n02113799/ILSVRC2012_val_00045485.JPEG ===
+2025-09-17 16:55:03,643 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02113799/ILSVRC2012_val_00045485.JPEG reached epsilon at step 2210, loss sum: 126.2040, final loss: 0.00099945, weight distance: 0.0709
+2025-09-17 16:55:04,447 - INFO - Example 559 completed: 2210 steps, loss sum: 126.2040, final loss: 0.00099945, weight distance: 0.0709 (universal rank: 34163)
+2025-09-17 16:55:04,447 - INFO - 
+=== Training Example 560/1500: /home/projects/bagon/shared/imagenet512/val/n02326432/ILSVRC2012_val_00028827.JPEG ===
+2025-09-17 17:04:38,479 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02326432/ILSVRC2012_val_00028827.JPEG reached epsilon at step 5227, loss sum: 140.7724, final loss: 0.00097656, weight distance: 0.1279
+2025-09-17 17:04:39,292 - INFO - Example 560 completed: 5227 steps, loss sum: 140.7724, final loss: 0.00097656, weight distance: 0.1279 (universal rank: 34171)
+2025-09-17 17:04:39,292 - INFO - 
+=== Training Example 561/1500: /home/projects/bagon/shared/imagenet512/val/n03483316/ILSVRC2012_val_00021449.JPEG ===
+2025-09-17 17:08:57,804 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03483316/ILSVRC2012_val_00021449.JPEG reached epsilon at step 2350, loss sum: 684.0559, final loss: 0.00099182, weight distance: 0.0892
+2025-09-17 17:08:58,614 - INFO - Example 561 completed: 2350 steps, loss sum: 684.0559, final loss: 0.00099182, weight distance: 0.0892 (universal rank: 34173)
+2025-09-17 17:08:58,614 - INFO - 
+=== Training Example 562/1500: /home/projects/bagon/shared/imagenet512/val/n02107142/ILSVRC2012_val_00040464.JPEG ===
+2025-09-17 17:17:33,632 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02107142/ILSVRC2012_val_00040464.JPEG reached epsilon at step 4694, loss sum: 219.6776, final loss: 0.00099945, weight distance: 0.1227
+2025-09-17 17:17:34,451 - INFO - Example 562 completed: 4694 steps, loss sum: 219.6776, final loss: 0.00099945, weight distance: 0.1227 (universal rank: 34179)
+2025-09-17 17:17:34,451 - INFO - 
+=== Training Example 563/1500: /home/projects/bagon/shared/imagenet512/val/n02137549/ILSVRC2012_val_00023445.JPEG ===
+2025-09-17 17:23:27,916 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02137549/ILSVRC2012_val_00023445.JPEG reached epsilon at step 3215, loss sum: 475.9739, final loss: 0.00098419, weight distance: 0.1021
+2025-09-17 17:23:28,721 - INFO - Example 563 completed: 3215 steps, loss sum: 475.9739, final loss: 0.00098419, weight distance: 0.1021 (universal rank: 34200)
+2025-09-17 17:23:28,721 - INFO - 
+=== Training Example 564/1500: /home/projects/bagon/shared/imagenet512/val/n03110669/ILSVRC2012_val_00040493.JPEG ===
+2025-09-17 17:31:04,572 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03110669/ILSVRC2012_val_00040493.JPEG reached epsilon at step 4118, loss sum: 66.9497, final loss: 0.00098419, weight distance: 0.0943
+2025-09-17 17:31:05,390 - INFO - Example 564 completed: 4118 steps, loss sum: 66.9497, final loss: 0.00098419, weight distance: 0.0943 (universal rank: 34216)
+2025-09-17 17:31:05,390 - INFO - 
+=== Training Example 565/1500: /home/projects/bagon/shared/imagenet512/val/n03196217/ILSVRC2012_val_00026298.JPEG ===
+2025-09-17 17:35:04,738 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03196217/ILSVRC2012_val_00026298.JPEG reached epsilon at step 2176, loss sum: 416.0851, final loss: 0.00099945, weight distance: 0.0752
+2025-09-17 17:35:05,542 - INFO - Example 565 completed: 2176 steps, loss sum: 416.0851, final loss: 0.00099945, weight distance: 0.0752 (universal rank: 34252)
+2025-09-17 17:35:05,542 - INFO - 
+=== Training Example 566/1500: /home/projects/bagon/shared/imagenet512/val/n03445924/ILSVRC2012_val_00034557.JPEG ===
+2025-09-17 17:40:19,469 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03445924/ILSVRC2012_val_00034557.JPEG reached epsilon at step 2849, loss sum: 627.4331, final loss: 0.00097656, weight distance: 0.0921
+2025-09-17 17:40:20,362 - INFO - Example 566 completed: 2849 steps, loss sum: 627.4331, final loss: 0.00097656, weight distance: 0.0921 (universal rank: 34270)
+2025-09-17 17:40:20,362 - INFO - 
+=== Training Example 567/1500: /home/projects/bagon/shared/imagenet512/val/n02102318/ILSVRC2012_val_00046143.JPEG ===
+2025-09-17 17:47:27,623 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02102318/ILSVRC2012_val_00046143.JPEG reached epsilon at step 3902, loss sum: 265.3800, final loss: 0.00099945, weight distance: 0.0935
+2025-09-17 17:47:28,437 - INFO - Example 567 completed: 3902 steps, loss sum: 265.3800, final loss: 0.00099945, weight distance: 0.0935 (universal rank: 34284)
+2025-09-17 17:47:28,437 - INFO - 
+=== Training Example 568/1500: /home/projects/bagon/shared/imagenet512/val/n02105855/ILSVRC2012_val_00009660.JPEG ===
+2025-09-17 17:57:35,485 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02105855/ILSVRC2012_val_00009660.JPEG reached epsilon at step 5507, loss sum: 259.1395, final loss: 0.00099945, weight distance: 0.1301
+2025-09-17 17:57:36,300 - INFO - Example 568 completed: 5507 steps, loss sum: 259.1395, final loss: 0.00099945, weight distance: 0.1301 (universal rank: 34294)
+2025-09-17 17:57:36,300 - INFO - 
+=== Training Example 569/1500: /home/projects/bagon/shared/imagenet512/val/n01484850/ILSVRC2012_val_00023185.JPEG ===
+2025-09-17 18:03:45,755 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n01484850/ILSVRC2012_val_00023185.JPEG reached epsilon at step 3360, loss sum: 466.0502, final loss: 0.00099945, weight distance: 0.0932
+2025-09-17 18:03:46,569 - INFO - Example 569 completed: 3360 steps, loss sum: 466.0502, final loss: 0.00099945, weight distance: 0.0932 (universal rank: 34299)
+2025-09-17 18:03:46,569 - INFO - 
+=== Training Example 570/1500: /home/projects/bagon/shared/imagenet512/val/n03776460/ILSVRC2012_val_00044721.JPEG ===
+2025-09-17 18:11:19,911 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03776460/ILSVRC2012_val_00044721.JPEG reached epsilon at step 4121, loss sum: 558.3482, final loss: 0.00099945, weight distance: 0.1054
+2025-09-17 18:11:20,785 - INFO - Example 570 completed: 4121 steps, loss sum: 558.3482, final loss: 0.00099945, weight distance: 0.1054 (universal rank: 34306)
+2025-09-17 18:11:20,785 - INFO - 
+=== Training Example 571/1500: /home/projects/bagon/shared/imagenet512/val/n03777754/ILSVRC2012_val_00002292.JPEG ===
+2025-09-17 18:14:55,936 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03777754/ILSVRC2012_val_00002292.JPEG reached epsilon at step 1955, loss sum: 193.5934, final loss: 0.00099945, weight distance: 0.0760
+2025-09-17 18:14:56,823 - INFO - Example 571 completed: 1955 steps, loss sum: 193.5934, final loss: 0.00099945, weight distance: 0.0760 (universal rank: 34309)
+2025-09-17 18:14:56,824 - INFO - 
+=== Training Example 572/1500: /home/projects/bagon/shared/imagenet512/val/n02951585/ILSVRC2012_val_00033696.JPEG ===
+2025-09-17 18:18:26,613 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02951585/ILSVRC2012_val_00033696.JPEG reached epsilon at step 1908, loss sum: 250.7498, final loss: 0.00098419, weight distance: 0.0784
+2025-09-17 18:18:27,425 - INFO - Example 572 completed: 1908 steps, loss sum: 250.7498, final loss: 0.00098419, weight distance: 0.0784 (universal rank: 34319)
+2025-09-17 18:18:27,425 - INFO - 
+=== Training Example 573/1500: /home/projects/bagon/shared/imagenet512/val/n03770679/ILSVRC2012_val_00022654.JPEG ===
+2025-09-17 18:25:28,809 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03770679/ILSVRC2012_val_00022654.JPEG reached epsilon at step 3833, loss sum: 340.3616, final loss: 0.00099945, weight distance: 0.1096
+2025-09-17 18:25:29,665 - INFO - Example 573 completed: 3833 steps, loss sum: 340.3616, final loss: 0.00099945, weight distance: 0.1096 (universal rank: 34322)
+2025-09-17 18:25:29,665 - INFO - 
+=== Training Example 574/1500: /home/projects/bagon/shared/imagenet512/val/n07716906/ILSVRC2012_val_00024988.JPEG ===
+2025-09-17 18:29:53,697 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n07716906/ILSVRC2012_val_00024988.JPEG reached epsilon at step 2397, loss sum: 328.6329, final loss: 0.00099945, weight distance: 0.0841
+2025-09-17 18:29:54,506 - INFO - Example 574 completed: 2397 steps, loss sum: 328.6329, final loss: 0.00099945, weight distance: 0.0841 (universal rank: 34351)
+2025-09-17 18:29:54,506 - INFO - 
+=== Training Example 575/1500: /home/projects/bagon/shared/imagenet512/val/n01616318/ILSVRC2012_val_00020743.JPEG ===
+2025-09-17 18:38:31,712 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n01616318/ILSVRC2012_val_00020743.JPEG reached epsilon at step 4709, loss sum: 578.2469, final loss: 0.00099182, weight distance: 0.1202
+2025-09-17 18:38:32,612 - INFO - Example 575 completed: 4709 steps, loss sum: 578.2469, final loss: 0.00099182, weight distance: 0.1202 (universal rank: 34360)
+2025-09-17 18:38:32,612 - INFO - 
+=== Training Example 576/1500: /home/projects/bagon/shared/imagenet512/val/n02870880/ILSVRC2012_val_00014281.JPEG ===
+2025-09-17 18:49:20,660 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02870880/ILSVRC2012_val_00014281.JPEG reached epsilon at step 5904, loss sum: 238.5111, final loss: 0.00099182, weight distance: 0.1149
+2025-09-17 18:49:21,460 - INFO - Example 576 completed: 5904 steps, loss sum: 238.5111, final loss: 0.00099182, weight distance: 0.1149 (universal rank: 34363)
+2025-09-17 18:49:21,460 - INFO - 
+=== Training Example 577/1500: /home/projects/bagon/shared/imagenet512/val/n04344873/ILSVRC2012_val_00049662.JPEG ===
+2025-09-17 18:53:48,055 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04344873/ILSVRC2012_val_00049662.JPEG reached epsilon at step 2425, loss sum: 144.2314, final loss: 0.00098419, weight distance: 0.0723
+2025-09-17 18:53:49,019 - INFO - Example 577 completed: 2425 steps, loss sum: 144.2314, final loss: 0.00098419, weight distance: 0.0723 (universal rank: 34420)
+2025-09-17 18:53:49,019 - INFO - 
+=== Training Example 578/1500: /home/projects/bagon/shared/imagenet512/val/n03742115/ILSVRC2012_val_00040111.JPEG ===
+2025-09-17 18:58:37,774 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03742115/ILSVRC2012_val_00040111.JPEG reached epsilon at step 2631, loss sum: 238.8762, final loss: 0.00099945, weight distance: 0.0750
+2025-09-17 18:58:38,668 - INFO - Example 578 completed: 2631 steps, loss sum: 238.8762, final loss: 0.00099945, weight distance: 0.0750 (universal rank: 34441)
+2025-09-17 18:58:38,668 - INFO - 
+=== Training Example 579/1500: /home/projects/bagon/shared/imagenet512/val/n02119022/ILSVRC2012_val_00031470.JPEG ===
+2025-09-17 19:04:49,961 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02119022/ILSVRC2012_val_00031470.JPEG reached epsilon at step 3388, loss sum: 764.2818, final loss: 0.00094604, weight distance: 0.1124
+2025-09-17 19:04:50,839 - INFO - Example 579 completed: 3388 steps, loss sum: 764.2818, final loss: 0.00094604, weight distance: 0.1124 (universal rank: 34455)
+2025-09-17 19:04:50,839 - INFO - 
+=== Training Example 580/1500: /home/projects/bagon/shared/imagenet512/val/n01955084/ILSVRC2012_val_00012224.JPEG ===
+2025-09-17 19:07:19,184 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n01955084/ILSVRC2012_val_00012224.JPEG reached epsilon at step 1344, loss sum: 125.5977, final loss: 0.00098419, weight distance: 0.0581
+2025-09-17 19:07:20,000 - INFO - Example 580 completed: 1344 steps, loss sum: 125.5977, final loss: 0.00098419, weight distance: 0.0581 (universal rank: 34464)
+2025-09-17 19:07:20,000 - INFO - 
+=== Training Example 581/1500: /home/projects/bagon/shared/imagenet512/val/n03980874/ILSVRC2012_val_00006436.JPEG ===
+2025-09-17 19:15:47,502 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03980874/ILSVRC2012_val_00006436.JPEG reached epsilon at step 4627, loss sum: 1218.8182, final loss: 0.00099945, weight distance: 0.1251
+2025-09-17 19:15:48,329 - INFO - Example 581 completed: 4627 steps, loss sum: 1218.8182, final loss: 0.00099945, weight distance: 0.1251 (universal rank: 34485)
+2025-09-17 19:15:48,329 - INFO - 
+=== Training Example 582/1500: /home/projects/bagon/shared/imagenet512/val/n04311174/ILSVRC2012_val_00022328.JPEG ===
+2025-09-17 19:21:44,192 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04311174/ILSVRC2012_val_00022328.JPEG reached epsilon at step 3236, loss sum: 868.1866, final loss: 0.00099945, weight distance: 0.1016
+2025-09-17 19:21:45,008 - INFO - Example 582 completed: 3236 steps, loss sum: 868.1866, final loss: 0.00099945, weight distance: 0.1016 (universal rank: 34490)
+2025-09-17 19:21:45,008 - INFO - 
+=== Training Example 583/1500: /home/projects/bagon/shared/imagenet512/val/n01877812/ILSVRC2012_val_00022693.JPEG ===
+2025-09-17 19:27:39,714 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n01877812/ILSVRC2012_val_00022693.JPEG reached epsilon at step 3254, loss sum: 401.5713, final loss: 0.00099182, weight distance: 0.1065
+2025-09-17 19:27:40,562 - INFO - Example 583 completed: 3254 steps, loss sum: 401.5713, final loss: 0.00099182, weight distance: 0.1065 (universal rank: 34496)
+2025-09-17 19:27:40,563 - INFO - 
+=== Training Example 584/1500: /home/projects/bagon/shared/imagenet512/val/n04099969/ILSVRC2012_val_00001340.JPEG ===
+2025-09-17 19:30:43,611 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04099969/ILSVRC2012_val_00001340.JPEG reached epsilon at step 1684, loss sum: 193.0725, final loss: 0.00098419, weight distance: 0.0651
+2025-09-17 19:30:44,500 - INFO - Example 584 completed: 1684 steps, loss sum: 193.0725, final loss: 0.00098419, weight distance: 0.0651 (universal rank: 34502)
+2025-09-17 19:30:44,500 - INFO - 
+=== Training Example 585/1500: /home/projects/bagon/shared/imagenet512/val/n02102318/ILSVRC2012_val_00017742.JPEG ===
+2025-09-17 19:35:28,757 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02102318/ILSVRC2012_val_00017742.JPEG reached epsilon at step 2599, loss sum: 291.9400, final loss: 0.00099945, weight distance: 0.0743
+2025-09-17 19:35:29,588 - INFO - Example 585 completed: 2599 steps, loss sum: 291.9400, final loss: 0.00099945, weight distance: 0.0743 (universal rank: 34505)
+2025-09-17 19:35:29,588 - INFO - 
+=== Training Example 586/1500: /home/projects/bagon/shared/imagenet512/val/n04590129/ILSVRC2012_val_00033802.JPEG ===
+2025-09-17 19:39:18,436 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04590129/ILSVRC2012_val_00033802.JPEG reached epsilon at step 2091, loss sum: 185.4670, final loss: 0.00099945, weight distance: 0.0638
+2025-09-17 19:39:19,249 - INFO - Example 586 completed: 2091 steps, loss sum: 185.4670, final loss: 0.00099945, weight distance: 0.0638 (universal rank: 34518)
+2025-09-17 19:39:19,249 - INFO - 
+=== Training Example 587/1500: /home/projects/bagon/shared/imagenet512/val/n02236044/ILSVRC2012_val_00041766.JPEG ===
+2025-09-17 19:46:46,273 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02236044/ILSVRC2012_val_00041766.JPEG reached epsilon at step 4079, loss sum: 416.0286, final loss: 0.00099945, weight distance: 0.0992
+2025-09-17 19:46:47,076 - INFO - Example 587 completed: 4079 steps, loss sum: 416.0286, final loss: 0.00099945, weight distance: 0.0992 (universal rank: 34608)
+2025-09-17 19:46:47,076 - INFO - 
+=== Training Example 588/1500: /home/projects/bagon/shared/imagenet512/val/n02951585/ILSVRC2012_val_00026835.JPEG ===
+2025-09-17 19:52:14,995 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02951585/ILSVRC2012_val_00026835.JPEG reached epsilon at step 3001, loss sum: 151.7028, final loss: 0.00099182, weight distance: 0.0871
+2025-09-17 19:52:15,813 - INFO - Example 588 completed: 3001 steps, loss sum: 151.7028, final loss: 0.00099182, weight distance: 0.0871 (universal rank: 34609)
+2025-09-17 19:52:15,813 - INFO - 
+=== Training Example 589/1500: /home/projects/bagon/shared/imagenet512/val/n02356798/ILSVRC2012_val_00001237.JPEG ===
+2025-09-17 19:57:38,862 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02356798/ILSVRC2012_val_00001237.JPEG reached epsilon at step 2941, loss sum: 2549.9362, final loss: 0.00099182, weight distance: 0.1065
+2025-09-17 19:57:39,668 - INFO - Example 589 completed: 2941 steps, loss sum: 2549.9362, final loss: 0.00099182, weight distance: 0.1065 (universal rank: 34632)
+2025-09-17 19:57:39,668 - INFO - 
+=== Training Example 590/1500: /home/projects/bagon/shared/imagenet512/val/n03775546/ILSVRC2012_val_00004313.JPEG ===
+2025-09-17 20:03:36,817 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03775546/ILSVRC2012_val_00004313.JPEG reached epsilon at step 3234, loss sum: 364.4875, final loss: 0.00099945, weight distance: 0.0932
+2025-09-17 20:03:37,617 - INFO - Example 590 completed: 3234 steps, loss sum: 364.4875, final loss: 0.00099945, weight distance: 0.0932 (universal rank: 34681)
+2025-09-17 20:03:37,617 - INFO - 
+=== Training Example 591/1500: /home/projects/bagon/shared/imagenet512/val/n02226429/ILSVRC2012_val_00005775.JPEG ===
+2025-09-17 20:10:10,093 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02226429/ILSVRC2012_val_00005775.JPEG reached epsilon at step 3547, loss sum: 254.5261, final loss: 0.00099182, weight distance: 0.0998
+2025-09-17 20:10:10,902 - INFO - Example 591 completed: 3547 steps, loss sum: 254.5261, final loss: 0.00099182, weight distance: 0.0998 (universal rank: 34704)
+2025-09-17 20:10:10,902 - INFO - 
+=== Training Example 592/1500: /home/projects/bagon/shared/imagenet512/val/n03290653/ILSVRC2012_val_00044961.JPEG ===
+2025-09-17 20:21:37,738 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03290653/ILSVRC2012_val_00044961.JPEG reached epsilon at step 6225, loss sum: 331.1952, final loss: 0.00096512, weight distance: 0.1139
+2025-09-17 20:21:38,609 - INFO - Example 592 completed: 6225 steps, loss sum: 331.1952, final loss: 0.00096512, weight distance: 0.1139 (universal rank: 34712)
+2025-09-17 20:21:38,609 - INFO - 
+=== Training Example 593/1500: /home/projects/bagon/shared/imagenet512/val/n02444819/ILSVRC2012_val_00039985.JPEG ===
+2025-09-17 20:27:58,363 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02444819/ILSVRC2012_val_00039985.JPEG reached epsilon at step 3444, loss sum: 363.5676, final loss: 0.00099945, weight distance: 0.0981
+2025-09-17 20:27:59,203 - INFO - Example 593 completed: 3444 steps, loss sum: 363.5676, final loss: 0.00099945, weight distance: 0.0981 (universal rank: 34713)
+2025-09-17 20:27:59,203 - INFO - 
+=== Training Example 594/1500: /home/projects/bagon/shared/imagenet512/val/n03110669/ILSVRC2012_val_00037326.JPEG ===
+2025-09-17 20:35:55,697 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03110669/ILSVRC2012_val_00037326.JPEG reached epsilon at step 4330, loss sum: 368.2615, final loss: 0.00099182, weight distance: 0.0818
+2025-09-17 20:35:56,603 - INFO - Example 594 completed: 4330 steps, loss sum: 368.2615, final loss: 0.00099182, weight distance: 0.0818 (universal rank: 34720)
+2025-09-17 20:35:56,604 - INFO - 
+=== Training Example 595/1500: /home/projects/bagon/shared/imagenet512/val/n03384352/ILSVRC2012_val_00042081.JPEG ===
+2025-09-17 20:40:32,154 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03384352/ILSVRC2012_val_00042081.JPEG reached epsilon at step 2507, loss sum: 71.4614, final loss: 0.00099945, weight distance: 0.0772
+2025-09-17 20:40:33,030 - INFO - Example 595 completed: 2507 steps, loss sum: 71.4614, final loss: 0.00099945, weight distance: 0.0772 (universal rank: 34729)
+2025-09-17 20:40:33,030 - INFO - 
+=== Training Example 596/1500: /home/projects/bagon/shared/imagenet512/val/n03476991/ILSVRC2012_val_00038345.JPEG ===
+2025-09-17 20:44:47,038 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03476991/ILSVRC2012_val_00038345.JPEG reached epsilon at step 2314, loss sum: 662.8624, final loss: 0.00099945, weight distance: 0.0837
+2025-09-17 20:44:47,839 - INFO - Example 596 completed: 2314 steps, loss sum: 662.8624, final loss: 0.00099945, weight distance: 0.0837 (universal rank: 34737)
+2025-09-17 20:44:47,839 - INFO - 
+=== Training Example 597/1500: /home/projects/bagon/shared/imagenet512/val/n02107683/ILSVRC2012_val_00029461.JPEG ===
+2025-09-17 20:53:37,867 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02107683/ILSVRC2012_val_00029461.JPEG reached epsilon at step 4824, loss sum: 111.3904, final loss: 0.00099945, weight distance: 0.1057
+2025-09-17 20:53:38,757 - INFO - Example 597 completed: 4824 steps, loss sum: 111.3904, final loss: 0.00099945, weight distance: 0.1057 (universal rank: 34741)
+2025-09-17 20:53:38,757 - INFO - 
+=== Training Example 598/1500: /home/projects/bagon/shared/imagenet512/val/n04252225/ILSVRC2012_val_00031447.JPEG ===
+2025-09-17 20:59:00,435 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04252225/ILSVRC2012_val_00031447.JPEG reached epsilon at step 2935, loss sum: 228.8353, final loss: 0.00099182, weight distance: 0.0816
+2025-09-17 20:59:01,239 - INFO - Example 598 completed: 2935 steps, loss sum: 228.8353, final loss: 0.00099182, weight distance: 0.0816 (universal rank: 34751)
+2025-09-17 20:59:01,240 - INFO - 
+=== Training Example 599/1500: /home/projects/bagon/shared/imagenet512/val/n03902125/ILSVRC2012_val_00019465.JPEG ===
+2025-09-17 21:09:32,556 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03902125/ILSVRC2012_val_00019465.JPEG reached epsilon at step 5725, loss sum: 96.5946, final loss: 0.00099945, weight distance: 0.1211
+2025-09-17 21:09:33,368 - INFO - Example 599 completed: 5725 steps, loss sum: 96.5946, final loss: 0.00099945, weight distance: 0.1211 (universal rank: 34772)
+2025-09-17 21:09:33,368 - INFO - 
+=== Training Example 600/1500: /home/projects/bagon/shared/imagenet512/val/n02134418/ILSVRC2012_val_00032283.JPEG ===
+2025-09-17 21:14:35,282 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02134418/ILSVRC2012_val_00032283.JPEG reached epsilon at step 2760, loss sum: 101.8261, final loss: 0.00099945, weight distance: 0.0692
+2025-09-17 21:14:36,087 - INFO - Example 600 completed: 2760 steps, loss sum: 101.8261, final loss: 0.00099945, weight distance: 0.0692 (universal rank: 34804)
+2025-09-17 21:14:36,087 - INFO - 
+=== Training Example 601/1500: /home/projects/bagon/shared/imagenet512/val/n03041632/ILSVRC2012_val_00048029.JPEG ===
+2025-09-17 21:15:54,639 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03041632/ILSVRC2012_val_00048029.JPEG reached epsilon at step 722, loss sum: 244.8672, final loss: 0.00099182, weight distance: 0.0380
+2025-09-17 21:15:55,449 - INFO - Example 601 completed: 722 steps, loss sum: 244.8672, final loss: 0.00099182, weight distance: 0.0380 (universal rank: 34816)
+2025-09-17 21:15:55,449 - INFO - 
+=== Training Example 602/1500: /home/projects/bagon/shared/imagenet512/val/n04517823/ILSVRC2012_val_00046435.JPEG ===
+2025-09-17 21:18:16,210 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04517823/ILSVRC2012_val_00046435.JPEG reached epsilon at step 1283, loss sum: 549.6275, final loss: 0.00099945, weight distance: 0.0586
+2025-09-17 21:18:17,023 - INFO - Example 602 completed: 1283 steps, loss sum: 549.6275, final loss: 0.00099945, weight distance: 0.0586 (universal rank: 34819)
+2025-09-17 21:18:17,023 - INFO - 
+=== Training Example 603/1500: /home/projects/bagon/shared/imagenet512/val/n02097658/ILSVRC2012_val_00006610.JPEG ===
+2025-09-17 21:24:36,084 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02097658/ILSVRC2012_val_00006610.JPEG reached epsilon at step 3460, loss sum: 205.6781, final loss: 0.00099945, weight distance: 0.0986
+2025-09-17 21:24:36,880 - INFO - Example 603 completed: 3460 steps, loss sum: 205.6781, final loss: 0.00099945, weight distance: 0.0986 (universal rank: 34821)
+2025-09-17 21:24:36,880 - INFO - 
+=== Training Example 604/1500: /home/projects/bagon/shared/imagenet512/val/n04235860/ILSVRC2012_val_00028067.JPEG ===
+2025-09-17 21:28:55,492 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04235860/ILSVRC2012_val_00028067.JPEG reached epsilon at step 2348, loss sum: 467.1076, final loss: 0.00099182, weight distance: 0.0788
+2025-09-17 21:28:56,403 - INFO - Example 604 completed: 2348 steps, loss sum: 467.1076, final loss: 0.00099182, weight distance: 0.0788 (universal rank: 34825)
+2025-09-17 21:28:56,404 - INFO - 
+=== Training Example 605/1500: /home/projects/bagon/shared/imagenet512/val/n02106662/ILSVRC2012_val_00019267.JPEG ===
+2025-09-17 21:35:15,640 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02106662/ILSVRC2012_val_00019267.JPEG reached epsilon at step 3445, loss sum: 217.2309, final loss: 0.00098419, weight distance: 0.0987
+2025-09-17 21:35:16,436 - INFO - Example 605 completed: 3445 steps, loss sum: 217.2309, final loss: 0.00098419, weight distance: 0.0987 (universal rank: 34855)
+2025-09-17 21:35:16,436 - INFO - 
+=== Training Example 606/1500: /home/projects/bagon/shared/imagenet512/val/n02363005/ILSVRC2012_val_00018422.JPEG ===
+2025-09-17 21:40:09,460 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02363005/ILSVRC2012_val_00018422.JPEG reached epsilon at step 2657, loss sum: 725.8306, final loss: 0.00099182, weight distance: 0.0890
+2025-09-17 21:40:10,278 - INFO - Example 606 completed: 2657 steps, loss sum: 725.8306, final loss: 0.00099182, weight distance: 0.0890 (universal rank: 34880)
+2025-09-17 21:40:10,278 - INFO - 
+=== Training Example 607/1500: /home/projects/bagon/shared/imagenet512/val/n01739381/ILSVRC2012_val_00018037.JPEG ===
+2025-09-17 21:44:12,946 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n01739381/ILSVRC2012_val_00018037.JPEG reached epsilon at step 2200, loss sum: 85.6472, final loss: 0.00097656, weight distance: 0.0704
+2025-09-17 21:44:13,853 - INFO - Example 607 completed: 2200 steps, loss sum: 85.6472, final loss: 0.00097656, weight distance: 0.0704 (universal rank: 34885)
+2025-09-17 21:44:13,853 - INFO - 
+=== Training Example 608/1500: /home/projects/bagon/shared/imagenet512/val/n03372029/ILSVRC2012_val_00046205.JPEG ===
+2025-09-17 21:49:56,991 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03372029/ILSVRC2012_val_00046205.JPEG reached epsilon at step 3119, loss sum: 1733.0369, final loss: 0.00098419, weight distance: 0.1045
+2025-09-17 21:49:57,797 - INFO - Example 608 completed: 3119 steps, loss sum: 1733.0369, final loss: 0.00098419, weight distance: 0.1045 (universal rank: 34899)
+2025-09-17 21:49:57,797 - INFO - 
+=== Training Example 609/1500: /home/projects/bagon/shared/imagenet512/val/n02279972/ILSVRC2012_val_00001717.JPEG ===
+2025-09-17 22:00:16,501 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02279972/ILSVRC2012_val_00001717.JPEG reached epsilon at step 5633, loss sum: 61.8934, final loss: 0.00099945, weight distance: 0.1169
+2025-09-17 22:00:17,350 - INFO - Example 609 completed: 5633 steps, loss sum: 61.8934, final loss: 0.00099945, weight distance: 0.1169 (universal rank: 34914)
+2025-09-17 22:00:17,350 - INFO - 
+=== Training Example 610/1500: /home/projects/bagon/shared/imagenet512/val/n02823428/ILSVRC2012_val_00039194.JPEG ===
+2025-09-17 22:07:03,127 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02823428/ILSVRC2012_val_00039194.JPEG reached epsilon at step 3691, loss sum: 170.1549, final loss: 0.00099182, weight distance: 0.0963
+2025-09-17 22:07:03,951 - INFO - Example 610 completed: 3691 steps, loss sum: 170.1549, final loss: 0.00099182, weight distance: 0.0963 (universal rank: 34936)
+2025-09-17 22:07:03,951 - INFO - 
+=== Training Example 611/1500: /home/projects/bagon/shared/imagenet512/val/n04590129/ILSVRC2012_val_00016279.JPEG ===
+2025-09-17 22:13:57,818 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04590129/ILSVRC2012_val_00016279.JPEG reached epsilon at step 3776, loss sum: 258.7589, final loss: 0.00098419, weight distance: 0.0857
+2025-09-17 22:13:58,626 - INFO - Example 611 completed: 3776 steps, loss sum: 258.7589, final loss: 0.00098419, weight distance: 0.0857 (universal rank: 34941)
+2025-09-17 22:13:58,626 - INFO - 
+=== Training Example 612/1500: /home/projects/bagon/shared/imagenet512/val/n03724870/ILSVRC2012_val_00007883.JPEG ===
+2025-09-17 22:17:26,053 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03724870/ILSVRC2012_val_00007883.JPEG reached epsilon at step 1894, loss sum: 706.1926, final loss: 0.00097656, weight distance: 0.0724
+2025-09-17 22:17:26,955 - INFO - Example 612 completed: 1894 steps, loss sum: 706.1926, final loss: 0.00097656, weight distance: 0.0724 (universal rank: 35004)
+2025-09-17 22:17:26,955 - INFO - 
+=== Training Example 613/1500: /home/projects/bagon/shared/imagenet512/val/n07873807/ILSVRC2012_val_00028297.JPEG ===
+2025-09-17 22:23:45,606 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n07873807/ILSVRC2012_val_00028297.JPEG reached epsilon at step 3452, loss sum: 205.3885, final loss: 0.00099182, weight distance: 0.1143
+2025-09-17 22:23:46,431 - INFO - Example 613 completed: 3452 steps, loss sum: 205.3885, final loss: 0.00099182, weight distance: 0.1143 (universal rank: 35018)
+2025-09-17 22:23:46,431 - INFO - 
+=== Training Example 614/1500: /home/projects/bagon/shared/imagenet512/val/n02111500/ILSVRC2012_val_00024785.JPEG ===
+2025-09-17 22:28:48,717 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02111500/ILSVRC2012_val_00024785.JPEG reached epsilon at step 2756, loss sum: 54.7777, final loss: 0.00099945, weight distance: 0.0687
+2025-09-17 22:28:49,525 - INFO - Example 614 completed: 2756 steps, loss sum: 54.7777, final loss: 0.00099945, weight distance: 0.0687 (universal rank: 35027)
+2025-09-17 22:28:49,525 - INFO - 
+=== Training Example 615/1500: /home/projects/bagon/shared/imagenet512/val/n01984695/ILSVRC2012_val_00008182.JPEG ===
+2025-09-17 22:35:35,594 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n01984695/ILSVRC2012_val_00008182.JPEG reached epsilon at step 3725, loss sum: 245.9775, final loss: 0.00099945, weight distance: 0.1082
+2025-09-17 22:35:36,406 - INFO - Example 615 completed: 3725 steps, loss sum: 245.9775, final loss: 0.00099945, weight distance: 0.1082 (universal rank: 35093)
+2025-09-17 22:35:36,407 - INFO - 
+=== Training Example 616/1500: /home/projects/bagon/shared/imagenet512/val/n04461696/ILSVRC2012_val_00046880.JPEG ===
+2025-09-17 22:40:43,364 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04461696/ILSVRC2012_val_00046880.JPEG reached epsilon at step 2801, loss sum: 453.5471, final loss: 0.00099945, weight distance: 0.0993
+2025-09-17 22:40:44,257 - INFO - Example 616 completed: 2801 steps, loss sum: 453.5471, final loss: 0.00099945, weight distance: 0.0993 (universal rank: 35115)
+2025-09-17 22:40:44,257 - INFO - 
+=== Training Example 617/1500: /home/projects/bagon/shared/imagenet512/val/n02841315/ILSVRC2012_val_00032632.JPEG ===
+2025-09-17 22:44:29,376 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02841315/ILSVRC2012_val_00032632.JPEG reached epsilon at step 2064, loss sum: 775.8603, final loss: 0.00099945, weight distance: 0.0707
+2025-09-17 22:44:30,422 - INFO - Example 617 completed: 2064 steps, loss sum: 775.8603, final loss: 0.00099945, weight distance: 0.0707 (universal rank: 35121)
+2025-09-17 22:44:30,422 - INFO - 
+=== Training Example 618/1500: /home/projects/bagon/shared/imagenet512/val/n02105505/ILSVRC2012_val_00007833.JPEG ===
+2025-09-17 22:50:19,410 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02105505/ILSVRC2012_val_00007833.JPEG reached epsilon at step 3183, loss sum: 177.5147, final loss: 0.00097275, weight distance: 0.0817
+2025-09-17 22:50:20,547 - INFO - Example 618 completed: 3183 steps, loss sum: 177.5147, final loss: 0.00097275, weight distance: 0.0817 (universal rank: 35127)
+2025-09-17 22:50:20,548 - INFO - 
+=== Training Example 619/1500: /home/projects/bagon/shared/imagenet512/val/n02011460/ILSVRC2012_val_00002242.JPEG ===
+2025-09-17 22:54:42,109 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02011460/ILSVRC2012_val_00002242.JPEG reached epsilon at step 2386, loss sum: 175.8516, final loss: 0.00099945, weight distance: 0.0742
+2025-09-17 22:54:42,919 - INFO - Example 619 completed: 2386 steps, loss sum: 175.8516, final loss: 0.00099945, weight distance: 0.0742 (universal rank: 35141)
+2025-09-17 22:54:42,919 - INFO - 
+=== Training Example 620/1500: /home/projects/bagon/shared/imagenet512/val/n03047690/ILSVRC2012_val_00005793.JPEG ===
+2025-09-17 22:57:28,350 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03047690/ILSVRC2012_val_00005793.JPEG reached epsilon at step 1521, loss sum: 252.6013, final loss: 0.00099182, weight distance: 0.0635
+2025-09-17 22:57:29,152 - INFO - Example 620 completed: 1521 steps, loss sum: 252.6013, final loss: 0.00099182, weight distance: 0.0635 (universal rank: 35151)
+2025-09-17 22:57:29,152 - INFO - 
+=== Training Example 621/1500: /home/projects/bagon/shared/imagenet512/val/n03481172/ILSVRC2012_val_00018822.JPEG ===
+2025-09-17 23:02:36,708 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03481172/ILSVRC2012_val_00018822.JPEG reached epsilon at step 2811, loss sum: 318.3677, final loss: 0.00099945, weight distance: 0.0877
+2025-09-17 23:02:37,568 - INFO - Example 621 completed: 2811 steps, loss sum: 318.3677, final loss: 0.00099945, weight distance: 0.0877 (universal rank: 35166)
+2025-09-17 23:02:37,568 - INFO - 
+=== Training Example 622/1500: /home/projects/bagon/shared/imagenet512/val/n02835271/ILSVRC2012_val_00031498.JPEG ===
+2025-09-17 23:12:12,517 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02835271/ILSVRC2012_val_00031498.JPEG reached epsilon at step 5237, loss sum: 278.8113, final loss: 0.00099945, weight distance: 0.1175
+2025-09-17 23:12:13,329 - INFO - Example 622 completed: 5237 steps, loss sum: 278.8113, final loss: 0.00099945, weight distance: 0.1175 (universal rank: 35171)
+2025-09-17 23:12:13,330 - INFO - 
+=== Training Example 623/1500: /home/projects/bagon/shared/imagenet512/val/n04254120/ILSVRC2012_val_00008831.JPEG ===
+2025-09-17 23:14:21,535 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04254120/ILSVRC2012_val_00008831.JPEG reached epsilon at step 1177, loss sum: 29.7145, final loss: 0.00096893, weight distance: 0.0395
+2025-09-17 23:14:22,353 - INFO - Example 623 completed: 1177 steps, loss sum: 29.7145, final loss: 0.00096893, weight distance: 0.0395 (universal rank: 35193)
+2025-09-17 23:14:22,353 - INFO - 
+=== Training Example 624/1500: /home/projects/bagon/shared/imagenet512/val/n04026417/ILSVRC2012_val_00039356.JPEG ===
+2025-09-17 23:27:59,012 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04026417/ILSVRC2012_val_00039356.JPEG reached epsilon at step 7448, loss sum: 722.3213, final loss: 0.00099945, weight distance: 0.1538
+2025-09-17 23:27:59,833 - INFO - Example 624 completed: 7448 steps, loss sum: 722.3213, final loss: 0.00099945, weight distance: 0.1538 (universal rank: 35213)
+2025-09-17 23:27:59,834 - INFO - 
+=== Training Example 625/1500: /home/projects/bagon/shared/imagenet512/val/n03255030/ILSVRC2012_val_00042471.JPEG ===
+2025-09-17 23:31:55,111 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03255030/ILSVRC2012_val_00042471.JPEG reached epsilon at step 2145, loss sum: 146.5083, final loss: 0.00098419, weight distance: 0.0749
+2025-09-17 23:31:55,927 - INFO - Example 625 completed: 2145 steps, loss sum: 146.5083, final loss: 0.00098419, weight distance: 0.0749 (universal rank: 35216)
+2025-09-17 23:31:55,927 - INFO - 
+=== Training Example 626/1500: /home/projects/bagon/shared/imagenet512/val/n02236044/ILSVRC2012_val_00015818.JPEG ===
+2025-09-17 23:39:22,742 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02236044/ILSVRC2012_val_00015818.JPEG reached epsilon at step 4086, loss sum: 392.4166, final loss: 0.00099945, weight distance: 0.0972
+2025-09-17 23:39:23,558 - INFO - Example 626 completed: 4086 steps, loss sum: 392.4166, final loss: 0.00099945, weight distance: 0.0972 (universal rank: 35243)
+2025-09-17 23:39:23,558 - INFO - 
+=== Training Example 627/1500: /home/projects/bagon/shared/imagenet512/val/n03584829/ILSVRC2012_val_00016286.JPEG ===
+2025-09-17 23:42:33,543 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03584829/ILSVRC2012_val_00016286.JPEG reached epsilon at step 1722, loss sum: 477.0224, final loss: 0.00099182, weight distance: 0.0691
+2025-09-17 23:42:34,350 - INFO - Example 627 completed: 1722 steps, loss sum: 477.0224, final loss: 0.00099182, weight distance: 0.0691 (universal rank: 35269)
+2025-09-17 23:42:34,350 - INFO - 
+=== Training Example 628/1500: /home/projects/bagon/shared/imagenet512/val/n03937543/ILSVRC2012_val_00030685.JPEG ===
+2025-09-17 23:46:33,652 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03937543/ILSVRC2012_val_00030685.JPEG reached epsilon at step 2182, loss sum: 190.4270, final loss: 0.00099945, weight distance: 0.0623
+2025-09-17 23:46:34,464 - INFO - Example 628 completed: 2182 steps, loss sum: 190.4270, final loss: 0.00099945, weight distance: 0.0623 (universal rank: 35328)
+2025-09-17 23:46:34,464 - INFO - 
+=== Training Example 629/1500: /home/projects/bagon/shared/imagenet512/val/n04040759/ILSVRC2012_val_00046014.JPEG ===
+2025-09-17 23:52:08,453 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04040759/ILSVRC2012_val_00046014.JPEG reached epsilon at step 3037, loss sum: 122.7838, final loss: 0.00099945, weight distance: 0.0927
+2025-09-17 23:52:09,267 - INFO - Example 629 completed: 3037 steps, loss sum: 122.7838, final loss: 0.00099945, weight distance: 0.0927 (universal rank: 35329)
+2025-09-17 23:52:09,267 - INFO - 
+=== Training Example 630/1500: /home/projects/bagon/shared/imagenet512/val/n02280649/ILSVRC2012_val_00020691.JPEG ===
+2025-09-17 23:57:15,014 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02280649/ILSVRC2012_val_00020691.JPEG reached epsilon at step 2789, loss sum: 371.8681, final loss: 0.00099945, weight distance: 0.0923
+2025-09-17 23:57:15,849 - INFO - Example 630 completed: 2789 steps, loss sum: 371.8681, final loss: 0.00099945, weight distance: 0.0923 (universal rank: 35362)
+2025-09-17 23:57:15,849 - INFO - 
+=== Training Example 631/1500: /home/projects/bagon/shared/imagenet512/val/n02794156/ILSVRC2012_val_00037026.JPEG ===
+2025-09-18 00:06:39,873 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02794156/ILSVRC2012_val_00037026.JPEG reached epsilon at step 5138, loss sum: 126.6648, final loss: 0.00099182, weight distance: 0.1134
+2025-09-18 00:06:40,690 - INFO - Example 631 completed: 5138 steps, loss sum: 126.6648, final loss: 0.00099182, weight distance: 0.1134 (universal rank: 35371)
+2025-09-18 00:06:40,690 - INFO - 
+=== Training Example 632/1500: /home/projects/bagon/shared/imagenet512/val/n02992529/ILSVRC2012_val_00039245.JPEG ===
+2025-09-18 00:10:50,283 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02992529/ILSVRC2012_val_00039245.JPEG reached epsilon at step 2269, loss sum: 243.5786, final loss: 0.00095749, weight distance: 0.0797
+2025-09-18 00:10:51,092 - INFO - Example 632 completed: 2269 steps, loss sum: 243.5786, final loss: 0.00095749, weight distance: 0.0797 (universal rank: 35380)
+2025-09-18 00:10:51,092 - INFO - 
+=== Training Example 633/1500: /home/projects/bagon/shared/imagenet512/val/n04584207/ILSVRC2012_val_00024127.JPEG ===
+2025-09-18 00:16:16,076 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04584207/ILSVRC2012_val_00024127.JPEG reached epsilon at step 2979, loss sum: 161.5475, final loss: 0.00099945, weight distance: 0.0739
+2025-09-18 00:16:16,879 - INFO - Example 633 completed: 2979 steps, loss sum: 161.5475, final loss: 0.00099945, weight distance: 0.0739 (universal rank: 35402)
+2025-09-18 00:16:16,879 - INFO - 
+=== Training Example 634/1500: /home/projects/bagon/shared/imagenet512/val/n03770679/ILSVRC2012_val_00018768.JPEG ===
+2025-09-18 00:25:57,217 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03770679/ILSVRC2012_val_00018768.JPEG reached epsilon at step 5308, loss sum: 223.5109, final loss: 0.00099945, weight distance: 0.1193
+2025-09-18 00:25:58,020 - INFO - Example 634 completed: 5308 steps, loss sum: 223.5109, final loss: 0.00099945, weight distance: 0.1193 (universal rank: 35414)
+2025-09-18 00:25:58,020 - INFO - 
+=== Training Example 635/1500: /home/projects/bagon/shared/imagenet512/val/n03956157/ILSVRC2012_val_00038501.JPEG ===
+2025-09-18 00:30:04,909 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03956157/ILSVRC2012_val_00038501.JPEG reached epsilon at step 2255, loss sum: 32.2662, final loss: 0.00099182, weight distance: 0.0673
+2025-09-18 00:30:05,759 - INFO - Example 635 completed: 2255 steps, loss sum: 32.2662, final loss: 0.00099182, weight distance: 0.0673 (universal rank: 35428)
+2025-09-18 00:30:05,759 - INFO - 
+=== Training Example 636/1500: /home/projects/bagon/shared/imagenet512/val/n03916031/ILSVRC2012_val_00045360.JPEG ===
+2025-09-18 00:32:38,341 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03916031/ILSVRC2012_val_00045360.JPEG reached epsilon at step 1397, loss sum: 171.4888, final loss: 0.00099182, weight distance: 0.0643
+2025-09-18 00:32:39,150 - INFO - Example 636 completed: 1397 steps, loss sum: 171.4888, final loss: 0.00099182, weight distance: 0.0643 (universal rank: 35457)
+2025-09-18 00:32:39,150 - INFO - 
+=== Training Example 637/1500: /home/projects/bagon/shared/imagenet512/val/n02112706/ILSVRC2012_val_00042249.JPEG ===
+2025-09-18 00:36:45,423 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02112706/ILSVRC2012_val_00042249.JPEG reached epsilon at step 2256, loss sum: 1264.5383, final loss: 0.00097275, weight distance: 0.0953
+2025-09-18 00:36:46,505 - INFO - Example 637 completed: 2256 steps, loss sum: 1264.5383, final loss: 0.00097275, weight distance: 0.0953 (universal rank: 35474)
+2025-09-18 00:36:46,505 - INFO - 
+=== Training Example 638/1500: /home/projects/bagon/shared/imagenet512/val/n02111277/ILSVRC2012_val_00019325.JPEG ===
+2025-09-18 00:44:07,767 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02111277/ILSVRC2012_val_00019325.JPEG reached epsilon at step 4011, loss sum: 360.4013, final loss: 0.00096512, weight distance: 0.1084
+2025-09-18 00:44:08,662 - INFO - Example 638 completed: 4011 steps, loss sum: 360.4013, final loss: 0.00096512, weight distance: 0.1084 (universal rank: 35502)
+2025-09-18 00:44:08,662 - INFO - 
+=== Training Example 639/1500: /home/projects/bagon/shared/imagenet512/val/n03743016/ILSVRC2012_val_00018889.JPEG ===
+2025-09-18 00:48:29,675 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03743016/ILSVRC2012_val_00018889.JPEG reached epsilon at step 2389, loss sum: 149.5815, final loss: 0.00099182, weight distance: 0.0661
+2025-09-18 00:48:30,502 - INFO - Example 639 completed: 2389 steps, loss sum: 149.5815, final loss: 0.00099182, weight distance: 0.0661 (universal rank: 35525)
+2025-09-18 00:48:30,502 - INFO - 
+=== Training Example 640/1500: /home/projects/bagon/shared/imagenet512/val/n02277742/ILSVRC2012_val_00048641.JPEG ===
+2025-09-18 00:53:29,697 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02277742/ILSVRC2012_val_00048641.JPEG reached epsilon at step 2737, loss sum: 1094.4196, final loss: 0.00097656, weight distance: 0.0933
+2025-09-18 00:53:30,524 - INFO - Example 640 completed: 2737 steps, loss sum: 1094.4196, final loss: 0.00097656, weight distance: 0.0933 (universal rank: 35528)
+2025-09-18 00:53:30,524 - INFO - 
+=== Training Example 641/1500: /home/projects/bagon/shared/imagenet512/val/n03874599/ILSVRC2012_val_00014197.JPEG ===
+2025-09-18 01:11:46,909 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03874599/ILSVRC2012_val_00014197.JPEG never reached epsilon after 10000 steps, loss sum: 324.3417, final loss: 0.00236511, weight distance: 0.0729
+2025-09-18 01:11:47,718 - INFO - Example 641 completed: -1 steps, loss sum: 324.3417, final loss: 0.00236511, weight distance: 0.0729 (universal rank: 35551)
+2025-09-18 01:11:47,718 - INFO - 
+=== Training Example 642/1500: /home/projects/bagon/shared/imagenet512/val/n01855672/ILSVRC2012_val_00016195.JPEG ===
+2025-09-18 01:16:38,143 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n01855672/ILSVRC2012_val_00016195.JPEG reached epsilon at step 2645, loss sum: 86.0477, final loss: 0.00099945, weight distance: 0.0706
+2025-09-18 01:16:39,009 - INFO - Example 642 completed: 2645 steps, loss sum: 86.0477, final loss: 0.00099945, weight distance: 0.0706 (universal rank: 35554)
+2025-09-18 01:16:39,009 - INFO - 
+=== Training Example 643/1500: /home/projects/bagon/shared/imagenet512/val/n04356056/ILSVRC2012_val_00038061.JPEG ===
+2025-09-18 01:28:51,727 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04356056/ILSVRC2012_val_00038061.JPEG reached epsilon at step 6680, loss sum: 1039.4944, final loss: 0.00099945, weight distance: 0.1660
+2025-09-18 01:28:52,530 - INFO - Example 643 completed: 6680 steps, loss sum: 1039.4944, final loss: 0.00099945, weight distance: 0.1660 (universal rank: 35559)
+2025-09-18 01:28:52,530 - INFO - 
+=== Training Example 644/1500: /home/projects/bagon/shared/imagenet512/val/n02077923/ILSVRC2012_val_00046767.JPEG ===
+2025-09-18 01:34:33,113 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02077923/ILSVRC2012_val_00046767.JPEG reached epsilon at step 3136, loss sum: 676.9716, final loss: 0.00099945, weight distance: 0.1039
+2025-09-18 01:34:33,940 - INFO - Example 644 completed: 3136 steps, loss sum: 676.9716, final loss: 0.00099945, weight distance: 0.1039 (universal rank: 35562)
+2025-09-18 01:34:33,940 - INFO - 
+=== Training Example 645/1500: /home/projects/bagon/shared/imagenet512/val/n03899768/ILSVRC2012_val_00047581.JPEG ===
+2025-09-18 01:35:41,353 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03899768/ILSVRC2012_val_00047581.JPEG reached epsilon at step 622, loss sum: 164.1307, final loss: 0.00099945, weight distance: 0.0349
+2025-09-18 01:35:42,163 - INFO - Example 645 completed: 622 steps, loss sum: 164.1307, final loss: 0.00099945, weight distance: 0.0349 (universal rank: 35578)
+2025-09-18 01:35:42,163 - INFO - 
+=== Training Example 646/1500: /home/projects/bagon/shared/imagenet512/val/n09332890/ILSVRC2012_val_00001323.JPEG ===
+2025-09-18 01:39:48,079 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n09332890/ILSVRC2012_val_00001323.JPEG reached epsilon at step 2293, loss sum: 93.7409, final loss: 0.00099182, weight distance: 0.0650
+2025-09-18 01:39:48,897 - INFO - Example 646 completed: 2293 steps, loss sum: 93.7409, final loss: 0.00099182, weight distance: 0.0650 (universal rank: 35590)
+2025-09-18 01:39:48,897 - INFO - 
+=== Training Example 647/1500: /home/projects/bagon/shared/imagenet512/val/n02087046/ILSVRC2012_val_00017869.JPEG ===
+2025-09-18 01:46:25,421 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02087046/ILSVRC2012_val_00017869.JPEG reached epsilon at step 3643, loss sum: 178.4565, final loss: 0.00099182, weight distance: 0.0966
+2025-09-18 01:46:26,307 - INFO - Example 647 completed: 3643 steps, loss sum: 178.4565, final loss: 0.00099182, weight distance: 0.0966 (universal rank: 35591)
+2025-09-18 01:46:26,307 - INFO - 
+=== Training Example 648/1500: /home/projects/bagon/shared/imagenet512/val/n02326432/ILSVRC2012_val_00035418.JPEG ===
+2025-09-18 01:52:55,048 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02326432/ILSVRC2012_val_00035418.JPEG reached epsilon at step 3617, loss sum: 184.7667, final loss: 0.00099945, weight distance: 0.0895
+2025-09-18 01:52:55,854 - INFO - Example 648 completed: 3617 steps, loss sum: 184.7667, final loss: 0.00099945, weight distance: 0.0895 (universal rank: 35599)
+2025-09-18 01:52:55,854 - INFO - 
+=== Training Example 649/1500: /home/projects/bagon/shared/imagenet512/val/n03950228/ILSVRC2012_val_00000046.JPEG ===
+2025-09-18 02:02:56,808 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03950228/ILSVRC2012_val_00000046.JPEG reached epsilon at step 5506, loss sum: 471.2770, final loss: 0.00097656, weight distance: 0.1474
+2025-09-18 02:02:57,640 - INFO - Example 649 completed: 5506 steps, loss sum: 471.2770, final loss: 0.00097656, weight distance: 0.1474 (universal rank: 35603)
+2025-09-18 02:02:57,640 - INFO - 
+=== Training Example 650/1500: /home/projects/bagon/shared/imagenet512/val/n06794110/ILSVRC2012_val_00033131.JPEG ===
+2025-09-18 02:10:25,879 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n06794110/ILSVRC2012_val_00033131.JPEG reached epsilon at step 4111, loss sum: 159.1310, final loss: 0.00098419, weight distance: 0.1015
+2025-09-18 02:10:26,772 - INFO - Example 650 completed: 4111 steps, loss sum: 159.1310, final loss: 0.00098419, weight distance: 0.1015 (universal rank: 35632)
+2025-09-18 02:10:26,772 - INFO - 
+=== Training Example 651/1500: /home/projects/bagon/shared/imagenet512/val/n03110669/ILSVRC2012_val_00004350.JPEG ===
