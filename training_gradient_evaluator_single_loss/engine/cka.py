@@ -170,3 +170,183 @@ class CKAEvaluator:
 		plt.close()
 
 
+class CKAManager:
+		"""High-level, reproducible CKA pipeline wrapper.
+
+		Responsibilities:
+		- Random, seed-stable selection of CKA layers and image batch
+		- Building pre-training CKA reference
+		- Saving baseline plot/JSON
+		- Computing per-example CKA outputs during training
+		"""
+
+		def __init__(
+			self,
+			model: nn.Module,
+			transform,
+			device: torch.device,
+			layer_fraction: float,
+			seed: int,
+			root_dir: Optional[str],
+			difficulty_paths: List[str],
+			model_out_dir: str,
+			logger,
+			num_images: int = 50,
+			plot_interval_ranks: int = 1000,
+		) -> None:
+			import random as _random
+			self.model = model
+			self.transform = transform
+			self.device = device
+			self.layer_fraction = max(0.0, float(layer_fraction))
+			self.seed = int(seed)
+			self.root_dir = root_dir
+			self.difficulty_paths = list(difficulty_paths)
+			self.model_out_dir = model_out_dir
+			self.logger = logger
+			self.num_images = int(num_images)
+			self.plot_interval_ranks = int(plot_interval_ranks)
+			self.rng = _random.Random(self.seed)
+			self.cka_dir = os.path.join(model_out_dir, "CKA_plots")
+			self.cka_json_dir = os.path.join(model_out_dir, "CKA_jsons")
+			os.makedirs(self.cka_dir, exist_ok=True)
+			os.makedirs(self.cka_json_dir, exist_ok=True)
+			self._layer_whitelist: Optional[Set[str]] = None
+			self._cka_paths: List[str] = []
+			self._evaluator: Optional[CKAEvaluator] = None
+			self._last_plot_rank: Optional[int] = None
+
+		def _resolve_full(self, p: str) -> str:
+			return os.path.join(self.root_dir, p) if self.root_dir and not os.path.isabs(p) else p
+
+		def _select_eligible_layers(self) -> List[str]:
+			eligible: List[str] = []
+			for name, module in self.model.named_modules():
+				if name == "":
+					continue
+				try:
+					_has_params = any(True for _ in module.parameters(recurse=False))
+				except Exception:
+					_has_params = False
+				if not _has_params:
+					continue
+				eligible.append(name)
+			# Sort for seed stability across Python versions
+			return sorted(eligible)
+
+		def _sample_layers(self) -> Optional[Set[str]]:
+			layers = self._select_eligible_layers()
+			if not layers:
+				self.logger.warning("No eligible layers found for CKA hooks; defaulting to all layers")
+				return None
+			if self.layer_fraction <= 0.0:
+				return set()  # indicates disabled
+			frac = min(1.0, max(0.0, float(self.layer_fraction)))
+			k = max(1, int(round(frac * len(layers))))
+			try:
+				chosen = set(self.rng.sample(layers, k))
+			except Exception:
+				chosen = set(layers[:k])
+			self.logger.info(f"CKA layer subset: selecting {len(chosen)}/{len(layers)} layers (~{int(round(frac*100))}%)")
+			# Persist chosen layers for reproducibility
+			try:
+				with open(os.path.join(self.model_out_dir, "cka_layers_chosen.txt"), 'w', encoding='utf-8') as _f:
+					_f.write("\n".join(sorted(chosen)))
+			except Exception:
+				self.logger.exception("Failed to write cka_layers_chosen.txt", exc_info=True)
+			return chosen
+
+		def _collect_valid_images(self) -> List[str]:
+			valid: List[str] = []
+			for p in self.difficulty_paths:
+				if isinstance(p, str) and p.strip().lower() in {"none", "null"}:
+					continue
+				full = self._resolve_full(p)
+				if os.path.exists(full):
+					valid.append(full)
+			return valid
+
+		def _sample_images(self) -> List[str]:
+			valid = self._collect_valid_images()
+			if not valid:
+				self.logger.warning("No valid images available for CKA reference; CKA will be disabled")
+				return []
+			k = min(self.num_images, len(valid))
+			try:
+				chosen = self.rng.sample(valid, k)
+			except Exception:
+				chosen = valid[:k]
+			if len(chosen) < self.num_images:
+				self.logger.warning("Fewer than %d valid images available for CKA reference; proceeding with %d", self.num_images, len(chosen))
+			# Persist chosen image paths
+			try:
+				with open(os.path.join(self.model_out_dir, "cka_image_paths.txt"), 'w', encoding='utf-8') as _f:
+					_f.write("\n".join(chosen))
+			except Exception:
+				self.logger.exception("Failed to write cka_image_paths.txt", exc_info=True)
+			return chosen
+
+		def setup_baseline(self) -> None:
+			"""Select layers and images, build reference, and save baseline outputs."""
+			if self.layer_fraction <= 0.0:
+				self._layer_whitelist = set()
+				return
+			self._layer_whitelist = self._sample_layers()
+			if self._layer_whitelist is not None and len(self._layer_whitelist) == 0:
+				# Explicitly disabled
+				return
+			self._cka_paths = self._sample_images()
+			if not self._cka_paths:
+				return
+			self._evaluator = CKAEvaluator(self.model, self.transform, self.device, layer_whitelist=self._layer_whitelist)
+			self._evaluator.build_reference(self._cka_paths)
+			# Baseline plot/JSON (model vs itself)
+			try:
+				M0, layer_names0 = self._evaluator.compute_matrix(self.model, self._cka_paths)
+				no_train_png = os.path.join(self.cka_dir, "CKA_no_training.png")
+				CKAEvaluator.save_plot(M0, layer_names0, no_train_png)
+				cka0_diag = {str(layer_names0[i]): float(M0[i, i]) for i in range(len(layer_names0))}
+				no_train_json = os.path.join(self.cka_json_dir, "CKA_no_training.json")
+				with open(no_train_json, 'w', encoding='utf-8') as jf:
+					import json as _json
+					_json.dump(cka0_diag, jf, ensure_ascii=False, indent=2)
+			except Exception:
+				self.logger.exception("Failed to write baseline CKA_no_training plot/JSON", exc_info=True)
+
+		def is_enabled(self) -> bool:
+			if self.layer_fraction <= 0.0:
+				return False
+			return bool(self._evaluator is not None and self._cka_paths)
+
+		def after_example(self, post_model: nn.Module, example_path: str, short_id: str, rank: int) -> float | str:
+			"""Compute and persist CKA artifacts after training on one example.
+
+			Returns global CKA value (float) or empty string if disabled.
+			"""
+			if not self.is_enabled():
+				return ''
+			assert self._evaluator is not None
+			try:
+				M, layer_names = self._evaluator.compute_matrix(post_model, self._cka_paths)
+				global_cka = self._evaluator.compute_global_cka(post_model, self._cka_paths)
+				# Save per-layer diagonal JSON
+				try:
+					cka_diag = {str(layer_names[i]): float(M[i, i]) for i in range(len(layer_names))}
+					cka_json_name = f"rank_{int(rank):05d}_{short_id}.json"
+					cka_json_path = os.path.join(self.cka_json_dir, cka_json_name)
+					with open(cka_json_path, 'w', encoding='utf-8') as jf:
+						import json as _json
+						_json.dump(cka_diag, jf, ensure_ascii=False, indent=2)
+				except Exception:
+					self.logger.exception("Failed to write CKA JSON for example", exc_info=True)
+				# Save plot at rank intervals
+				if self._last_plot_rank is None or (int(rank) - int(self._last_plot_rank)) >= self.plot_interval_ranks:
+					cka_filename = f"rank_{int(rank):05d}_{short_id}.png"
+					cka_out = os.path.join(self.cka_dir, cka_filename)
+					CKAEvaluator.save_plot(M, layer_names, cka_out)
+					self._last_plot_rank = int(rank)
+				return float(global_cka)
+			except Exception:
+				self.logger.exception("CKA computation failed after example", exc_info=True)
+				return ''
+
