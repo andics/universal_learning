@@ -78,6 +78,8 @@ def main() -> None:
 	# Optional explicit training examples JSON (same structure as produced by dataset_processing script)
 	parser.add_argument("--explicit_examples_for_training", type=str, default=None,
 					help="Path to JSON with explicit examples to train on; if provided, selection is restricted to these examples")
+	# Time limit in seconds (default: 1 hour 45 minutes)
+	parser.add_argument("--time_limit_seconds", type=int, default=6300, help="Wall-clock time budget in seconds before exiting after the current example. Default: 6300 (1h45m)")
 	# Parallel arguments
 	parser.add_argument("--num_workers", type=int, required=True, help="Total number of parallel workers (constant across instances)")
 	parser.add_argument("--current_worker", type=int, required=True, help="Index of this worker in [0, num_workers-1]")
@@ -395,7 +397,7 @@ def main() -> None:
 
 		# Auto-stop check: exit before starting the next example if limit exceeded
 		elapsed_s = time.time() - start_time
-		if elapsed_s >= (1 * 3600 + 45 * 60):
+		if elapsed_s >= int(args.time_limit_seconds):
 			logger.info("Time limit reached (~1h45m). Exiting before starting next example.")
 			break
 
