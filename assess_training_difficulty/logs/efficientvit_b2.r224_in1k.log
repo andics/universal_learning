@@ -1,0 +1,47 @@
+2025-09-22 08:00:21,257 - INFO - Parsed arguments:
+2025-09-22 08:00:21,257 - INFO -   amp_dtype = None
+2025-09-22 08:00:21,257 - INFO -   bars_npy = bars/geq6wrong_21017_geq6correct_1525_imagenet.npy
+2025-09-22 08:00:21,257 - INFO -   cka_layer_fraction = 0.0
+2025-09-22 08:00:21,257 - INFO -   deterministic = True
+2025-09-22 08:00:21,257 - INFO -   device = cuda
+2025-09-22 08:00:21,257 - INFO -   epsilon = 0.001
+2025-09-22 08:00:21,258 - INFO -   examples_csv = bars/geq6wrong_21017_geq6correct_1525_imagenet_examples_ammended.csv
+2025-09-22 08:00:21,258 - INFO -   explicit_examples_for_training = None
+2025-09-22 08:00:21,258 - INFO -   grad_clip_norm = 1.0
+2025-09-22 08:00:21,258 - INFO -   hierarchy_json = bars/imagenet_synset_hierarchy.json
+2025-09-22 08:00:21,258 - INFO -   imagenet_models_csv = bars/imagenet_models.csv
+2025-09-22 08:00:21,258 - INFO -   lr = 0.0001
+2025-09-22 08:00:21,258 - INFO -   max_examples = 1
+2025-09-22 08:00:21,258 - INFO -   max_steps_per_example = 10000
+2025-09-22 08:00:21,258 - INFO -   model_csv_name = efficientvit_base_2_224_classification_imagenet_1k
+2025-09-22 08:00:21,258 - INFO -   model_name = efficientvit_b2.r224_in1k
+2025-09-22 08:00:21,258 - INFO -   no_amp = False
+2025-09-22 08:00:21,258 - INFO -   output_dir = training_gradient_evaluator_single_loss/outputs_assess_training_time
+2025-09-22 08:00:21,258 - INFO -   root_dir = None
+2025-09-22 08:00:21,258 - INFO -   seed = 1337
+2025-09-22 08:00:21,258 - INFO -   weight_decay = 0
+2025-09-22 08:00:21,258 - INFO -   zero_aug_train = True
+2025-09-22 08:00:21,268 - INFO - Loaded 50000 examples in difficulty order
+2025-09-22 08:00:22,156 - INFO - Loaded TIMM pretrained weights for efficientvit_b2.r224_in1k
+2025-09-22 08:00:22,156 - INFO - pretrained_cfg.url= hf_hub_id=timm/efficientvit_b2.r224_in1k
+2025-09-22 08:00:22,544 - INFO - Stored original model weights for reset
+2025-09-22 08:00:22,550 - INFO - Training configuration:
+2025-09-22 08:00:22,550 - INFO -   lr = 0.0001
+2025-09-22 08:00:22,550 - INFO -   weight_decay = 0
+2025-09-22 08:00:22,550 - INFO -   max_steps = 10000
+2025-09-22 08:00:22,550 - INFO -   epsilon = 0.001
+2025-09-22 08:00:22,550 - INFO -   device = cuda
+2025-09-22 08:00:22,550 - INFO -   use_amp = True
+2025-09-22 08:00:22,550 - INFO -   amp_dtype = bfloat16
+2025-09-22 08:00:22,550 - INFO -   gradient_clip_norm = 1.0
+2025-09-22 08:00:22,600 - INFO - Resolved model_csv_name='efficientvit_base_2_224_classification_imagenet_1k' to mask_row_index=470
+2025-09-22 08:00:23,707 - INFO - Selected 1 wrong examples for training (sorted by difficulty)
+2025-09-22 08:00:23,710 - INFO - Training examples (rank indices, 0-based): 21594
+2025-09-22 08:00:23,724 - INFO - CKA disabled: cka_layer_fraction == 0. Skipping all CKA computations.
+2025-09-22 08:00:23,725 - INFO - 
+=== Training Example 1/1: /home/projects/bagon/shared/imagenet512/val/n04037443/ILSVRC2012_val_00049700.JPEG ===
+2025-09-22 08:00:33,013 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04037443/ILSVRC2012_val_00049700.JPEG reached epsilon at step 123, loss sum: 4.1578, final loss: 0.00094986, weight distance: 0.0078
+2025-09-22 08:00:33,018 - INFO - Example 1 completed: 123 steps, loss sum: 4.1578, final loss: 0.00094986, weight distance: 0.0078 (universal rank: 21595)
+2025-09-22 08:00:33,018 - INFO - Creating final plots...
+2025-09-22 08:00:33,022 - INFO - Training complete. Summary saved to training_gradient_evaluator_single_loss/outputs_assess_training_time/efficientvit_b2.r224_in1k/training_summary.json
+2025-09-22 08:00:33,022 - INFO - Results CSV: training_gradient_evaluator_single_loss/outputs_assess_training_time/efficientvit_b2.r224_in1k/single_example_results.csv
