@@ -19,7 +19,7 @@ class WorkerCoordinator:
 				data = json.load(f) or {}
 			if isinstance(data, dict):
 				return data
-			except Exception:
+		except Exception:
 			return {}
 
 	def update_status(self, worker_id: int, status: str) -> None:

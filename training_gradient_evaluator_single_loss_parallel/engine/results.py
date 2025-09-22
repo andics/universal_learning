@@ -211,8 +211,8 @@ class ResultsWriter:
 						x_grad.append(float(row[name_to_idx["grad_mass_wasserstein"]]))
 					if "global_linear_cka" in name_to_idx and row[name_to_idx["global_linear_cka"]] != '':
 						x_cka.append(float(row[name_to_idx["global_linear_cka"]]))
-			except Exception:
-				continue
+				except Exception:
+					continue
 			if len(y_rank) < 2:
 				return {}
 			corr_steps = float(np.corrcoef(x_steps, y_rank)[0, 1]) if len(y_rank) > 1 else 0.0

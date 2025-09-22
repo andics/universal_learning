@@ -1,0 +1,216 @@
+2025-09-22 16:15:48,257 - INFO - Parsed arguments:
+2025-09-22 16:15:48,257 - INFO -   amp_dtype = None
+2025-09-22 16:15:48,257 - INFO -   bars_npy = /home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/geq6wrong_21017_geq6correct_1525_imagenet.npy
+2025-09-22 16:15:48,257 - INFO -   cka_layer_fraction = 0.05
+2025-09-22 16:15:48,257 - INFO -   current_worker = 4
+2025-09-22 16:15:48,257 - INFO -   deterministic = True
+2025-09-22 16:15:48,257 - INFO -   device = cuda
+2025-09-22 16:15:48,257 - INFO -   epsilon = 0.001
+2025-09-22 16:15:48,257 - INFO -   examples_csv = /home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/geq6wrong_21017_geq6correct_1525_imagenet_examples_ammended.csv
+2025-09-22 16:15:48,257 - INFO -   explicit_examples_for_training = None
+2025-09-22 16:15:48,257 - INFO -   grad_clip_norm = 1.0
+2025-09-22 16:15:48,258 - INFO -   hierarchy_json = /home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/imagenet_synset_hierarchy.json
+2025-09-22 16:15:48,258 - INFO -   imagenet_models_csv = /home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/imagenet_models.csv
+2025-09-22 16:15:48,258 - INFO -   lr = 0.0001
+2025-09-22 16:15:48,258 - INFO -   max_examples = 50000
+2025-09-22 16:15:48,258 - INFO -   max_steps_per_example = 10000
+2025-09-22 16:15:48,258 - INFO -   model_csv_name = mobilenetv3_small_075_224_lamb_imagenet_1k
+2025-09-22 16:15:48,258 - INFO -   model_name = mobilenetv3_small_075.lamb_in1k
+2025-09-22 16:15:48,258 - INFO -   no_amp = False
+2025-09-22 16:15:48,258 - INFO -   num_workers = 8
+2025-09-22 16:15:48,258 - INFO -   output_dir = /home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/training_gradient_evaluator_single_loss_parallel/output_parallel_8_workers
+2025-09-22 16:15:48,258 - INFO -   root_dir = None
+2025-09-22 16:15:48,258 - INFO -   seed = 1337
+2025-09-22 16:15:48,258 - INFO -   time_limit_seconds = 6300
+2025-09-22 16:15:48,258 - INFO -   weight_decay = 0.0
+2025-09-22 16:15:48,258 - INFO -   zero_aug_train = False
+2025-09-22 16:15:48,271 - INFO - Loaded 50000 examples in difficulty order
+2025-09-22 16:15:48,943 - INFO - Loaded TIMM pretrained weights for mobilenetv3_small_075.lamb_in1k
+2025-09-22 16:15:48,943 - INFO - pretrained_cfg.url=https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/mobilenetv3_small_075_lambc-384766db.pth hf_hub_id=timm/mobilenetv3_small_075.lamb_in1k
+2025-09-22 16:15:49,206 - INFO - Stored original model weights for reset
+2025-09-22 16:15:49,212 - INFO - Training configuration:
+2025-09-22 16:15:49,212 - INFO -   lr = 0.0001
+2025-09-22 16:15:49,212 - INFO -   weight_decay = 0.0
+2025-09-22 16:15:49,212 - INFO -   max_steps = 10000
+2025-09-22 16:15:49,212 - INFO -   epsilon = 0.001
+2025-09-22 16:15:49,212 - INFO -   device = cuda
+2025-09-22 16:15:49,212 - INFO -   use_amp = True
+2025-09-22 16:15:49,212 - INFO -   amp_dtype = bfloat16
+2025-09-22 16:15:49,212 - INFO -   gradient_clip_norm = 1.0
+2025-09-22 16:15:49,228 - INFO - Resolved model_csv_name='mobilenetv3_small_075_224_lamb_imagenet_1k' to mask_row_index=1016
+2025-09-22 16:15:53,621 - INFO - Selected 15530 wrong examples for training (sorted by difficulty)
+2025-09-22 16:15:53,622 - INFO - Worker 4/8 assigned range [7766, 9707) with 1941 examples
+2025-09-22 16:15:53,647 - INFO - 
+=== Worker 4 Training Example 1/1941 (global idx 7766): /home/projects/bagon/shared/imagenet512/val/n02123394/ILSVRC2012_val_00032609.JPEG ===
+2025-09-22 16:18:02,695 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02123394/ILSVRC2012_val_00032609.JPEG reached epsilon at step 2887, loss sum: 353.8899, final loss: 0.00096512, weight distance: 0.0993
+2025-09-22 16:18:03,723 - INFO - Example 1 completed: 2887 steps, loss sum: 353.8899, final loss: 0.00096512, weight distance: 0.0993 (universal rank: 39491)
+2025-09-22 16:18:03,723 - INFO - 
+=== Worker 4 Training Example 2/1941 (global idx 7767): /home/projects/bagon/shared/imagenet512/val/n02096051/ILSVRC2012_val_00024385.JPEG ===
+2025-09-22 16:19:42,320 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02096051/ILSVRC2012_val_00024385.JPEG reached epsilon at step 2201, loss sum: 777.5915, final loss: 0.00099945, weight distance: 0.0784
+2025-09-22 16:19:42,987 - INFO - Example 2 completed: 2201 steps, loss sum: 777.5915, final loss: 0.00099945, weight distance: 0.0784 (universal rank: 39494)
+2025-09-22 16:19:42,987 - INFO - 
+=== Worker 4 Training Example 3/1941 (global idx 7768): /home/projects/bagon/shared/imagenet512/val/n01775062/ILSVRC2012_val_00008820.JPEG ===
+2025-09-22 16:21:46,438 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n01775062/ILSVRC2012_val_00008820.JPEG reached epsilon at step 2753, loss sum: 147.4419, final loss: 0.00098419, weight distance: 0.0771
+2025-09-22 16:21:47,103 - INFO - Example 3 completed: 2753 steps, loss sum: 147.4419, final loss: 0.00098419, weight distance: 0.0771 (universal rank: 39496)
+2025-09-22 16:21:47,103 - INFO - 
+=== Worker 4 Training Example 4/1941 (global idx 7769): /home/projects/bagon/shared/imagenet512/val/n04023962/ILSVRC2012_val_00010716.JPEG ===
+2025-09-22 16:22:59,771 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04023962/ILSVRC2012_val_00010716.JPEG reached epsilon at step 1622, loss sum: 1238.3937, final loss: 0.00098419, weight distance: 0.0827
+2025-09-22 16:23:00,435 - INFO - Example 4 completed: 1622 steps, loss sum: 1238.3937, final loss: 0.00098419, weight distance: 0.0827 (universal rank: 39497)
+2025-09-22 16:23:00,435 - INFO - 
+=== Worker 4 Training Example 5/1941 (global idx 7770): /home/projects/bagon/shared/imagenet512/val/n03692522/ILSVRC2012_val_00012274.JPEG ===
+2025-09-22 16:28:01,028 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03692522/ILSVRC2012_val_00012274.JPEG reached epsilon at step 6692, loss sum: 1376.3139, final loss: 0.00098419, weight distance: 0.1477
+2025-09-22 16:28:01,722 - INFO - Example 5 completed: 6692 steps, loss sum: 1376.3139, final loss: 0.00098419, weight distance: 0.1477 (universal rank: 39498)
+2025-09-22 16:28:01,722 - INFO - 
+=== Worker 4 Training Example 6/1941 (global idx 7771): /home/projects/bagon/shared/imagenet512/val/n03000134/ILSVRC2012_val_00034897.JPEG ===
+2025-09-22 16:29:26,765 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03000134/ILSVRC2012_val_00034897.JPEG reached epsilon at step 1887, loss sum: 344.9099, final loss: 0.00099945, weight distance: 0.0648
+2025-09-22 16:29:27,454 - INFO - Example 6 completed: 1887 steps, loss sum: 344.9099, final loss: 0.00099945, weight distance: 0.0648 (universal rank: 39500)
+2025-09-22 16:29:27,454 - INFO - 
+=== Worker 4 Training Example 7/1941 (global idx 7772): /home/projects/bagon/shared/imagenet512/val/n03532672/ILSVRC2012_val_00015760.JPEG ===
+2025-09-22 16:32:55,987 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03532672/ILSVRC2012_val_00015760.JPEG reached epsilon at step 4632, loss sum: 886.6666, final loss: 0.00096893, weight distance: 0.1098
+2025-09-22 16:32:56,747 - INFO - Example 7 completed: 4632 steps, loss sum: 886.6666, final loss: 0.00096893, weight distance: 0.1098 (universal rank: 39502)
+2025-09-22 16:32:56,748 - INFO - 
+=== Worker 4 Training Example 8/1941 (global idx 7773): /home/projects/bagon/shared/imagenet512/val/n03877845/ILSVRC2012_val_00018214.JPEG ===
+2025-09-22 16:36:04,692 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03877845/ILSVRC2012_val_00018214.JPEG reached epsilon at step 3870, loss sum: 147.5994, final loss: 0.00099945, weight distance: 0.0839
+2025-09-22 16:36:05,366 - INFO - Example 8 completed: 3870 steps, loss sum: 147.5994, final loss: 0.00099945, weight distance: 0.0839 (universal rank: 39503)
+2025-09-22 16:36:05,366 - INFO - 
+=== Worker 4 Training Example 9/1941 (global idx 7774): /home/projects/bagon/shared/imagenet512/val/n04152593/ILSVRC2012_val_00035949.JPEG ===
+2025-09-22 16:40:08,528 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04152593/ILSVRC2012_val_00035949.JPEG reached epsilon at step 5453, loss sum: 482.0178, final loss: 0.00099182, weight distance: 0.0884
+2025-09-22 16:40:09,213 - INFO - Example 9 completed: 5453 steps, loss sum: 482.0178, final loss: 0.00099182, weight distance: 0.0884 (universal rank: 39504)
+2025-09-22 16:40:09,213 - INFO - 
+=== Worker 4 Training Example 10/1941 (global idx 7775): /home/projects/bagon/shared/imagenet512/val/n04099969/ILSVRC2012_val_00037994.JPEG ===
+2025-09-22 16:40:46,840 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04099969/ILSVRC2012_val_00037994.JPEG reached epsilon at step 843, loss sum: 105.0577, final loss: 0.00099182, weight distance: 0.0327
+2025-09-22 16:40:47,510 - INFO - Example 10 completed: 843 steps, loss sum: 105.0577, final loss: 0.00099182, weight distance: 0.0327 (universal rank: 39505)
+2025-09-22 16:40:47,510 - INFO - 
+=== Worker 4 Training Example 11/1941 (global idx 7776): /home/projects/bagon/shared/imagenet512/val/n04467665/ILSVRC2012_val_00019053.JPEG ===
+2025-09-22 16:44:51,717 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04467665/ILSVRC2012_val_00019053.JPEG reached epsilon at step 5186, loss sum: 1196.6617, final loss: 0.00099182, weight distance: 0.1337
+2025-09-22 16:44:52,403 - INFO - Example 11 completed: 5186 steps, loss sum: 1196.6617, final loss: 0.00099182, weight distance: 0.1337 (universal rank: 39506)
+2025-09-22 16:44:52,403 - INFO - 
+=== Worker 4 Training Example 12/1941 (global idx 7777): /home/projects/bagon/shared/imagenet512/val/n04366367/ILSVRC2012_val_00037386.JPEG ===
+2025-09-22 16:47:58,652 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04366367/ILSVRC2012_val_00037386.JPEG reached epsilon at step 3733, loss sum: 921.1907, final loss: 0.00099945, weight distance: 0.1159
+2025-09-22 16:47:59,349 - INFO - Example 12 completed: 3733 steps, loss sum: 921.1907, final loss: 0.00099945, weight distance: 0.1159 (universal rank: 39507)
+2025-09-22 16:47:59,349 - INFO - 
+=== Worker 4 Training Example 13/1941 (global idx 7778): /home/projects/bagon/shared/imagenet512/val/n02808440/ILSVRC2012_val_00049673.JPEG ===
+2025-09-22 16:51:22,097 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02808440/ILSVRC2012_val_00049673.JPEG reached epsilon at step 3953, loss sum: 907.3828, final loss: 0.00097656, weight distance: 0.0997
+2025-09-22 16:51:22,796 - INFO - Example 13 completed: 3953 steps, loss sum: 907.3828, final loss: 0.00097656, weight distance: 0.0997 (universal rank: 39508)
+2025-09-22 16:51:22,796 - INFO - 
+=== Worker 4 Training Example 14/1941 (global idx 7779): /home/projects/bagon/shared/imagenet512/val/n03637318/ILSVRC2012_val_00048879.JPEG ===
+2025-09-22 16:53:11,487 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03637318/ILSVRC2012_val_00048879.JPEG reached epsilon at step 2117, loss sum: 585.2269, final loss: 0.00097656, weight distance: 0.0860
+2025-09-22 16:53:12,171 - INFO - Example 14 completed: 2117 steps, loss sum: 585.2269, final loss: 0.00097656, weight distance: 0.0860 (universal rank: 39509)
+2025-09-22 16:53:12,171 - INFO - 
+=== Worker 4 Training Example 15/1941 (global idx 7780): /home/projects/bagon/shared/imagenet512/val/n03710721/ILSVRC2012_val_00016414.JPEG ===
+2025-09-22 16:56:55,814 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03710721/ILSVRC2012_val_00016414.JPEG reached epsilon at step 4351, loss sum: 702.2918, final loss: 0.00098419, weight distance: 0.1064
+2025-09-22 16:56:56,574 - INFO - Example 15 completed: 4351 steps, loss sum: 702.2918, final loss: 0.00098419, weight distance: 0.1064 (universal rank: 39510)
+2025-09-22 16:56:56,574 - INFO - 
+=== Worker 4 Training Example 16/1941 (global idx 7781): /home/projects/bagon/shared/imagenet512/val/n04099969/ILSVRC2012_val_00009521.JPEG ===
+2025-09-22 16:58:16,875 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04099969/ILSVRC2012_val_00009521.JPEG reached epsilon at step 1794, loss sum: 441.5315, final loss: 0.00098419, weight distance: 0.0669
+2025-09-22 16:58:17,554 - INFO - Example 16 completed: 1794 steps, loss sum: 441.5315, final loss: 0.00098419, weight distance: 0.0669 (universal rank: 39512)
+2025-09-22 16:58:17,554 - INFO - 
+=== Worker 4 Training Example 17/1941 (global idx 7782): /home/projects/bagon/shared/imagenet512/val/n01784675/ILSVRC2012_val_00014978.JPEG ===
+2025-09-22 16:59:35,538 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n01784675/ILSVRC2012_val_00014978.JPEG reached epsilon at step 1744, loss sum: 584.7677, final loss: 0.00096893, weight distance: 0.0763
+2025-09-22 16:59:36,204 - INFO - Example 17 completed: 1744 steps, loss sum: 584.7677, final loss: 0.00096893, weight distance: 0.0763 (universal rank: 39516)
+2025-09-22 16:59:36,205 - INFO - 
+=== Worker 4 Training Example 18/1941 (global idx 7783): /home/projects/bagon/shared/imagenet512/val/n03764736/ILSVRC2012_val_00018209.JPEG ===
+2025-09-22 17:00:55,137 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03764736/ILSVRC2012_val_00018209.JPEG reached epsilon at step 1767, loss sum: 286.9430, final loss: 0.00099182, weight distance: 0.0654
+2025-09-22 17:00:55,812 - INFO - Example 18 completed: 1767 steps, loss sum: 286.9430, final loss: 0.00099182, weight distance: 0.0654 (universal rank: 39517)
+2025-09-22 17:00:55,812 - INFO - 
+=== Worker 4 Training Example 19/1941 (global idx 7784): /home/projects/bagon/shared/imagenet512/val/n02992529/ILSVRC2012_val_00035610.JPEG ===
+2025-09-22 17:04:47,493 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02992529/ILSVRC2012_val_00035610.JPEG reached epsilon at step 5166, loss sum: 1540.0375, final loss: 0.00099945, weight distance: 0.1346
+2025-09-22 17:04:48,180 - INFO - Example 19 completed: 5166 steps, loss sum: 1540.0375, final loss: 0.00099945, weight distance: 0.1346 (universal rank: 39518)
+2025-09-22 17:04:48,180 - INFO - 
+=== Worker 4 Training Example 20/1941 (global idx 7785): /home/projects/bagon/shared/imagenet512/val/n03047690/ILSVRC2012_val_00009402.JPEG ===
+2025-09-22 17:06:44,745 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03047690/ILSVRC2012_val_00009402.JPEG reached epsilon at step 2605, loss sum: 303.1520, final loss: 0.00097656, weight distance: 0.0812
+2025-09-22 17:06:45,426 - INFO - Example 20 completed: 2605 steps, loss sum: 303.1520, final loss: 0.00097656, weight distance: 0.0812 (universal rank: 39519)
+2025-09-22 17:06:45,426 - INFO - 
+=== Worker 4 Training Example 21/1941 (global idx 7786): /home/projects/bagon/shared/imagenet512/val/n02776631/ILSVRC2012_val_00027953.JPEG ===
+2025-09-22 17:08:27,531 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02776631/ILSVRC2012_val_00027953.JPEG reached epsilon at step 2284, loss sum: 180.8380, final loss: 0.00099182, weight distance: 0.0787
+2025-09-22 17:08:28,217 - INFO - Example 21 completed: 2284 steps, loss sum: 180.8380, final loss: 0.00099182, weight distance: 0.0787 (universal rank: 39520)
+2025-09-22 17:08:28,217 - INFO - 
+=== Worker 4 Training Example 22/1941 (global idx 7787): /home/projects/bagon/shared/imagenet512/val/n04357314/ILSVRC2012_val_00001610.JPEG ===
+2025-09-22 17:10:32,285 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04357314/ILSVRC2012_val_00001610.JPEG reached epsilon at step 2760, loss sum: 1227.3755, final loss: 0.00099182, weight distance: 0.1093
+2025-09-22 17:10:32,955 - INFO - Example 22 completed: 2760 steps, loss sum: 1227.3755, final loss: 0.00099182, weight distance: 0.1093 (universal rank: 39521)
+2025-09-22 17:10:32,955 - INFO - 
+=== Worker 4 Training Example 23/1941 (global idx 7788): /home/projects/bagon/shared/imagenet512/val/n03424325/ILSVRC2012_val_00002290.JPEG ===
+2025-09-22 17:12:24,354 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03424325/ILSVRC2012_val_00002290.JPEG reached epsilon at step 2499, loss sum: 515.2057, final loss: 0.00097656, weight distance: 0.0908
+2025-09-22 17:12:25,026 - INFO - Example 23 completed: 2499 steps, loss sum: 515.2057, final loss: 0.00097656, weight distance: 0.0908 (universal rank: 39522)
+2025-09-22 17:12:25,026 - INFO - 
+=== Worker 4 Training Example 24/1941 (global idx 7789): /home/projects/bagon/shared/imagenet512/val/n03085013/ILSVRC2012_val_00035446.JPEG ===
+2025-09-22 17:14:46,145 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03085013/ILSVRC2012_val_00035446.JPEG reached epsilon at step 3165, loss sum: 448.1603, final loss: 0.00099945, weight distance: 0.1026
+2025-09-22 17:14:46,809 - INFO - Example 24 completed: 3165 steps, loss sum: 448.1603, final loss: 0.00099945, weight distance: 0.1026 (universal rank: 39524)
+2025-09-22 17:14:46,810 - INFO - 
+=== Worker 4 Training Example 25/1941 (global idx 7790): /home/projects/bagon/shared/imagenet512/val/n02843684/ILSVRC2012_val_00015234.JPEG ===
+2025-09-22 17:15:45,025 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02843684/ILSVRC2012_val_00015234.JPEG reached epsilon at step 1308, loss sum: 181.8410, final loss: 0.00099182, weight distance: 0.0532
+2025-09-22 17:15:45,686 - INFO - Example 25 completed: 1308 steps, loss sum: 181.8410, final loss: 0.00099182, weight distance: 0.0532 (universal rank: 39525)
+2025-09-22 17:15:45,687 - INFO - 
+=== Worker 4 Training Example 26/1941 (global idx 7791): /home/projects/bagon/shared/imagenet512/val/n02172182/ILSVRC2012_val_00043711.JPEG ===
+2025-09-22 17:16:13,553 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02172182/ILSVRC2012_val_00043711.JPEG reached epsilon at step 603, loss sum: 4.7364, final loss: 0.00095367, weight distance: 0.0224
+2025-09-22 17:16:14,265 - INFO - Example 26 completed: 603 steps, loss sum: 4.7364, final loss: 0.00095367, weight distance: 0.0224 (universal rank: 39527)
+2025-09-22 17:16:14,265 - INFO - 
+=== Worker 4 Training Example 27/1941 (global idx 7792): /home/projects/bagon/shared/imagenet512/val/n02415577/ILSVRC2012_val_00008701.JPEG ===
+2025-09-22 17:19:15,511 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02415577/ILSVRC2012_val_00008701.JPEG reached epsilon at step 4096, loss sum: 398.6614, final loss: 0.00098419, weight distance: 0.0988
+2025-09-22 17:19:16,176 - INFO - Example 27 completed: 4096 steps, loss sum: 398.6614, final loss: 0.00098419, weight distance: 0.0988 (universal rank: 39528)
+2025-09-22 17:19:16,176 - INFO - 
+=== Worker 4 Training Example 28/1941 (global idx 7793): /home/projects/bagon/shared/imagenet512/val/n02981792/ILSVRC2012_val_00014291.JPEG ===
+2025-09-22 17:22:25,479 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02981792/ILSVRC2012_val_00014291.JPEG reached epsilon at step 4313, loss sum: 226.1153, final loss: 0.00099182, weight distance: 0.1011
+2025-09-22 17:22:26,238 - INFO - Example 28 completed: 4313 steps, loss sum: 226.1153, final loss: 0.00099182, weight distance: 0.1011 (universal rank: 39529)
+2025-09-22 17:22:26,239 - INFO - 
+=== Worker 4 Training Example 29/1941 (global idx 7794): /home/projects/bagon/shared/imagenet512/val/n04039381/ILSVRC2012_val_00007886.JPEG ===
+2025-09-22 17:24:49,241 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04039381/ILSVRC2012_val_00007886.JPEG reached epsilon at step 3245, loss sum: 1041.4399, final loss: 0.00099182, weight distance: 0.1103
+2025-09-22 17:24:49,902 - INFO - Example 29 completed: 3245 steps, loss sum: 1041.4399, final loss: 0.00099182, weight distance: 0.1103 (universal rank: 39531)
+2025-09-22 17:24:49,902 - INFO - 
+=== Worker 4 Training Example 30/1941 (global idx 7795): /home/projects/bagon/shared/imagenet512/val/n07248320/ILSVRC2012_val_00032814.JPEG ===
+2025-09-22 17:28:38,844 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n07248320/ILSVRC2012_val_00032814.JPEG reached epsilon at step 5087, loss sum: 596.7420, final loss: 0.00097656, weight distance: 0.1105
+2025-09-22 17:28:39,521 - INFO - Example 30 completed: 5087 steps, loss sum: 596.7420, final loss: 0.00097656, weight distance: 0.1105 (universal rank: 39532)
+2025-09-22 17:28:39,522 - INFO - 
+=== Worker 4 Training Example 31/1941 (global idx 7796): /home/projects/bagon/shared/imagenet512/val/n03459775/ILSVRC2012_val_00025724.JPEG ===
+2025-09-22 17:30:21,842 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03459775/ILSVRC2012_val_00025724.JPEG reached epsilon at step 2324, loss sum: 335.0168, final loss: 0.00098419, weight distance: 0.0650
+2025-09-22 17:30:22,507 - INFO - Example 31 completed: 2324 steps, loss sum: 335.0168, final loss: 0.00098419, weight distance: 0.0650 (universal rank: 39534)
+2025-09-22 17:30:22,507 - INFO - 
+=== Worker 4 Training Example 32/1941 (global idx 7797): /home/projects/bagon/shared/imagenet512/val/n02106166/ILSVRC2012_val_00045261.JPEG ===
+2025-09-22 17:35:10,269 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02106166/ILSVRC2012_val_00045261.JPEG reached epsilon at step 6576, loss sum: 372.7132, final loss: 0.00099945, weight distance: 0.1349
+2025-09-22 17:35:10,938 - INFO - Example 32 completed: 6576 steps, loss sum: 372.7132, final loss: 0.00099945, weight distance: 0.1349 (universal rank: 39535)
+2025-09-22 17:35:10,938 - INFO - 
+=== Worker 4 Training Example 33/1941 (global idx 7798): /home/projects/bagon/shared/imagenet512/val/n03630383/ILSVRC2012_val_00007859.JPEG ===
+2025-09-22 17:36:59,391 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03630383/ILSVRC2012_val_00007859.JPEG reached epsilon at step 2458, loss sum: 79.2253, final loss: 0.00099945, weight distance: 0.0669
+2025-09-22 17:37:00,052 - INFO - Example 33 completed: 2458 steps, loss sum: 79.2253, final loss: 0.00099945, weight distance: 0.0669 (universal rank: 39539)
+2025-09-22 17:37:00,053 - INFO - 
+=== Worker 4 Training Example 34/1941 (global idx 7799): /home/projects/bagon/shared/imagenet512/val/n01739381/ILSVRC2012_val_00018204.JPEG ===
+2025-09-22 17:39:26,827 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n01739381/ILSVRC2012_val_00018204.JPEG reached epsilon at step 3162, loss sum: 853.7392, final loss: 0.00099945, weight distance: 0.0860
+2025-09-22 17:39:27,503 - INFO - Example 34 completed: 3162 steps, loss sum: 853.7392, final loss: 0.00099945, weight distance: 0.0860 (universal rank: 39541)
+2025-09-22 17:39:27,503 - INFO - 
+=== Worker 4 Training Example 35/1941 (global idx 7800): /home/projects/bagon/shared/imagenet512/val/n04487394/ILSVRC2012_val_00044627.JPEG ===
+2025-09-22 17:41:58,566 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04487394/ILSVRC2012_val_00044627.JPEG reached epsilon at step 3099, loss sum: 1385.6052, final loss: 0.00098419, weight distance: 0.1004
+2025-09-22 17:41:59,220 - INFO - Example 35 completed: 3099 steps, loss sum: 1385.6052, final loss: 0.00098419, weight distance: 0.1004 (universal rank: 39542)
+2025-09-22 17:41:59,220 - INFO - 
+=== Worker 4 Training Example 36/1941 (global idx 7801): /home/projects/bagon/shared/imagenet512/val/n02089078/ILSVRC2012_val_00041810.JPEG ===
+2025-09-22 17:45:21,122 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02089078/ILSVRC2012_val_00041810.JPEG reached epsilon at step 4376, loss sum: 843.2370, final loss: 0.00099182, weight distance: 0.1297
+2025-09-22 17:45:21,793 - INFO - Example 36 completed: 4376 steps, loss sum: 843.2370, final loss: 0.00099182, weight distance: 0.1297 (universal rank: 39543)
+2025-09-22 17:45:21,794 - INFO - 
+=== Worker 4 Training Example 37/1941 (global idx 7802): /home/projects/bagon/shared/imagenet512/val/n02412080/ILSVRC2012_val_00041048.JPEG ===
+2025-09-22 17:46:39,062 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02412080/ILSVRC2012_val_00041048.JPEG reached epsilon at step 1776, loss sum: 937.8308, final loss: 0.00097656, weight distance: 0.0850
+2025-09-22 17:46:39,711 - INFO - Example 37 completed: 1776 steps, loss sum: 937.8308, final loss: 0.00097656, weight distance: 0.0850 (universal rank: 39544)
+2025-09-22 17:46:39,711 - INFO - 
+=== Worker 4 Training Example 38/1941 (global idx 7803): /home/projects/bagon/shared/imagenet512/val/n03255030/ILSVRC2012_val_00010730.JPEG ===
+2025-09-22 17:47:57,422 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03255030/ILSVRC2012_val_00010730.JPEG reached epsilon at step 1765, loss sum: 140.4864, final loss: 0.00099945, weight distance: 0.0601
+2025-09-22 17:47:58,064 - INFO - Example 38 completed: 1765 steps, loss sum: 140.4864, final loss: 0.00099945, weight distance: 0.0601 (universal rank: 39545)
+2025-09-22 17:47:58,064 - INFO - 
+=== Worker 4 Training Example 39/1941 (global idx 7804): /home/projects/bagon/shared/imagenet512/val/n01667114/ILSVRC2012_val_00022841.JPEG ===
+2025-09-22 17:50:42,408 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n01667114/ILSVRC2012_val_00022841.JPEG reached epsilon at step 3735, loss sum: 610.6501, final loss: 0.00098419, weight distance: 0.0952
+2025-09-22 17:50:43,080 - INFO - Example 39 completed: 3735 steps, loss sum: 610.6501, final loss: 0.00098419, weight distance: 0.0952 (universal rank: 39546)
+2025-09-22 17:50:43,080 - INFO - 
+=== Worker 4 Training Example 40/1941 (global idx 7805): /home/projects/bagon/shared/imagenet512/val/n02791270/ILSVRC2012_val_00036193.JPEG ===
+2025-09-22 17:52:58,894 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02791270/ILSVRC2012_val_00036193.JPEG reached epsilon at step 2885, loss sum: 1553.2032, final loss: 0.00099182, weight distance: 0.1064
+2025-09-22 17:52:59,552 - INFO - Example 40 completed: 2885 steps, loss sum: 1553.2032, final loss: 0.00099182, weight distance: 0.1064 (universal rank: 39547)
+2025-09-22 17:52:59,553 - INFO - 
+=== Worker 4 Training Example 41/1941 (global idx 7806): /home/projects/bagon/shared/imagenet512/val/n04443257/ILSVRC2012_val_00040807.JPEG ===
+2025-09-22 17:56:04,545 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04443257/ILSVRC2012_val_00040807.JPEG reached epsilon at step 3894, loss sum: 675.5105, final loss: 0.00099945, weight distance: 0.1189
+2025-09-22 17:56:05,209 - INFO - Example 41 completed: 3894 steps, loss sum: 675.5105, final loss: 0.00099945, weight distance: 0.1189 (universal rank: 39548)
+2025-09-22 17:56:05,209 - INFO - 
+=== Worker 4 Training Example 42/1941 (global idx 7807): /home/projects/bagon/shared/imagenet512/val/n03584254/ILSVRC2012_val_00030348.JPEG ===
+2025-09-22 17:58:56,229 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03584254/ILSVRC2012_val_00030348.JPEG reached epsilon at step 3704, loss sum: 657.7990, final loss: 0.00097656, weight distance: 0.1106
+2025-09-22 17:58:56,887 - INFO - Example 42 completed: 3704 steps, loss sum: 657.7990, final loss: 0.00097656, weight distance: 0.1106 (universal rank: 39549)
+2025-09-22 17:58:56,888 - INFO - 
+=== Worker 4 Training Example 43/1941 (global idx 7808): /home/projects/bagon/shared/imagenet512/val/n04347754/ILSVRC2012_val_00006902.JPEG ===
+2025-09-22 18:02:23,671 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04347754/ILSVRC2012_val_00006902.JPEG reached epsilon at step 4682, loss sum: 219.6749, final loss: 0.00099182, weight distance: 0.0934
+2025-09-22 18:02:24,345 - INFO - Example 43 completed: 4682 steps, loss sum: 219.6749, final loss: 0.00099182, weight distance: 0.0934 (universal rank: 39550)
+2025-09-22 18:02:24,345 - INFO - Time limit reached (~1h45m). Exiting before starting next example.
+2025-09-22 18:02:24,345 - INFO - Worker 4 completed. Per-worker results at /home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/training_gradient_evaluator_single_loss_parallel/output_parallel_8_workers/mobilenetv3_small_075.lamb_in1k/single_example_results_4.csv
