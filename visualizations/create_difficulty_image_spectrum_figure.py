@@ -2,18 +2,16 @@
 Generate an ImageNet difficulty spectrum figure.
 
 Inputs:
-  - imagenet_examples_ammended.csv: Single comma-separated line of 50,000 validation image paths
-    in the universal order (rank 0..49999). Placeholders like "None" may appear for filtered sets.
-  - imagenet.npy: Model-by-image correctness matrix aligned to the same 50k order. This may be
-    a boolean ndarray or an object ndarray containing booleans and Nones; we normalize to bool.
-  - imagenet_synset_hierarchy.json: Mapping from WNIDs to metadata, including "words" labels.
+  - imagenet_examples_ammended.csv: Single comma-separated line of image paths in a global order
+    of arbitrary length N. Placeholders like "None" may appear for filtered sets.
+  - imagenet_synset_hierarchy.json (optional): Mapping from WNIDs to metadata, including "words"
+    labels. If missing, WNIDs will be shown as labels.
 
-Process:
-  1) Build per-class index lists across the 50k ranks using WNIDs parsed from paths.
-  2) Score classes by how uniformly their indices cover NUM_BINS bins across the 50k ranks.
-  3) Choose TOP_K classes with lowest uniformity score (and at least 2*NUM_BINS examples).
-  4) For each chosen class and each bin, sample two images closest to the bin center.
-  5) Render a grid: a top difficulty axis row; then one row per class with 2 images per bin.
+Process (single-row spectrum):
+  1) Consider a difficulty sub-range of global ranks [start_rank, end_rank).
+  2) Split that range into NUM_BINS equal bins (default 12).
+  3) Pick one image per bin near its center, preferring class diversity across the 12 picks.
+  4) Render one row of 12 images; above it, render a colored difficulty scale spanning the range.
 
 Usage:
   python visualizations/main.py \
@@ -40,28 +38,29 @@ import matplotlib.pyplot as plt
 
 
 def default_paths() -> Tuple[str, str, str, str]:
-    """Return defaults for csv, npy, hierarchy json, and output path."""
+    """Return defaults for csv, hierarchy json, and output path."""
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     bars_dir = os.path.join(project_root, "bars")
     csv_path = os.path.join(bars_dir, "imagenet_examples_ammended.csv")
-    npy_path = os.path.join(bars_dir, "imagenet.npy")
     hier_path = os.path.join(bars_dir, "imagenet_synset_hierarchy.json")
     out_path = os.path.join(os.path.dirname(__file__), "difficulty_spectrum.png")
-    
-    return csv_path, npy_path, hier_path, out_path
+
+    return csv_path, hier_path, out_path
 
 
 def parse_args() -> argparse.Namespace:
-    d_csv, d_npy, d_hier, d_out = default_paths()
+    d_csv, d_hier, d_out = default_paths()
     p = argparse.ArgumentParser(description="Generate ImageNet difficulty spectrum figure.")
     p.add_argument("--csv", default=d_csv, help="Path to imagenet_examples_ammended.csv")
-    p.add_argument("--npy", default=d_npy, help="Path to imagenet.npy")
     p.add_argument("--hier", default=d_hier, help="Path to imagenet_synset_hierarchy.json")
     p.add_argument("--out", default=d_out, help="Output image path (PNG)")
-    p.add_argument("--bins", type=int, default=12, help="Number of rank bins")
-    p.add_argument("--classes", type=int, default=5, help="Number of classes to show")
+    p.add_argument("--bins", type=int, default=12, help="Number of rank bins (images)")
+    p.add_argument("--start_rank", type=int, default=1, help="Inclusive 1-based start rank (default 1)")
+    p.add_argument("--end_rank", type=int, default=0, help="Exclusive 1-based end rank (0=end of file)")
+    p.add_argument("--classes", type=int, default=5, help="Number of classes to prioritize for diversity")
     p.add_argument("--seed", type=int, default=1337, help="RNG seed for tie-breaking")
-    p.add_argument("--thumb", type=int, default=128, help="Thumbnail square size in pixels")
+    p.add_argument("--thumb", type=int, default=160, help="Thumbnail square size in pixels")
+    p.add_argument("--dpi", type=int, default=350, help="Output figure DPI")
     return p.parse_args()
 
 
@@ -76,28 +75,7 @@ def parse_imagenet_examples_csv(csv_path: str) -> List[str]:
     return [p for p in parts if p != ""]
 
 
-def load_correct_matrix(npy_path: str, expected_images: int | None = None) -> np.ndarray:
-    arr = np.load(npy_path, allow_pickle=True)
-    if arr.dtype == object:
-        if arr.ndim == 1:
-            rows: List[np.ndarray] = []
-            for row in arr.tolist():
-                rows.append(np.asarray([False if (x is None) else bool(x) for x in row], dtype=bool))
-            matrix = np.vstack(rows)
-        else:
-            m, n = arr.shape
-            matrix = np.zeros((m, n), dtype=bool)
-            for i in range(m):
-                for j in range(n):
-                    x = arr[i, j]
-                    matrix[i, j] = False if (x is None) else bool(x)
-    else:
-        matrix = arr.astype(bool) if arr.dtype != bool else arr
-    if matrix.ndim == 1:
-        matrix = np.expand_dims(matrix, axis=0)
-    if expected_images is not None and matrix.shape[1] != expected_images:
-        raise ValueError(f"NPY images={matrix.shape[1]} mismatch vs expected {expected_images}")
-    return matrix
+# No scores/NPY required for this visualization; selection relies solely on CSV ranks and class spread
 
 
 def path_to_wnid(path: str) -> Optional[str]:
@@ -106,33 +84,22 @@ def path_to_wnid(path: str) -> Optional[str]:
     return m.group(1) if m else None
 
 
-@dataclass
-class ClassCoverage:
-    wnid: str
-    label: str
-    counts: List[int]
-    score: float
-
-
-def compute_coverage(indices: List[int], num_images: int, num_bins: int) -> Tuple[List[int], float]:
-    counts = [0] * num_bins
-    for idx in indices:
-        b = min(int(idx * num_bins / num_images), num_bins - 1)
-        counts[b] += 1
-    total = sum(counts)
-    if total == 0:
-        return counts, float("inf")
-    expected = total / num_bins
-    chisq = sum(((c - expected) ** 2) / (expected + 1e-9) for c in counts)
-    zeros = sum(1 for c in counts if c == 0)
-    score = chisq + zeros * expected
-    return counts, float(score)
+def continuous_colormap(width: int, cmap_name: str = "plasma") -> np.ndarray:
+    """Return a 1xW RGB image representing a continuous colormap."""
+    import matplotlib.cm as cm
+    cmap = cm.get_cmap(cmap_name)
+    xs = np.linspace(0.0, 1.0, width)
+    rgb = cmap(xs)[..., :3]
+    return np.expand_dims(rgb, axis=0)
 
 
 def load_hierarchy_labels(hier_path: str) -> Dict[str, str]:
-    with open(hier_path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    return {wnid: meta.get("words", wnid) for wnid, meta in data.items()}
+    try:
+        with open(hier_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return {wnid: meta.get("words", wnid) for wnid, meta in data.items()}
+    except Exception:
+        return {}
 
 
 def load_image_or_tile(path: str, size: Tuple[int, int]) -> Image.Image:
@@ -151,19 +118,16 @@ def main() -> None:
     args = parse_args()
     random.seed(args.seed)
 
-    paths_50k = parse_imagenet_examples_csv(args.csv)
-    num_images = len(paths_50k)
-    if num_images != 50000:
-        raise ValueError(f"Expected 50,000 images in CSV, got {num_images}")
-
-    correct_matrix = load_correct_matrix(args.npy, expected_images=num_images)
-    _num_models, _ = correct_matrix.shape
+    paths_all = parse_imagenet_examples_csv(args.csv)
+    num_images = len(paths_all)
+    if num_images <= 0:
+        raise ValueError("CSV appears empty")
 
     labels = load_hierarchy_labels(args.hier)
 
-    # Build wnid -> indices
+    # Build wnid -> indices (0-based ranks)
     wnid_to_indices: Dict[str, List[int]] = {}
-    for idx, p in enumerate(paths_50k):
+    for idx, p in enumerate(paths_all):
         if p == "None" or p == "":
             continue
         wnid = path_to_wnid(p)
@@ -171,78 +135,146 @@ def main() -> None:
             continue
         wnid_to_indices.setdefault(wnid, []).append(idx)
 
-    num_bins = args.bins
-    bin_edges = [i * num_images / num_bins for i in range(num_bins + 1)]
+    # Restrict to requested rank window [start_rank, end_rank) (1-based ranks)
+    start_rank = max(1, int(args.start_rank))
+    end_rank = int(args.end_rank) if int(args.end_rank) > 0 else num_images
+    if end_rank <= start_rank:
+        raise ValueError("end_rank must be greater than start_rank")
+    start_idx = start_rank - 1
+    end_idx_exclusive = end_rank  # already exclusive
+    total_in_window = end_idx_exclusive - start_idx
+    if total_in_window <= 0:
+        raise ValueError("Empty rank window after conversion to 0-based indices")
+
+    num_bins = int(args.bins)
+    # Floating bin edges across the selected window
+    bin_edges = [start_idx + i * (total_in_window / num_bins) for i in range(num_bins + 1)]
     bin_centers = [int((bin_edges[i] + bin_edges[i + 1]) / 2) for i in range(num_bins)]
 
-    coverages: List[ClassCoverage] = []
-    for wnid, idxs in wnid_to_indices.items():
-        counts, score = compute_coverage(idxs, num_images=num_images, num_bins=num_bins)
-        coverages.append(ClassCoverage(wnid=wnid, label=labels.get(wnid, wnid), counts=counts, score=score))
-
-    min_per_class = 2 * num_bins
-    candidates = [c for c in coverages if sum(c.counts) >= min_per_class]
-    random.shuffle(candidates)
-    candidates.sort(key=lambda c: c.score)
-    chosen = candidates[: args.classes]
-
-    # Prepare per-bin index lists for chosen classes
-    class_bin_indices: Dict[str, List[List[int]]] = {}
-    for c in chosen:
-        per_bin = [[] for _ in range(num_bins)]
-        for idx in wnid_to_indices[c.wnid]:
-            b = min(int(idx * num_bins / num_images), num_bins - 1)
-            per_bin[b].append(idx)
-        for b in range(num_bins):
-            per_bin[b].sort()
-        class_bin_indices[c.wnid] = per_bin
-
-    # Plot
-    cols = num_bins * 2
-    rows = len(chosen)
-    fig_h = 2.2 * rows
-    fig_w = 1.8 * cols / 6
-    fig, axes = plt.subplots(rows + 1, cols, figsize=(fig_w, fig_h), gridspec_kw={"height_ratios": [0.6] + [1] * rows})
-
-    # Top difficulty axis
-    for col in range(cols):
-        ax = axes[0, col]
-        ax.axis("off")
-        bin_id = col // 2
-        if col % 2 == 0:
-            ax.text(0.5, 0.5, f"≤{int(bin_edges[bin_id + 1])}", ha="center", va="center", fontsize=9)
-    axes[0, 0].text(0.0, 1.2, "Difficulty (easy → hard)", transform=axes[0, 0].transAxes, fontsize=12, fontweight="bold")
-
-    # Rows per class with thumbnails
-    thumb_size = (args.thumb, args.thumb)
-    for r, c in enumerate(chosen, start=1):
-        label_ax = axes[r, 0]
-        label_ax.text(-0.6, 0.5, c.label, va="center", ha="right", fontsize=11, transform=label_ax.transAxes)
-        for col in range(cols):
-            axes[r, col].axis("off")
-
-        per_bin_used = {b: 0 for b in range(num_bins)}
-        per_bin = class_bin_indices[c.wnid]
-        for b in range(num_bins):
-            idxs = per_bin[b]
-            if not idxs:
+    # Choose 5 classes with best uniform spread across this window
+    def compute_class_score(indices: List[int]) -> float:
+        counts = [0] * num_bins
+        for idx in indices:
+            if idx < start_idx or idx >= end_idx_exclusive:
                 continue
-            center = bin_centers[b]
-            for idx in sorted(idxs, key=lambda i: abs(i - center))[:2]:
-                slot = per_bin_used[b]
-                if slot >= 2:
+            b = min(int((idx - start_idx) * num_bins / total_in_window), num_bins - 1)
+            counts[b] += 1
+        total = sum(counts)
+        if total == 0:
+            return float("inf")
+        expected = total / num_bins
+        chisq = sum(((c - expected) ** 2) / (expected + 1e-9) for c in counts)
+        zeros = sum(1 for c in counts if c == 0)
+        return chisq + zeros * expected
+
+    class_scores: List[Tuple[str, float]] = []
+    for wnid, idxs in wnid_to_indices.items():
+        score = compute_class_score(idxs)
+        class_scores.append((wnid, score))
+    class_scores.sort(key=lambda t: t[1])
+    chosen_wnids = [wnid for wnid, _ in class_scores[: max(1, int(args.classes))]]
+
+    # Precompute per-bin nearest candidate for each chosen class
+    per_class_bin_lists: Dict[str, List[List[int]]] = {w: [[] for _ in range(num_bins)] for w in chosen_wnids}
+    for w in chosen_wnids:
+        for idx in wnid_to_indices.get(w, []):
+            if idx < start_idx or idx >= end_idx_exclusive:
+                continue
+            b = min(int((idx - start_idx) * num_bins / total_in_window), num_bins - 1)
+            per_class_bin_lists[w][b].append(idx)
+        for b in range(num_bins):
+            per_class_bin_lists[w][b].sort()
+
+    # Candidate indices per bin; choose one per bin with class-diversity preference among chosen classes
+    # Build global index list for quick wnid lookup
+    def idx_to_wnid(i: int) -> Optional[str]:
+        p = paths_all[i]
+        if not p or p == "None":
+            return None
+        return path_to_wnid(p)
+
+    chosen_indices: List[int] = []
+    used_wnids: Dict[str, int] = {w: 0 for w in chosen_wnids}
+    for b in range(num_bins):
+        center = bin_centers[b]
+        # Build per-class nearest candidate within this bin
+        candidates: List[Tuple[int, str, int]] = []  # (distance, wnid, idx)
+        for w in chosen_wnids:
+            lst = per_class_bin_lists[w][b]
+            if not lst:
+                continue
+            # pick nearest to center
+            nearest = min(lst, key=lambda j: abs(j - center))
+            candidates.append((abs(nearest - center), w, nearest))
+        if candidates:
+            # Prefer classes used fewer times; then smaller distance
+            candidates.sort(key=lambda t: (used_wnids.get(t[1], 0), t[0]))
+            _, w_sel, idx_sel = candidates[0]
+            chosen_indices.append(idx_sel)
+            used_wnids[w_sel] = used_wnids.get(w_sel, 0) + 1
+        else:
+            # Fallback: search any class in window
+            max_radius = int(math.ceil((bin_edges[b + 1] - bin_edges[b]) * 2))
+            chosen_any: Optional[int] = None
+            for radius in range(max_radius):
+                for sign in (-1, 1):
+                    j = center + sign * radius
+                    if j < int(bin_edges[b]) or j >= int(bin_edges[b + 1]):
+                        continue
+                    if paths_all[j] and paths_all[j] != "None":
+                        chosen_any = j
+                        break
+                if chosen_any is not None:
                     break
-                col = b * 2 + slot
-                img = load_image_or_tile(paths_50k[idx], size=thumb_size)
-                axes[r, col].imshow(img)
-                axes[r, col].set_title(f"{idx + 1}", fontsize=8)
-                per_bin_used[b] += 1
+            if chosen_any is not None:
+                chosen_indices.append(chosen_any)
+
+    # Plot: one top difficulty bar + one row of 12 images
+    cols = num_bins
+    rows = 1
+    fig_h = 3.8
+    fig_w = 1.6 * cols
+    fig, axes = plt.subplots(rows + 1, cols, figsize=(fig_w, fig_h), gridspec_kw={"height_ratios": [0.5] + [1] * rows})
+
+    # Top difficulty colored scale
+    gradient = continuous_colormap(800, cmap_name="plasma")
+    for c in range(cols):
+        axes[0, c].axis("off")
+    # Draw gradient across a single invisible axis spanning all columns by overlaying on axes[0, 0]
+    ax0 = axes[0, 0]
+    ax0.imshow(gradient, aspect="auto", extent=[0, 1, 0, 1])
+    ax0.set_xlim(0, 1)
+    ax0.set_ylim(0, 1)
+    ax0.axis("off")
+    # Add ticks at bin edges with rank labels
+    for i in range(cols + 1):
+        x = i / cols
+        ax0.plot([x, x], [0.0, 1.0], color=(1, 1, 1, 0.5), linewidth=0.8)
+        if i < cols:
+            rank_right = int((bin_edges[i + 1]) + 1)  # convert to 1-based approx
+            axes[0, i].text(0.5, -0.2, f"≤{rank_right}", ha="center", va="top", transform=axes[0, i].transAxes, fontsize=8)
+    axes[0, 0].text(0.0, 1.25, f"Difficulty ({start_rank:,} → {end_rank:,})", transform=axes[0, 0].transAxes, fontsize=12, fontweight="bold")
+
+    # One row of thumbnails
+    thumb_size = (args.thumb, args.thumb)
+    for col in range(cols):
+        ax = axes[1, col]
+        ax.axis("off")
+        if col >= len(chosen_indices):
+            continue
+        idx = chosen_indices[col]
+        img = load_image_or_tile(paths_all[idx], size=thumb_size)
+        wnid = path_to_wnid(paths_all[idx]) or ""
+        label = labels.get(wnid, wnid)
+        ax.imshow(img)
+        ax.set_title(f"{idx + 1}", fontsize=9)
+        ax.text(0.5, -0.18, label, ha="center", va="top", fontsize=8, transform=ax.transAxes, wrap=True)
 
     plt.tight_layout()
     out_dir = os.path.dirname(args.out)
     if out_dir:
         os.makedirs(out_dir, exist_ok=True)
-    fig.savefig(args.out, dpi=200)
+    fig.savefig(args.out, dpi=int(args.dpi))
     print(f"Saved figure to: {args.out}")
 
 
