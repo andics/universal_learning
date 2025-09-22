@@ -392,18 +392,6 @@ def main() -> None:
 		universal_rank = path_to_difficulty_rank[example_path] + 1
 		results.append([global_order_idx, example_path, total_steps, total_loss_sum, final_loss, weight_distance, softmax_w1, grad_mass_w1, universal_rank, global_cka, init_highest_softmax_prob, init_target_softmax_prob, steps_to_correct])
 		logger.info(f"Example {local_idx + 1} completed: {total_steps} steps, loss sum: {total_loss_sum:.4f}, final loss: {final_loss:.8f}, weight distance: {weight_distance:.4f} (universal rank: {universal_rank})")
-		# Write per-example completion JSON (idempotent) into step_logs/worker_X
-		try:
-			marker_payload = {
-				"path": example_path,
-				"rank": int(_rank),
-				"short_id": short_id,
-				"timestamp": float(time.time()),
-			}
-			with open(completion_json, 'w', encoding='utf-8') as jf:
-				json.dump(marker_payload, jf, ensure_ascii=False, indent=2)
-		except Exception:
-			logger.exception("Failed to write processed marker JSON", exc_info=True)
 
 		# Auto-stop check: exit before starting the next example if limit exceeded
 		elapsed_s = time.time() - start_time
