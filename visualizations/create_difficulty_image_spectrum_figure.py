@@ -60,25 +60,17 @@ def default_paths() -> Tuple[str, str, str, str]:
     return csv_path, npy_path, hier_path, out_path
 
 
-# Module-level defaults computed once
-DEFAULT_CSV, DEFAULT_NPY, DEFAULT_HIER, DEFAULT_OUT = default_paths()
-DEFAULT_BINS = 12
-DEFAULT_CLASSES = 5
-DEFAULT_SEED = 1337
-DEFAULT_THUMB = 128
-
-
 def parse_args() -> argparse.Namespace:
-    d_csv, d_npy, d_hier, d_out = DEFAULT_CSV, DEFAULT_NPY, DEFAULT_HIER, DEFAULT_OUT
+    d_csv, d_npy, d_hier, d_out = default_paths()
     p = argparse.ArgumentParser(description="Generate ImageNet difficulty spectrum figure.")
     p.add_argument("--csv", default=d_csv, help="Path to imagenet_examples_ammended.csv")
     p.add_argument("--npy", default=d_npy, help="Path to imagenet.npy")
     p.add_argument("--hier", default=d_hier, help="Path to imagenet_synset_hierarchy.json")
     p.add_argument("--out", default=d_out, help="Output image path (PNG)")
-    p.add_argument("--bins", type=int, default=DEFAULT_BINS, help="Number of rank bins")
-    p.add_argument("--classes", type=int, default=DEFAULT_CLASSES, help="Number of classes to show")
-    p.add_argument("--seed", type=int, default=DEFAULT_SEED, help="RNG seed for tie-breaking")
-    p.add_argument("--thumb", type=int, default=DEFAULT_THUMB, help="Thumbnail square size in pixels")
+    p.add_argument("--bins", type=int, default=12, help="Number of rank bins")
+    p.add_argument("--classes", type=int, default=5, help="Number of classes to show")
+    p.add_argument("--seed", type=int, default=1337, help="RNG seed for tie-breaking")
+    p.add_argument("--thumb", type=int, default=128, help="Thumbnail square size in pixels")
     return p.parse_args()
 
 

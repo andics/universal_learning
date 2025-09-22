@@ -66,30 +66,30 @@ def load_wnid_to_index_from_torchvision() -> Dict[str, int] | None:
 def main() -> None:
 	parser = argparse.ArgumentParser(description="Train model on single examples in order of difficulty.")
 	parser.add_argument("--model_name", type=str, default="efficientvit_b0.r224_in1k")
-	parser.add_argument("--bars_npy", type=str, default=os.path.join("bars", "geq6wrong_21017_geq6correct_1525_imagenet.npy"))
-	parser.add_argument("--examples_csv", type=str, default=os.path.join("bars", "geq6wrong_21017_geq6correct_1525_imagenet_examples_ammended.csv"))
+	parser.add_argument("--bars_npy", type=str, default="/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/geq6wrong_21017_geq6correct_1525_imagenet.npy")
+	parser.add_argument("--examples_csv", type=str, default="/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/geq6wrong_21017_geq6correct_1525_imagenet_examples_ammended.csv")
 	parser.add_argument("--root_dir", type=str, default=None)
 	parser.add_argument("--model_csv_name", type=str, default="efficientvit_base_0_224_classification_imagenet_1k",
 						help="Model name to look up in imagenet_models.csv to select row in imagenet.npy")
-	parser.add_argument("--imagenet_models_csv", type=str, default=os.path.join("bars", "imagenet_models.csv"),
+	parser.add_argument("--imagenet_models_csv", type=str, default="/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/imagenet_models.csv",
 						help="Path to bars/imagenet_models.csv containing model column names")
-	parser.add_argument("--max_examples", type=int, default=500, help="Maximum number of examples to train on")
+	parser.add_argument("--max_examples", type=int, default=1500, help="Maximum number of examples to train on")
 	parser.add_argument("--max_steps_per_example", type=int, default=10000, help="Maximum steps to train each example")
-	parser.add_argument("--lr", type=float, default=0.001)
+	parser.add_argument("--lr", type=float, default=0.0001)
 	parser.add_argument("--weight_decay", type=float, default=0)
 	parser.add_argument("--epsilon", type=float, default=1e-3, help="Train until loss reaches this epsilon")
 	parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu")
-	parser.add_argument("--output_dir", type=str, default=os.path.join("training_gradient_evaluator_single_loss", "outputs"))
+	parser.add_argument("--output_dir", type=str, default="/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/training_gradient_evaluator_single_loss/outputs_lr_0.0001")
 	parser.add_argument("--no_amp", action="store_true", help="Disable AMP (include this flag to turn AMP off)")
 	parser.add_argument("--amp_dtype", type=str, default=None, choices=["float16", "bfloat16"], help="AMP dtype to use when AMP is enabled")
 	parser.add_argument("--seed", type=int, default=1337, help="Global RNG seed for Python/NumPy/Torch")
-	parser.add_argument("--deterministic", action="store_true", help="Force PyTorch deterministic algorithms")
+	parser.add_argument("--deterministic", action="store_true", default=True, help="Force PyTorch deterministic algorithms")
 	# Fraction of parameterized layers to compute CKA on (default 5%)
 	parser.add_argument("--cka_layer_fraction", type=float, default=0.05, help="Fraction of parameterized layers to sample for CKA hooks (0-1]. Default: 0.05 (5%)")
 	# Always use zero augmentation via timm regardless of this flag; kept for backward compatibility
-	parser.add_argument("--zero_aug_train", action="store_true", help="(Deprecated) Zero augmentation is always enforced via timm")
+	parser.add_argument("--zero_aug_train", action="store_true", default=True, help="(Deprecated) Zero augmentation is always enforced via timm")
 	parser.add_argument("--grad_clip_norm", type=float, default=1.0, help="Gradient clipping max norm (use <=0 to disable)")
-	parser.add_argument("--hierarchy_json", type=str, default=_default_hierarchy_json_path(), 
+	parser.add_argument("--hierarchy_json", type=str, default="/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/imagenet_synset_hierarchy.json", 
 	                   help="Path to bars/imagenet_synset_hierarchy.json")
 	# Optional explicit training examples JSON (same structure as produced by dataset_processing script)
 	parser.add_argument("--explicit_examples_for_training", type=str, default=None,
