@@ -50,7 +50,7 @@ def main() -> None:
 			per_model_args = [
 				'--model_name', str(model_in_timm),
 				'--model_csv_name', str(model_csv_name),
-				'--output_dir', os.path.join('training_gradient_evaluator_single_loss', 'outputs_lr_0.0001'),
+				'--output_dir', os.path.join('training_gradient_evaluator_single_loss', 'outputs_assess_training_time'),
 			]
 			# common args
 			for k, v in args_common.items():
