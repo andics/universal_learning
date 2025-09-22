@@ -6,56 +6,19 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-
-def _total_variation_distance(p: np.ndarray, q: np.ndarray) -> float:
-	"""TV distance between categorical distributions p and q.
-	This equals the 1-Wasserstein distance under a 0-1 ground metric."""
-	p = np.asarray(p, dtype=np.float64)
-	q = np.asarray(q, dtype=np.float64)
-	p = p / (p.sum() + 1e-12)
-	q = q / (q.sum() + 1e-12)
-	return float(0.5 * np.abs(p - q).sum())
-
-
-def _wasserstein_equal_bins_1d(p: np.ndarray, q: np.ndarray) -> float:
-	"""Compute 1D W1 between discrete distributions on equally spaced bins (width=1)."""
-	p = np.asarray(p, dtype=np.float64)
-	q = np.asarray(q, dtype=np.float64)
-	p = p / (p.sum() + 1e-12)
-	q = q / (q.sum() + 1e-12)
-	cdf_p = np.cumsum(p)
-	cdf_q = np.cumsum(q)
-	return float(np.abs(cdf_p - cdf_q).sum())
-
-
-def _get_param_buckets(model: nn.Module) -> list[str]:
-	"""Return stable parameter buckets by first name token (before first dot)."""
-	buckets: list[str] = []
-	seen = set()
-	for name, _ in model.named_parameters():
-		prefix = name.split('.')[0] if '.' in name else name
-		if prefix not in seen:
-			seen.add(prefix)
-			buckets.append(prefix)
-	return buckets
-
-
-def _compute_grad_mass_distribution(model: nn.Module, buckets: list[str]) -> np.ndarray:
-	"""Aggregate mean |grad| per provided bucket list and normalize to a distribution."""
-	from collections import defaultdict
-	agg = defaultdict(float)
-	for name, p in model.named_parameters():
-		if p.grad is None:
-			continue
-		prefix = name.split('.')[0] if '.' in name else name
-		g = p.grad.detach()
-		mass = float(g.abs().mean().item())
-		agg[prefix] += mass
-	masses = np.array([agg.get(b, 0.0) for b in buckets], dtype=np.float64)
-	den = masses.sum()
-	if den <= 0:
-		return np.full_like(masses, 1.0 / len(masses)) if len(masses) > 0 else np.array([1.0])
-	return masses / den
+from .train_utils import (
+	AmpContext,
+	build_amp_context,
+	create_optimizer,
+	set_eval_for_small_batch_modules,
+	restore_training,
+	get_param_buckets,
+	compute_grad_mass_distribution,
+	forward_backward_step,
+	compute_weight_distance,
+	total_variation_distance,
+	wasserstein_equal_bins_1d,
+)
 
 
 @dataclass
@@ -83,9 +46,9 @@ class SingleExampleTrainer:
 		config: SingleExampleConfig,
 		reset_state_dict: Dict[str, torch.Tensor],
 		step_log_csv_path: str,
-	) -> Tuple[int, float, float, float, float, float]:
+	) -> Tuple[int, float, float, float, float, float, float, float, int]:
 		"""Run SGD on a single image until loss <= epsilon or max_steps.
-		Returns (total_steps, loss_sum, final_loss, weight_distance, softmax_w1, grad_mass_w1).
+		Returns (total_steps, loss_sum, final_loss, weight_distance, softmax_w1, grad_mass_w1, init_highest_softmax_prob, init_target_softmax_prob, steps_to_correct).
 		"""
 		from PIL import Image
 		from training_gradient_evaluator_single_loss_parallel.data import extract_synset_from_path
@@ -105,30 +68,30 @@ class SingleExampleTrainer:
 			raise RuntimeError(f"Could not determine synset/class for path: {example_path}")
 		target = torch.tensor([self.synset_to_idx[wnid]], device=device)
 
-		# Before-training softmax
+		# Before-training softmax and initial metrics
 		with torch.no_grad():
 			self.model.eval()
 			logits0 = self.model(x)
 			probs0 = torch.softmax(logits0, dim=-1).squeeze(0).detach().cpu().numpy()
+			init_highest_softmax_prob = float(np.max(probs0))
+			init_target_softmax_prob = float(probs0[int(target.item())])
+			initial_pred = int(torch.argmax(logits0, dim=-1).item())
 
 		self.model.train()
 		# Put BN and Dropout in eval to avoid batch size=1 stat updates and stochasticity
-		_eval_modules = []
-		for module in self.model.modules():
-			if isinstance(module, (torch.nn.BatchNorm1d, torch.nn.BatchNorm2d, torch.nn.BatchNorm3d, torch.nn.Dropout, torch.nn.Dropout2d, torch.nn.Dropout3d, torch.nn.AlphaDropout)):
-				_eval_modules.append(module)
-				module.eval()
+		_eval_modules = set_eval_for_small_batch_modules(self.model)
 
-		optimizer = torch.optim.SGD(self.model.parameters(), lr=config.lr, weight_decay=config.weight_decay)
-		# AMP setup: prefer GradScaler for float16; do not use GradScaler for bfloat16
-		use_scaler = bool(config.use_amp and device.type == "cuda" and (config.amp_dtype or "float16") == "float16")
-		scaler = torch.amp.GradScaler('cuda', enabled=use_scaler)
+		optimizer = create_optimizer(self.model, lr=config.lr, weight_decay=config.weight_decay)
+		# AMP setup
+		amp_ctx: AmpContext = build_amp_context(config.use_amp, config.amp_dtype, device)
+		scaler = torch.amp.GradScaler('cuda', enabled=amp_ctx.use_scaler)
 		criterion = nn.CrossEntropyLoss()
-		param_buckets = _get_param_buckets(self.model)
+		param_buckets = get_param_buckets(self.model)
 
 		total_loss_sum = 0.0
 		first_grad_mass = None
 		last_grad_mass = None
+		steps_to_correct = 0 if initial_pred == int(target.item()) else -1
 
 		# Step logging
 		os.makedirs(os.path.dirname(step_log_csv_path), exist_ok=True)
@@ -138,114 +101,69 @@ class SingleExampleTrainer:
 			step_writer.writerow(["step", "loss", "cumulative_loss_sum"])
 
 			for step in range(1, int(config.max_steps) + 1):
-				optimizer.zero_grad(set_to_none=True)
-				if scaler.is_enabled() or (config.use_amp and device.type == "cuda" and (config.amp_dtype or "float16") == "bfloat16"):
-					# Autocast with requested dtype (float16 or bfloat16)
-					_autocast_dtype = torch.bfloat16 if (config.amp_dtype or "float16") == "bfloat16" else torch.float16
-					with torch.amp.autocast('cuda', dtype=_autocast_dtype):
-						logits = self.model(x)
-						loss = criterion(logits, target)
-					if scaler.is_enabled():
-						scaler.scale(loss).backward()
-						# Capture grad mass then clip, step
-						scaler.unscale_(optimizer)
-						gmass = _compute_grad_mass_distribution(self.model, param_buckets)
-						if first_grad_mass is None:
-							first_grad_mass = gmass
-						last_grad_mass = gmass
-						if config.gradient_clip_norm:
-							torch.nn.utils.clip_grad_norm_(self.model.parameters(), config.gradient_clip_norm)
-						scaler.step(optimizer)
-						scaler.update()
-					else:
-						loss.backward()
-						gmass = _compute_grad_mass_distribution(self.model, param_buckets)
-						if first_grad_mass is None:
-							first_grad_mass = gmass
-						last_grad_mass = gmass
-						if config.gradient_clip_norm:
-							torch.nn.utils.clip_grad_norm_(self.model.parameters(), config.gradient_clip_norm)
-						optimizer.step()
-				else:
-					logits = self.model(x)
-					loss = criterion(logits, target)
-					loss.backward()
-					gmass = _compute_grad_mass_distribution(self.model, param_buckets)
-					if first_grad_mass is None:
-						first_grad_mass = gmass
-					last_grad_mass = gmass
-					if config.gradient_clip_norm:
-						torch.nn.utils.clip_grad_norm_(self.model.parameters(), config.gradient_clip_norm)
-					optimizer.step()
+				loss_value, gmass, pred_after = forward_backward_step(
+					model=self.model,
+					x=x,
+					target=target,
+					criterion=criterion,
+					optimizer=optimizer,
+					amp=amp_ctx,
+					scaler=scaler,
+					gradient_clip_norm=config.gradient_clip_norm,
+					param_buckets=param_buckets,
+				)
 
-				current_loss = float(loss.item())
+				# Track steps_to_correct: first step when prediction equals target
+				if steps_to_correct < 0 and pred_after == int(target.item()):
+					steps_to_correct = int(step)
+
+				current_loss = float(loss_value)
 				total_loss_sum += current_loss
 				step_writer.writerow([step, current_loss, total_loss_sum])
 
-				if torch.isnan(loss):
+				if torch.isnan(torch.tensor(current_loss)):
 					# Weight distance (use parameter tensors only)
-					final_params = {n: p.data.clone().cpu() for n, p in self.model.named_parameters()}
-					wd = 0.0
-					for n, p0 in initial_param_weights.items():
-						if n in final_params:
-							d = (final_params[n].flatten().float() - p0.flatten().float())
-							wd += float(torch.sum(d * d).item())
-					wd = float(wd ** 0.5)
+					wd = compute_weight_distance(initial_param_weights, self.model)
 					with torch.no_grad():
 						self.model.eval()
 						logitsT = self.model(x)
 						probsT = torch.softmax(logitsT, dim=-1).squeeze(0).detach().cpu().numpy()
-					softmax_w1 = _total_variation_distance(probs0, probsT)
-					grad_mass_w1 = _wasserstein_equal_bins_1d(first_grad_mass if first_grad_mass is not None else np.array([1.0]), last_grad_mass if last_grad_mass is not None else np.array([1.0]))
-					for m in _eval_modules:
-						m.train()
+					softmax_w1 = total_variation_distance(probs0, probsT)
+					grad_mass_w1 = wasserstein_equal_bins_1d(first_grad_mass if first_grad_mass is not None else np.array([1.0]), last_grad_mass if last_grad_mass is not None else np.array([1.0]))
+					restore_training(_eval_modules)
 					if self.logger:
 						self.logger.warning(f"NaN loss detected at step {step}. Stopping training for this example.")
-					return -1, total_loss_sum, float('nan'), wd, softmax_w1, grad_mass_w1
+					return -1, total_loss_sum, float('nan'), wd, softmax_w1, grad_mass_w1, init_highest_softmax_prob, init_target_softmax_prob, int(steps_to_correct)
 
 				if current_loss <= float(config.epsilon):
-					final_params = {n: p.data.clone().cpu() for n, p in self.model.named_parameters()}
-					wd = 0.0
-					for n, p0 in initial_param_weights.items():
-						if n in final_params:
-							d = (final_params[n].flatten().float() - p0.flatten().float())
-							wd += float(torch.sum(d * d).item())
-					wd = float(wd ** 0.5)
+					wd = compute_weight_distance(initial_param_weights, self.model)
 					with torch.no_grad():
 						self.model.eval()
 						logitsT = self.model(x)
 						probsT = torch.softmax(logitsT, dim=-1).squeeze(0).detach().cpu().numpy()
-					softmax_w1 = _total_variation_distance(probs0, probsT)
-					grad_mass_w1 = _wasserstein_equal_bins_1d(first_grad_mass if first_grad_mass is not None else np.array([1.0]), last_grad_mass if last_grad_mass is not None else np.array([1.0]))
-					for m in _eval_modules:
-						m.train()
+					softmax_w1 = total_variation_distance(probs0, probsT)
+					grad_mass_w1 = wasserstein_equal_bins_1d(first_grad_mass if first_grad_mass is not None else np.array([1.0]), last_grad_mass if last_grad_mass is not None else np.array([1.0]))
+					restore_training(_eval_modules)
 					if self.logger:
 						self.logger.info(
 							f"Example {example_path} reached epsilon at step {step}, loss sum: {total_loss_sum:.4f}, final loss: {current_loss:.8f}, weight distance: {wd:.4f}"
 						)
-					return step, total_loss_sum, current_loss, wd, softmax_w1, grad_mass_w1
+					return step, total_loss_sum, current_loss, wd, softmax_w1, grad_mass_w1, init_highest_softmax_prob, init_target_softmax_prob, int(steps_to_correct)
 
 		# Finalize without reaching epsilon
-		final_params = {n: p.data.clone().cpu() for n, p in self.model.named_parameters()}
-		wd = 0.0
-		for n, p0 in initial_param_weights.items():
-			if n in final_params:
-				d = (final_params[n].flatten().float() - p0.flatten().float())
-				wd += float(torch.sum(d * d).item())
-		wd = float(wd ** 0.5)
+		wd = compute_weight_distance(initial_param_weights, self.model)
 		with torch.no_grad():
 			self.model.eval()
 			logitsT = self.model(x)
 			probsT = torch.softmax(logitsT, dim=-1).squeeze(0).detach().cpu().numpy()
-		softmax_w1 = _total_variation_distance(probs0, probsT)
-		grad_mass_w1 = _wasserstein_equal_bins_1d(first_grad_mass if first_grad_mass is not None else np.array([1.0]), last_grad_mass if last_grad_mass is not None else np.array([1.0]))
-		for m in _eval_modules:
-			m.train()
+		softmax_w1 = total_variation_distance(probs0, probsT)
+		grad_mass_w1 = wasserstein_equal_bins_1d(first_grad_mass if first_grad_mass is not None else np.array([1.0]), last_grad_mass if last_grad_mass is not None else np.array([1.0]))
+		restore_training(_eval_modules)
 		if self.logger:
 			self.logger.info(
 				f"Example {example_path} never reached epsilon after {config.max_steps} steps, loss sum: {total_loss_sum:.4f}, final loss: {current_loss:.8f}, weight distance: {wd:.4f}"
 			)
-		return -1, total_loss_sum, current_loss, wd, softmax_w1, grad_mass_w1
+		return -1, total_loss_sum, current_loss, wd, softmax_w1, grad_mass_w1, init_highest_softmax_prob, init_target_softmax_prob, int(steps_to_correct)
 
 
 

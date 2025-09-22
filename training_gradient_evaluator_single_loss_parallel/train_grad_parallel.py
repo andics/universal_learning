@@ -375,7 +375,7 @@ def main() -> None:
 		step_log_file = os.path.join(step_logs_dir, f"example_{global_order_idx}_rank_{_rank:05d}_{short_id}_steps.csv")
 		full_path = resolve_full(example_path)
 		try:
-			total_steps, total_loss_sum, final_loss, weight_distance, softmax_w1, grad_mass_w1 = trainer.train_on_example(
+			total_steps, total_loss_sum, final_loss, weight_distance, softmax_w1, grad_mass_w1, init_highest_softmax_prob, init_target_softmax_prob, steps_to_correct = trainer.train_on_example(
 				full_path, se_config, reset_state, step_log_file
 			)
 			if cka_enabled:
@@ -386,7 +386,7 @@ def main() -> None:
 			logger.error("Fatal error while training on example", exc_info=True)
 			raise
 		universal_rank = path_to_difficulty_rank[example_path] + 1
-		results.append([global_order_idx, example_path, total_steps, total_loss_sum, final_loss, weight_distance, softmax_w1, grad_mass_w1, universal_rank, global_cka])
+		results.append([global_order_idx, example_path, total_steps, total_loss_sum, final_loss, weight_distance, softmax_w1, grad_mass_w1, universal_rank, global_cka, init_highest_softmax_prob, init_target_softmax_prob, steps_to_correct])
 		logger.info(f"Example {local_idx + 1} completed: {total_steps} steps, loss sum: {total_loss_sum:.4f}, final loss: {final_loss:.8f}, weight distance: {weight_distance:.4f} (universal rank: {universal_rank})")
 
 	# If this is the last worker, wait for all worker CSVs, then merge and compute plots/metrics/summary

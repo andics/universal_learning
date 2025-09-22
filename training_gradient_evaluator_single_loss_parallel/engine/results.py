@@ -11,7 +11,7 @@ class ResultsWriter:
 	HEADER = [
 		"example_index", "path", "total_steps_to_epsilon", "total_loss_sum", "final_loss",
 		"weight_distance", "softmax_wasserstein", "grad_mass_wasserstein", "universal_difficulty_rank",
-		"global_linear_cka"
+		"global_linear_cka", "init_highest_softmax_prob", "init_target_softmax_prob", "steps_to_correct"
 	]
 
 	def __init__(self, model_out_dir: str, results_csv_path: str | None = None) -> None:
@@ -31,11 +31,19 @@ class ResultsWriter:
 				reader = csv.reader(rf)
 				header = next(reader, None)
 				rows = list(reader)
-			if header is None or any(h not in header for h in self.HEADER):
+			if header is None:
+				with open(self.results_csv, 'w', newline='', encoding='utf-8') as wf:
+					writer = csv.writer(wf)
+					writer.writerow(self.HEADER)
+					return
+			# If header differs, rewrite and pad existing rows to new length
+			if header != self.HEADER:
 				with open(self.results_csv, 'w', newline='', encoding='utf-8') as wf:
 					writer = csv.writer(wf)
 					writer.writerow(self.HEADER)
 					for row in rows:
+						if len(row) < len(self.HEADER):
+							row = row + [''] * (len(self.HEADER) - len(row))
 						writer.writerow(row)
 		except Exception:
 			pass
