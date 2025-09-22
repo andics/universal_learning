@@ -359,12 +359,12 @@ def main() -> None:
 				num_reference=50,
 			)
 
+	# Start wall-clock timer for auto-stop (~1h45m)
+	start_time = time.time()
+
 	# Train each example individually (sequential within this worker)
-	processed_paths = set()  # Per-worker; we don't attempt cross-worker coordination here
+	processed_paths = set()  # Per-worker set; use JSON markers in step_logs for cross-run detection
 	for local_idx, example_path in enumerate(worker_examples):
-		if example_path in processed_paths:
-			logger.info(f"Skipping already processed example {local_idx}: {example_path}")
-			continue
 		global_order_idx = w_start + local_idx
 		logger.info(f"\n=== Worker {int(args.current_worker)} Training Example {local_idx + 1}/{len(worker_examples)} (global idx {global_order_idx}): {example_path} ===")
 		parent_name = os.path.basename(os.path.dirname(example_path))
@@ -372,6 +372,12 @@ def main() -> None:
 		short_id = f"{parent_name}_{file_name}" if parent_name else file_name
 		short_id = short_id.replace('/', '_').replace('\\', '_').replace(':', '_')
 		_rank = path_to_difficulty_rank.get(example_path, -1)
+		# Build per-example completion JSON path inside step_logs/worker_X
+		completion_json = os.path.join(step_logs_dir, f"rank_{int(_rank):05d}_{short_id}.json")
+		# Skip if completion JSON exists (previous successful run for this worker)
+		if os.path.exists(completion_json):
+			logger.info(f"Skipping already processed example (step_logs JSON exists): rank={int(_rank)} short_id={short_id}")
+			continue
 		step_log_file = os.path.join(step_logs_dir, f"example_{global_order_idx}_rank_{_rank:05d}_{short_id}_steps.csv")
 		full_path = resolve_full(example_path)
 		try:
@@ -388,6 +394,24 @@ def main() -> None:
 		universal_rank = path_to_difficulty_rank[example_path] + 1
 		results.append([global_order_idx, example_path, total_steps, total_loss_sum, final_loss, weight_distance, softmax_w1, grad_mass_w1, universal_rank, global_cka, init_highest_softmax_prob, init_target_softmax_prob, steps_to_correct])
 		logger.info(f"Example {local_idx + 1} completed: {total_steps} steps, loss sum: {total_loss_sum:.4f}, final loss: {final_loss:.8f}, weight distance: {weight_distance:.4f} (universal rank: {universal_rank})")
+		# Write per-example completion JSON (idempotent) into step_logs/worker_X
+		try:
+			marker_payload = {
+				"path": example_path,
+				"rank": int(_rank),
+				"short_id": short_id,
+				"timestamp": float(time.time()),
+			}
+			with open(completion_json, 'w', encoding='utf-8') as jf:
+				json.dump(marker_payload, jf, ensure_ascii=False, indent=2)
+		except Exception:
+			logger.exception("Failed to write processed marker JSON", exc_info=True)
+
+		# Auto-stop check: exit before starting the next example if limit exceeded
+		elapsed_s = time.time() - start_time
+		if elapsed_s >= (1 * 3600 + 45 * 60):
+			logger.info("Time limit reached (~1h45m). Exiting before starting next example.")
+			break
 
 	# If this is the last worker, wait for all worker CSVs, then merge and compute plots/metrics/summary
 	is_last_worker = (int(args.current_worker) == int(args.num_workers) - 1)

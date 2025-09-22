@@ -40,6 +40,7 @@ class CKAManager:
 		self.cka_dir = os.path.join(self.model_out_dir, "CKA_plots")
 		self.cka_json_dir = os.path.join(self.model_out_dir, "CKA_jsons")
 		self.cka_ref_npz = os.path.join(self.model_out_dir, "CKA_reference_features.npz")
+		self.cka_image_paths_txt = os.path.join(self.model_out_dir, "cka_image_paths.txt")
 		self.cka_ref_lock = os.path.join(self.model_out_dir, "CKA_reference.lock")
 		os.makedirs(self.cka_dir, exist_ok=True)
 		os.makedirs(self.cka_json_dir, exist_ok=True)
@@ -127,6 +128,14 @@ class CKAManager:
 			feat = {k: data[k] for k in data.files}
 			# Convert to numpy arrays (already), assign directly
 			setattr(self._evaluator, "_pre_features", feat)
+			# Populate CKA image path list from persisted file so other workers can compute post features
+			if os.path.exists(self.cka_image_paths_txt):
+				try:
+					with open(self.cka_image_paths_txt, 'r', encoding='utf-8') as f:
+						paths = [line.strip() for line in f if line.strip()]
+					self._cka_paths = paths
+				except Exception:
+					self._cka_paths = []
 			return True
 		except Exception:
 			self.logger.exception("Failed to load CKA reference features", exc_info=True)
@@ -192,6 +201,12 @@ class CKAManager:
 		self._evaluator.build_reference(self._cka_paths)
 		# Persist reference features for other workers
 		self._save_reference_npz()
+		# Persist image paths so other workers can reuse the same batch
+		try:
+			with open(self.cka_image_paths_txt, 'w', encoding='utf-8') as f:
+				f.write("\n".join(self._cka_paths))
+		except Exception:
+			self.logger.exception("Failed to write cka_image_paths.txt", exc_info=True)
 
 		# Baseline (model vs itself before any training) — avoid concurrent re-writes
 		try:
