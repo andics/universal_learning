@@ -6,6 +6,8 @@ Inputs:
     of arbitrary length N. Placeholders like "None" may appear for filtered sets.
   - imagenet_synset_hierarchy.json (optional): Mapping from WNIDs to metadata, including "words"
     labels. If missing, WNIDs will be shown as labels.
+  - Fixed WNIDs can be provided (defaults to: Piano n03452741, Zebra n02391049, Water bottle n04557648,
+    Wooden spoon n04597913, Dial phone n03187595).
 
 Process (multi-row spectrum):
   1) Determine the difficulty range from the first to the last non-None path in the CSV
@@ -63,6 +65,12 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--start_rank", type=int, default=1, help="Inclusive 1-based start rank (default 1)")
     p.add_argument("--end_rank", type=int, default=0, help="Exclusive 1-based end rank (0=end of file)")
     p.add_argument("--classes", type=int, default=5, help="Number of classes (rows) to show")
+    p.add_argument(
+        "--wnids",
+        type=str,
+        default="n03452741,n02391049,n04557648,n04597913,n03187595",
+        help="Comma-separated list of WNIDs to visualize (default: piano,zebra,water bottle,wooden spoon,dial phone)",
+    )
     p.add_argument("--seed", type=int, default=1337, help="RNG seed for tie-breaking")
     p.add_argument("--thumb", type=int, default=160, help="Thumbnail square size in pixels")
     p.add_argument("--dpi", type=int, default=350, help="Output figure DPI")
@@ -183,16 +191,32 @@ def main() -> None:
         zeros = sum(1 for c in counts if c == 0)
         return chisq + zeros * expected
 
-    class_scores: List[Tuple[str, float]] = []
-    for wnid, idxs in wnid_to_indices.items():
-        # must have at least 12 examples within the window to qualify
+    # Use explicit WNIDs provided via args (defaults to the requested five)
+    requested_wnids = [w.strip() for w in str(args.wnids).split(",") if w.strip()]
+    # Filter to those present in CSV and with at least 1 sample in window
+    present_wnids: List[str] = []
+    for w in requested_wnids:
+        idxs = wnid_to_indices.get(w, [])
         in_window = [i for i in idxs if start_idx <= i < end_idx_exclusive]
-        if len(in_window) < num_bins:
-            continue
-        score = compute_class_score(in_window)
-        class_scores.append((wnid, score))
-    class_scores.sort(key=lambda t: t[1])
-    chosen_wnids = [wnid for wnid, _ in class_scores[: max(1, int(args.classes))]]
+        if len(in_window) > 0:
+            present_wnids.append(w)
+    # If fewer than requested are present, fall back to best-uniform classes to fill the remainder
+    chosen_wnids: List[str] = list(present_wnids)
+    if len(chosen_wnids) < int(args.classes):
+        class_scores: List[Tuple[str, float]] = []
+        for wnid, idxs in wnid_to_indices.items():
+            if wnid in chosen_wnids:
+                continue
+            in_window = [i for i in idxs if start_idx <= i < end_idx_exclusive]
+            if len(in_window) < num_bins:
+                continue
+            score = compute_class_score(in_window)
+            class_scores.append((wnid, score))
+        class_scores.sort(key=lambda t: t[1])
+        for wnid, _ in class_scores:
+            if len(chosen_wnids) >= int(args.classes):
+                break
+            chosen_wnids.append(wnid)
 
     # Helper to choose nearest unused index to a target from a sorted list
     def nearest_unused(sorted_idxs: List[int], target: int, used: set[int]) -> Optional[int]:
@@ -229,29 +253,38 @@ def main() -> None:
         return best_idx
 
     # For each chosen class, collect 12 uniformly spaced images (nearest to bin center)
-    class_to_samples: Dict[str, List[int]] = {}
+    class_to_samples: Dict[str, List[Optional[int]]] = {}
     for w in chosen_wnids:
         indices_sorted = sorted([i for i in wnid_to_indices.get(w, []) if start_idx <= i < end_idx_exclusive])
-        used: set[int] = set()
-        picks: List[int] = []
+        # Build per-bin candidate lists sorted by distance to center
+        bin_candidates: List[List[int]] = [[] for _ in range(num_bins)]
+        for idx in indices_sorted:
+            b = min(int((idx - start_idx) * num_bins / total_in_window), num_bins - 1)
+            bin_candidates[b].append(idx)
         for b in range(num_bins):
-            target = bin_centers[b]
-            j = nearest_unused(indices_sorted, target, used)
-            if j is None:
-                # fallback: take any remaining
-                remain = [i for i in indices_sorted if i not in used]
-                if remain:
-                    j = remain[0]
-            if j is not None:
-                used.add(j)
-                picks.append(j)
-        # If still < 12 (rare), pad with nearest remaining indices
-        if len(picks) < num_bins:
-            remain = [i for i in indices_sorted if i not in used]
-            for i in remain[: (num_bins - len(picks))]:
-                picks.append(i)
-        # ensure exactly num_bins items
-        class_to_samples[w] = picks[:num_bins]
+            bin_candidates[b].sort(key=lambda j: abs(j - bin_centers[b]))
+        # Greedy assignment: fill bins with the fewest candidates first
+        order = sorted(range(num_bins), key=lambda b: len(bin_candidates[b]))
+        used: set[int] = set()
+        picks_by_bin: List[Optional[int]] = [None] * num_bins
+        for b in order:
+            for j in bin_candidates[b]:
+                if j not in used:
+                    picks_by_bin[b] = j
+                    used.add(j)
+                    break
+        # Fallback for bins not filled: take nearest from remaining indices
+        remain = [i for i in indices_sorted if i not in used]
+        for b in range(num_bins):
+            if picks_by_bin[b] is not None:
+                continue
+            if not remain:
+                break
+            # pick nearest remaining to center
+            j = min(remain, key=lambda x: abs(x - bin_centers[b]))
+            picks_by_bin[b] = j
+            remain.remove(j)
+        class_to_samples[w] = picks_by_bin
 
     # Plot: top difficulty spectrum + K class rows, 13 columns (label + 12 images)
     rows = len(chosen_wnids)
@@ -295,9 +328,9 @@ def main() -> None:
         for b in range(num_bins):
             ax = axes[r, b + 1]
             ax.axis("off")
-            if b >= len(picks):
+            if b >= len(picks) or picks[b] is None:
                 continue
-            idx = picks[b]
+            idx = int(picks[b])
             img = load_image_or_tile(paths_all[idx], size=thumb_size)
             ax.imshow(img)
             ax.set_title(f"{idx + 1}", fontsize=8)
