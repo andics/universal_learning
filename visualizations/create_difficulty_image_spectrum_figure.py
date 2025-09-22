@@ -47,16 +47,7 @@ def default_paths() -> Tuple[str, str, str, str]:
     npy_path = os.path.join(bars_dir, "imagenet.npy")
     hier_path = os.path.join(bars_dir, "imagenet_synset_hierarchy.json")
     out_path = os.path.join(os.path.dirname(__file__), "difficulty_spectrum.png")
-
-    # Prefer filtered versions if present
-    try:
-        for candidate in sorted(os.listdir(bars_dir)):
-            if candidate.endswith("imagenet_examples_ammended.csv") and candidate != "imagenet_examples_ammended.csv":
-                csv_path = os.path.join(bars_dir, candidate)
-            if candidate.endswith("imagenet.npy") and candidate != "imagenet.npy":
-                npy_path = os.path.join(bars_dir, candidate)
-    except FileNotFoundError:
-        pass
+    
     return csv_path, npy_path, hier_path, out_path
 
 
