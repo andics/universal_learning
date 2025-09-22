@@ -37,6 +37,7 @@ def main() -> None:
 	ZeroAugFlag = ['--zero_aug_train']
 
 	rows = []
+	model_to_time_sec: dict[str, float] = {}
 	with open(mapping_csv, 'r', encoding='utf-8') as f:
 		reader = csv.DictReader(f)
 		for row in reader:
@@ -80,6 +81,7 @@ def main() -> None:
 				'wait_time_seconds': f"{elapsed:.3f}",
 				'return_code': str(returncode),
 			})
+			model_to_time_sec[model_csv_name] = float(f"{elapsed:.3f}")
 
 	# write CSV
 	fieldnames = ['model_in_csv', 'model_in_timm', 'wait_time_seconds', 'return_code']
@@ -91,6 +93,28 @@ def main() -> None:
 			writer.writerow(r)
 
 	print(f"Wrote wait times for {len(rows)} models to {output_csv}")
+
+	# Also write a copy of the mapping CSV with a penultimate 'training_time' column
+	outputs_dir = os.path.join('training_gradient_evaluator_single_loss', 'outputs_assess_training_time')
+	os.makedirs(outputs_dir, exist_ok=True)
+	augmented_mapping_csv = os.path.join(outputs_dir, 'imagenet_model_name_mapping_with_training_time.csv')
+	with open(mapping_csv, 'r', encoding='utf-8') as rf:
+		reader2 = csv.DictReader(rf)
+		orig_fields = list(reader2.fieldnames or [])
+		if not orig_fields:
+			raise RuntimeError('Failed to read header from mapping CSV')
+		# Insert 'training_time' before the last column (penultimate position)
+		insert_pos = max(0, len(orig_fields) - 1)
+		new_fields = orig_fields[:insert_pos] + ['training_time'] + orig_fields[insert_pos:]
+		with open(augmented_mapping_csv, 'w', newline='', encoding='utf-8') as wf2:
+			writer2 = csv.DictWriter(wf2, fieldnames=new_fields)
+			writer2.writeheader()
+			for r in reader2:
+				mcsv = r.get('model_in_csv')
+				time_val = model_to_time_sec.get(mcsv)
+				r['training_time'] = (f"{time_val:.3f}" if isinstance(time_val, float) else '')
+				writer2.writerow(r)
+	print(f"Wrote augmented mapping CSV with training_time to {augmented_mapping_csv}")
 
 
 if __name__ == '__main__':
