@@ -346,7 +346,7 @@ def main() -> None:
 		# Build or wait for a shared reference to avoid duplicate work across workers
 		try:
 			cka_manager.load_or_build_reference(
-				difficulty_ordered_paths=difficulty_ordered_paths,
+				difficulty_ordered_paths=wrong_examples_ordered,
 				root_dir=args.root_dir,
 				num_reference=50,
 				wait_timeout_s=900,
@@ -354,7 +354,7 @@ def main() -> None:
 		except Exception:
 			# Fallback to local build if waiting failed
 			cka_manager.build_reference(
-				difficulty_ordered_paths=difficulty_ordered_paths,
+				difficulty_ordered_paths=wrong_examples_ordered,
 				root_dir=args.root_dir,
 				num_reference=50,
 			)
@@ -372,13 +372,11 @@ def main() -> None:
 		short_id = f"{parent_name}_{file_name}" if parent_name else file_name
 		short_id = short_id.replace('/', '_').replace('\\', '_').replace(':', '_')
 		_rank = path_to_difficulty_rank.get(example_path, -1)
-		# Build per-example completion JSON path inside step_logs/worker_X
-		completion_json = os.path.join(step_logs_dir, f"rank_{int(_rank):05d}_{short_id}.json")
-		# Skip if completion JSON exists (previous successful run for this worker)
-		if os.path.exists(completion_json):
-			logger.info(f"Skipping already processed example (step_logs JSON exists): rank={int(_rank)} short_id={short_id}")
-			continue
+		# Build expected step log CSV path and skip if present (resume)
 		step_log_file = os.path.join(step_logs_dir, f"example_{global_order_idx}_rank_{_rank:05d}_{short_id}_steps.csv")
+		if os.path.exists(step_log_file):
+			logger.info(f"Skipping already processed example (step log exists): {os.path.basename(step_log_file)}")
+			continue
 		full_path = resolve_full(example_path)
 		try:
 			total_steps, total_loss_sum, final_loss, weight_distance, softmax_w1, grad_mass_w1, init_highest_softmax_prob, init_target_softmax_prob, steps_to_correct = trainer.train_on_example(
