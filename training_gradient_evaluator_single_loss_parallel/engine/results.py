@@ -63,6 +63,7 @@ class ResultsWriter:
 				name_to_idx = {name: i for i, name in enumerate(header)}
 				rows = [row for row in reader if row]
 			x_steps, x_loss, x_weight, x_soft, x_grad, x_cka, y_rank = [], [], [], [], [], [], []
+			x_init_high, x_init_target = [], []
 			for row in rows:
 				try:
 					st = int(float(row[name_to_idx["total_steps_to_epsilon"]]))
@@ -79,6 +80,10 @@ class ResultsWriter:
 						x_grad.append(float(row[name_to_idx["grad_mass_wasserstein"]]))
 					if "global_linear_cka" in name_to_idx and row[name_to_idx["global_linear_cka"]] != '':
 						x_cka.append(float(row[name_to_idx["global_linear_cka"]]))
+					if "init_highest_softmax_prob" in name_to_idx and row[name_to_idx["init_highest_softmax_prob"]] != '':
+						x_init_high.append(float(row[name_to_idx["init_highest_softmax_prob"]]))
+					if "init_target_softmax_prob" in name_to_idx and row[name_to_idx["init_target_softmax_prob"]] != '':
+						x_init_target.append(float(row[name_to_idx["init_target_softmax_prob"]]))
 				except Exception:
 					continue
 			if len(y_rank) < 2:
@@ -151,6 +156,30 @@ class ResultsWriter:
 				corr = np.corrcoef(x_cka, y_rank)[0, 1] if len(y_rank) > 1 else 0.0
 				plt.text(0.05, 0.95, f'Correlation: {corr:.3f}', transform=plt.gca().transAxes, bbox=dict(boxstyle="round", facecolor='wheat'))
 				plt.savefig(os.path.join(self.model_out_dir, "global_cka_vs_difficulty.png"), dpi=150, bbox_inches='tight')
+				plt.close()
+			# Init highest softmax prob vs Difficulty
+			if len(x_init_high) == len(y_rank) and len(x_init_high) >= 2:
+				plt.figure(figsize=(10, 6))
+				plt.scatter(x_init_high, y_rank, alpha=0.7, s=50, color='orange')
+				plt.xlabel("Initial Highest Softmax Probability")
+				plt.ylabel("Universal Difficulty Ranking (1=easiest)")
+				plt.title(f"Universal Difficulty vs Initial Highest Softmax Prob\n({len(y_rank)} examples)")
+				plt.grid(True, alpha=0.3)
+				corr = np.corrcoef(x_init_high, y_rank)[0, 1] if len(y_rank) > 1 else 0.0
+				plt.text(0.05, 0.95, f'Correlation: {corr:.3f}', transform=plt.gca().transAxes, bbox=dict(boxstyle="round", facecolor='wheat'))
+				plt.savefig(os.path.join(self.model_out_dir, "init_highest_softmax_prob_vs_difficulty.png"), dpi=150, bbox_inches='tight')
+				plt.close()
+			# Init target softmax prob vs Difficulty
+			if len(x_init_target) == len(y_rank) and len(x_init_target) >= 2:
+				plt.figure(figsize=(10, 6))
+				plt.scatter(x_init_target, y_rank, alpha=0.7, s=50, color='navy')
+				plt.xlabel("Initial Target Softmax Probability")
+				plt.ylabel("Universal Difficulty Ranking (1=easiest)")
+				plt.title(f"Universal Difficulty vs Initial Target Softmax Prob\n({len(y_rank)} examples)")
+				plt.grid(True, alpha=0.3)
+				corr = np.corrcoef(x_init_target, y_rank)[0, 1] if len(y_rank) > 1 else 0.0
+				plt.text(0.05, 0.95, f'Correlation: {corr:.3f}', transform=plt.gca().transAxes, bbox=dict(boxstyle="round", facecolor='wheat'))
+				plt.savefig(os.path.join(self.model_out_dir, "init_target_softmax_prob_vs_difficulty.png"), dpi=150, bbox_inches='tight')
 				plt.close()
 		except Exception:
 			return
