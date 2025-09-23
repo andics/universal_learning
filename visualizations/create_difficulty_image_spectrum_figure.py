@@ -363,16 +363,14 @@ def build_and_save_collage(
     gap_px = max(0, int(args.pair_gap))
     top_bar_height = int(tile * 0.6)
 
-    # Build width ratios: [label] + for b in bins: [img] and insert [gap] after each pair except last
+    # Build width ratios: only image tiles, insert narrow gap after each pair except last
     def bin_to_col_index(b: int) -> int:
-        # label is column 0; number of gaps before bin b is floor(b/2)
-        return 1 + b + (b // 2)
+        # no label column; number of gaps before bin b is floor(b/2)
+        return b + (b // 2)
 
     width_ratios: List[float] = []
-    width_ratios.append(tile)  # label column
     for b in range(num_bins):
         width_ratios.append(tile)
-        # after each pair except the last pair, add a narrow gap column
         if b % 2 == 1 and b < num_bins - 1:
             width_ratios.append(gap_px)
 
@@ -392,16 +390,22 @@ def build_and_save_collage(
     except Exception:
         pass
 
-    # Top difficulty colored scale spanning over image columns (1..num_bins)
-    for c in range(cols_total):
-        axes[0, c].axis("off")
+    # Turn off all axes everywhere up front
+    for r in range(rows + 1):
+        for c in range(cols_total):
+            try:
+                axes[r, c].set_axis_off()
+            except Exception:
+                pass
+
+    # Top difficulty colored scale spanning over image columns (0..num_bins-1)
     # compute combined bbox for axes[0, first_img]..axes[0, last_img]
     first_img_col = bin_to_col_index(0)
     last_img_col = bin_to_col_index(num_bins - 1)
     left = axes[0, first_img_col].get_position().x0
     right = axes[0, last_img_col].get_position().x1
-    bottom = axes[0, 1].get_position().y0
-    top = axes[0, 1].get_position().y1
+    bottom = axes[0, first_img_col].get_position().y0
+    top = axes[0, first_img_col].get_position().y1
     overlay_ax = fig.add_axes([left, bottom, right - left, top - bottom])
     gradient = continuous_colormap(1200, cmap_name="plasma")
     overlay_ax.imshow(gradient, aspect="auto", extent=[0, 1, 0, 1])
@@ -409,24 +413,12 @@ def build_and_save_collage(
     overlay_ax.set_ylim(0, 1)
     overlay_ax.set_facecolor('none')
     overlay_ax.axis("off")
-    for i in range(num_bins + 1):
-        x = i / num_bins
-        overlay_ax.plot([x, x], [0.0, 1.0], color=(1, 1, 1, 0.5), linewidth=0.8)
-    # Title and fixed numeric labels at borders every two bars: 10k,20k,30k,40k,50k
-    axes[0, first_img_col].text(0.0, 1.25, f"Difficulty ({start_rank:,} → {end_rank:,})", transform=axes[0, first_img_col].transAxes, fontsize=16, fontweight="bold")
-    fixed_vals = [10000, 20000, 30000, 40000, 50000]
-    fixed_x = [0.2, 0.4, 0.6, 0.8, 1.0]
-    for x, val in zip(fixed_x, fixed_vals):
-        overlay_ax.text(x, -0.18, f"{val:,}", ha="center", va="top", fontsize=16, color="white", transform=overlay_ax.transAxes, clip_on=False)
+    # No ticks, no labels, no lines; pure colored bar with transparency
 
-    # Rows of thumbnails: each class per row, label column then 12 images
+    # Rows of thumbnails: each class per row, 10 images (5 pairs) with gaps between pairs
     thumb_size = (args.thumb, args.thumb)
     for r, w in enumerate(chosen_wnids, start=1):
-        # label at column 0
-        label_text = labels.get(w, w)
-        axes[r, 0].axis("off")
-        axes[r, 0].text(1.0, 0.5, label_text, ha="right", va="center", fontsize=11, transform=axes[r, 0].transAxes, wrap=True)
-        # images
+        # images only; no labels
         picks = class_to_samples.get(w, [])
         for b in range(num_bins):
             col_idx = bin_to_col_index(b)
