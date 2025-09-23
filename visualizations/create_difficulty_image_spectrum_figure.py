@@ -142,11 +142,13 @@ def load_image_or_tile(path: str, size: Tuple[int, int]) -> Image.Image:
             new_w = max(1, int(round(w * scale)))
             new_h = max(1, int(round(h * scale)))
             img = img.resize((new_w, new_h), Image.Resampling.LANCZOS)
-            bg = Image.new("RGBA", size, (0, 0, 0, 0))
+            # Fill the entire tile interior in black, then overlay the resized image
+            bg = Image.new("RGBA", size, (0, 0, 0, 255))
             bg.paste(img, ((target_w - new_w) // 2, (target_h - new_h) // 2))
             return bg
     except Exception:
-        return Image.new("RGBA", size, (0, 0, 0, 0))
+        # On failure, return a solid black tile
+        return Image.new("RGBA", size, (0, 0, 0, 255))
 
 
 def build_and_save_collage(
