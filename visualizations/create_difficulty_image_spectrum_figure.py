@@ -42,6 +42,7 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
+import shutil
 
 
 def default_paths() -> Tuple[str, str, str, str]:
@@ -75,6 +76,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--thumb", type=int, default=160, help="Thumbnail square size in pixels")
     p.add_argument("--dpi", type=int, default=350, help="Output figure DPI")
     p.add_argument("--pair_gap", type=int, default=12, help="Horizontal gap (pixels) between image pairs")
+    p.add_argument("--root_dir", type=str, default=None, help="Optional root to prefix non-absolute CSV paths when copying")
+    p.add_argument("--copy_images", action="store_true", help="If set, copy source images into collage folders")
     p.add_argument(
         "--second_wnids",
         type=str,
@@ -146,7 +149,7 @@ def load_image_or_tile(path: str, size: Tuple[int, int]) -> Image.Image:
         return Image.new("RGB", size, (0, 0, 0))
 
 
-def build_and_save_collage(paths_all: List[str], labels: Dict[str, str], args: argparse.Namespace, requested_wnids_csv: str, out_path: str) -> None:
+def build_and_save_collage(paths_all: List[str], labels: Dict[str, str], args: argparse.Namespace, requested_wnids_csv: str, out_path: str, collage_index: int) -> None:
     # New seed per run if None, to change picks while staying near bin centers
     if args.seed is None:
         random.seed()
@@ -410,6 +413,58 @@ def build_and_save_collage(paths_all: List[str], labels: Dict[str, str], args: a
     fig.savefig(out_path, dpi=int(args.dpi))
     print(f"Saved figure to: {out_path}")
 
+    # Optionally copy all images of the chosen classes into folders
+    if bool(getattr(args, 'copy_images', False)):
+        base_dir = os.path.dirname(out_path) or os.getcwd()
+        collage_dir = os.path.join(base_dir, f"collage_{collage_index}")
+        os.makedirs(collage_dir, exist_ok=True)
+
+        def sanitize(name: str) -> str:
+            return (
+                name.replace('/', '_')
+                .replace('\\', '_')
+                .replace(':', '_')
+                .replace('*', '_')
+                .replace('?', '_')
+                .replace('"', "'")
+                .replace('<', '(')
+                .replace('>', ')')
+                .replace('|', '_')
+            )
+
+        # Rebuild wnid -> indices over full CSV (not only window)
+        wnid_to_all_indices: Dict[str, List[int]] = {}
+        for idx, p in enumerate(paths_all):
+            if not p or p == "None":
+                continue
+            w = path_to_wnid(p)
+            if not w:
+                continue
+            wnid_to_all_indices.setdefault(w, []).append(idx)
+
+        for w in chosen_wnids:
+            label_text = labels.get(w, w)
+            class_dir = os.path.join(collage_dir, sanitize(label_text))
+            os.makedirs(class_dir, exist_ok=True)
+            for idx in wnid_to_all_indices.get(w, []):
+                src = paths_all[idx]
+                if not src or src == "None":
+                    continue
+                if not os.path.isabs(src) and args.root_dir:
+                    src = os.path.join(args.root_dir, src)
+                if not os.path.exists(src):
+                    continue
+                rank = idx + 1
+                basename = os.path.basename(src)
+                dst_name = f"{rank}_{basename}"
+                dst = os.path.join(class_dir, dst_name)
+                try:
+                    if not os.path.exists(dst):
+                        shutil.copy2(src, dst)
+                except Exception:
+                    # Skip files we cannot copy
+                    continue
+
 
 def main() -> None:
     args = parse_args()
@@ -427,7 +482,7 @@ def main() -> None:
     labels = load_hierarchy_labels(args.hier)
 
     # First collage
-    build_and_save_collage(paths_all, labels, args, args.wnids, args.out)
+    build_and_save_collage(paths_all, labels, args, args.wnids, args.out, collage_index=1)
 
     # Second collage if requested
     if args.second_out is None:
@@ -436,7 +491,7 @@ def main() -> None:
     else:
         second_out = args.second_out
     if args.second_wnids:
-        build_and_save_collage(paths_all, labels, args, args.second_wnids, second_out)
+        build_and_save_collage(paths_all, labels, args, args.second_wnids, second_out, collage_index=2)
 
 
 if __name__ == "__main__":
