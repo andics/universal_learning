@@ -74,9 +74,23 @@ class ParallelTrainingRunner:
 		# Status STARTED
 		self.coordinator.update_status(int(self.args.current_worker), "STARTED")
 		wrong_examples_ordered, path_to_rank = self.select_examples(mask_row_index)
+		# Verbose logging: global partition map across workers
+		parts = []
+		for wid in range(int(self.args.num_workers)):
+			ps, pe = self._compute_worker_slice(len(wrong_examples_ordered), int(self.args.num_workers), wid)
+			parts.append(f"[{ps}, {pe})")
+		self.logger.info(f"Global worker partitions (by ordered examples): {' '.join(parts)}")
 		# Partition for this worker
 		start, end = self._compute_worker_slice(len(wrong_examples_ordered), int(self.args.num_workers), int(self.args.current_worker))
 		worker_examples = wrong_examples_ordered[start:end]
+		self.logger.info(f"Assigned slice for worker {int(self.args.current_worker)}/{int(self.args.num_workers)}: [{start}, {end}) with {len(worker_examples)} examples")
+		# Verbose: list assigned universal ranks and paths
+		assigned_ranks = [path_to_rank.get(p, -1) for p in worker_examples]
+		self.logger.info(f"Assigned universal ranks ({len(assigned_ranks)}): " + ", ".join(str(int(r)) for r in assigned_ranks))
+		try:
+			self.logger.info("Assigned example paths (one per line):\n" + "\n".join(worker_examples))
+		except Exception:
+			pass
 		# Results per-worker CSV
 		results_csv_path = os.path.join(self.model_out_dir, f"single_example_results_{int(self.args.current_worker)}.csv")
 		results = ResultsWriter(self.model_out_dir, results_csv_path=results_csv_path)
@@ -94,6 +108,7 @@ class ParallelTrainingRunner:
 		reset_state = __import__('copy').deepcopy(model.state_dict())
 		cka_manager = self.build_cka(model, train_tfms, wrong_examples_ordered)
 		start_time = time.time()
+		processed_count = 0
 		for local_idx, example_path in enumerate(worker_examples):
 			global_idx = start + local_idx
 			parent_name = os.path.basename(os.path.dirname(example_path))
@@ -102,7 +117,8 @@ class ParallelTrainingRunner:
 			_rank = path_to_rank.get(example_path, -1)
 			step_log_file = os.path.join(self.step_logs_dir, f"example_{global_idx}_rank_{_rank:05d}_{short_id}_steps.csv")
 			if os.path.exists(step_log_file):
-				self.logger.info(f"Skipping already processed example (step log exists): {os.path.basename(step_log_file)}")
+				self.logger.info(f"Skipping already processed example (step log exists): rank={int(_rank)} path={example_path} file={os.path.basename(step_log_file)}")
+				processed_count += 1
 				continue
 			full_path = self.resolve_full(example_path)
 			total_steps, total_loss_sum, final_loss, weight_distance, softmax_w1, grad_mass_w1, init_highest_softmax_prob, init_target_softmax_prob, steps_to_correct = trainer.train_on_example(
@@ -113,15 +129,19 @@ class ParallelTrainingRunner:
 				global_cka = cka_manager.after_example_trained(model, _rank, short_id)
 			universal_rank = path_to_rank[example_path] + 1
 			results.append([global_idx, example_path, total_steps, total_loss_sum, final_loss, weight_distance, softmax_w1, grad_mass_w1, universal_rank, global_cka, init_highest_softmax_prob, init_target_softmax_prob, steps_to_correct])
+			processed_count += 1
 			# Time limit check
 			if (time.time() - start_time) >= int(self.args.time_limit_seconds):
 				self.logger.info("Time limit reached. Exiting before starting next example.")
 				break
-		# Status DONE
-		self.coordinator.update_status(int(self.args.current_worker), "DONE")
-		# Merge if last worker
-		if int(self.args.current_worker) == int(self.args.num_workers) - 1:
-			self._merge_and_finalize()
+		# Mark DONE only if all assigned examples are processed (including previously completed)
+		if processed_count >= len(worker_examples):
+			self.coordinator.update_status(int(self.args.current_worker), "DONE")
+			# Merge only if last worker and all workers are DONE
+			if int(self.args.current_worker) == int(self.args.num_workers) - 1:
+				self._merge_and_finalize()
+		else:
+			self.logger.info(f"Worker {int(self.args.current_worker)} exiting due to time limit; processed {processed_count}/{len(worker_examples)} assigned examples. Not marking DONE.")
 
 	def _compute_worker_slice(self, n_total: int, num_workers: int, current_worker: int) -> Tuple[int, int]:
 		base = n_total // num_workers
