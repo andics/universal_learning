@@ -363,20 +363,30 @@ def build_and_save_collage(
     gap_px = max(0, int(args.pair_gap))
     top_bar_height = int(tile * 0.6)
 
-    # Build width ratios: only image tiles, insert narrow gap after each pair except last
-    def bin_to_col_index(b: int) -> int:
-        # no label column; number of gaps before bin b is floor(b/2)
-        return b + (b // 2)
+    # Build width ratios as PAIRS with gaps between pairs only
+    num_pairs = max(1, num_bins // 2)
+    gap_w = int(round(gap_px * 1.5))
+    gap_h = int(round(gap_px * 1.5))
+    pair_width = tile * 2
+
+    def pair_to_col_index(pair_id: int) -> int:
+        # pair columns are at even positions: 0, 2, 4, ... with gaps in-between
+        return pair_id * 2
 
     width_ratios: List[float] = []
-    for b in range(num_bins):
-        width_ratios.append(tile)
-        if b % 2 == 1 and b < num_bins - 1:
-            width_ratios.append(gap_px)
+    for p in range(num_pairs):
+        width_ratios.append(pair_width)
+        if p < num_pairs - 1:
+            width_ratios.append(gap_w)
 
     cols_total = len(width_ratios)
     # Add top bar row + exact rows (no vertical gaps) to avoid extra whitespace
-    height_ratios: List[float] = [top_bar_height] + [tile] * rows
+    # Insert vertical gaps between rows
+    height_ratios: List[float] = [top_bar_height]
+    for r in range(rows):
+        height_ratios.append(tile)
+        if r < rows - 1:
+            height_ratios.append(gap_h)
     fig_w = (sum(width_ratios)) / 100.0
     fig_h = (sum(height_ratios)) / 100.0
     fig, axes = plt.subplots(
@@ -393,7 +403,7 @@ def build_and_save_collage(
         pass
 
     # Turn off all axes everywhere up front
-    for r in range(rows + 1):
+    for r in range(len(height_ratios)):
         for c in range(cols_total):
             try:
                 axes[r, c].set_axis_off()
@@ -408,8 +418,8 @@ def build_and_save_collage(
     # Lines at pair boundaries (every two bars)
     total_w = float(sum(width_ratios))
     x_positions: List[float] = []
-    for p in range(5):
-        start_col = bin_to_col_index(p * 2)
+    for p in range(num_pairs):
+        start_col = pair_to_col_index(p)
         x_before = sum(width_ratios[:start_col])
         x_positions.append(x_before / total_w)
     x_positions.append(1.0)
@@ -425,19 +435,39 @@ def build_and_save_collage(
         pass
 
     # Rows of thumbnails: each class per row, 10 images (5 pairs) with gaps between pairs
-    thumb_size = (tile, tile)
-    for r, w in enumerate(chosen_wnids, start=1):
+    from PIL import ImageDraw
+    single_size = (tile, tile)
+    pair_size = (pair_width, tile)
+
+    def compose_pair(left_idx: Optional[int], right_idx: Optional[int]) -> Image.Image:
+        left = load_image_or_tile(paths_all[left_idx], single_size) if left_idx is not None else Image.new("RGBA", single_size, (0,0,0,255))
+        right = load_image_or_tile(paths_all[right_idx], single_size) if right_idx is not None else Image.new("RGBA", single_size, (0,0,0,255))
+        pair_img = Image.new("RGBA", pair_size, (0,0,0,0))
+        pair_img.paste(left, (0, 0))
+        pair_img.paste(right, (tile, 0))
+        # Draw black border around the pair
+        draw = ImageDraw.Draw(pair_img)
+        border_px = max(1, int(round(tile * 0.02)))
+        # Draw border inside the image bounds
+        for k in range(border_px):
+            draw.rectangle([k, k, pair_size[0]-1-k, pair_size[1]-1-k], outline=(0,0,0,255))
+        return pair_img
+
+    # Map rows: top bar at row 0; content rows at indices 1, 3, 5, ... due to vertical gaps
+    for r_idx, w in enumerate(chosen_wnids):
+        axis_row = 1 + r_idx * 2 if rows > 1 else 1
         picks = class_to_samples.get(w, [])
-        for b in range(num_bins):
-            col_idx = bin_to_col_index(b)
-            ax = axes[r, col_idx]
+        for p in range(num_pairs):
+            left_bin = p * 2
+            right_bin = left_bin + 1
+            left_idx = int(picks[left_bin]) if left_bin < len(picks) and picks[left_bin] is not None else None
+            right_idx = int(picks[right_bin]) if right_bin < len(picks) and picks[right_bin] is not None else None
+            col_idx = pair_to_col_index(p)
+            ax = axes[axis_row, col_idx]
             ax.set_axis_off()
-            if b >= len(picks) or picks[b] is None:
-                continue
-            idx = int(picks[b])
-            img = load_image_or_tile(paths_all[idx], size=thumb_size)
+            pair_img = compose_pair(left_idx, right_idx)
             ax.set_facecolor("none")
-            ax.imshow(img, aspect="equal")
+            ax.imshow(pair_img, aspect="equal")
             ax.set_xticks([]); ax.set_yticks([])
             try:
                 for spine in ax.spines.values():
