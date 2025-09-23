@@ -149,7 +149,15 @@ def load_image_or_tile(path: str, size: Tuple[int, int]) -> Image.Image:
         return Image.new("RGB", size, (0, 0, 0))
 
 
-def build_and_save_collage(paths_all: List[str], labels: Dict[str, str], args: argparse.Namespace, requested_wnids_csv: str, out_path: str, collage_index: int) -> None:
+def build_and_save_collage(
+    paths_all: List[str],
+    labels: Dict[str, str],
+    args: argparse.Namespace,
+    requested_wnids_csv: str,
+    out_path: str,
+    collage_index: int,
+    explicit_picks_by_wnid: Optional[Dict[str, List[int]]] = None,
+) -> None:
     # New seed per run if None, to change picks while staying near bin centers
     if args.seed is None:
         random.seed()
@@ -173,24 +181,37 @@ def build_and_save_collage(paths_all: List[str], labels: Dict[str, str], args: a
             continue
         wnid_to_indices.setdefault(wnid, []).append(idx)
 
-    # Compute difficulty window from first and last non-None path in the CSV
-    first_idx = None
-    last_idx = None
-    for i, p in enumerate(paths_all):
-        if p and p != "None":
-            first_idx = i
-            break
-    for i in range(len(paths_all) - 1, -1, -1):
-        p = paths_all[i]
-        if p and p != "None":
-            last_idx = i
-            break
-    if first_idx is None or last_idx is None or last_idx < first_idx:
-        raise ValueError("Could not determine non-None range from CSV")
-    start_idx = first_idx
-    end_idx_exclusive = last_idx + 1  # exclusive
-    start_rank = start_idx + 1  # for display (1-based)
-    end_rank = last_idx + 1
+    # Compute difficulty window
+    if explicit_picks_by_wnid and any(explicit_picks_by_wnid.values()):
+        # Use min/max over explicitly chosen indices
+        all_idxs: List[int] = []
+        for lst in explicit_picks_by_wnid.values():
+            all_idxs.extend([i for i in lst if i is not None])
+        if not all_idxs:
+            raise ValueError("Explicit picks supplied but empty")
+        start_idx = int(min(all_idxs))
+        end_idx_exclusive = int(max(all_idxs)) + 1
+        start_rank = start_idx + 1
+        end_rank = end_idx_exclusive
+    else:
+        # Window from first to last non-None
+        first_idx = None
+        last_idx = None
+        for i, p in enumerate(paths_all):
+            if p and p != "None":
+                first_idx = i
+                break
+        for i in range(len(paths_all) - 1, -1, -1):
+            p = paths_all[i]
+            if p and p != "None":
+                last_idx = i
+                break
+        if first_idx is None or last_idx is None or last_idx < first_idx:
+            raise ValueError("Could not determine non-None range from CSV")
+        start_idx = first_idx
+        end_idx_exclusive = last_idx + 1  # exclusive
+        start_rank = start_idx + 1  # for display (1-based)
+        end_rank = last_idx + 1
     total_in_window = end_idx_exclusive - start_idx
     if total_in_window <= 0:
         raise ValueError("Empty rank window after conversion to 0-based indices")
@@ -277,54 +298,64 @@ def build_and_save_collage(paths_all: List[str], labels: Dict[str, str], args: a
                     return cand
         return best_idx
 
-    # For each chosen class, collect 12 uniformly spaced images (nearest to bin center)
+    # For each chosen class, collect 10 uniformly spaced images (nearest to bin center),
+    # or use explicit picks if provided
     class_to_samples: Dict[str, List[Optional[int]]] = {}
-    for w in chosen_wnids:
-        indices_sorted = sorted([i for i in wnid_to_indices.get(w, []) if start_idx <= i < end_idx_exclusive])
-        # Build per-bin candidate lists sorted by distance to center
-        bin_candidates: List[List[int]] = [[] for _ in range(num_bins)]
-        for idx in indices_sorted:
-            b = min(int((idx - start_idx) * num_bins / total_in_window), num_bins - 1)
-            bin_candidates[b].append(idx)
-        for b in range(num_bins):
-            bin_candidates[b].sort(key=lambda j: abs(j - bin_centers[b]))
-        # Greedy assignment with stochastic tie-breaking to vary picks across runs
-        rng = random.Random()
-        order = list(range(num_bins))
-        order.sort(key=lambda b: (len(bin_candidates[b]), b))
-        used: set[int] = set()
-        picks_by_bin: List[Optional[int]] = [None] * num_bins
-        for b in order:
-            cands = bin_candidates[b]
-            if not cands:
-                continue
-            # among top-k closest (k up to 3), pick randomly for variety
-            k = min(3, len(cands))
-            top_k = cands[:k]
-            top_k = [j for j in top_k if j not in used]
-            if top_k:
-                j = rng.choice(top_k)
-                picks_by_bin[b] = j
-                used.add(j)
-                continue
-            # otherwise pick the nearest unused
-            for j in cands:
-                if j not in used:
+    if explicit_picks_by_wnid:
+        for w in chosen_wnids:
+            picks = explicit_picks_by_wnid.get(w, [])
+            # Normalize to length num_bins
+            picks_norm: List[Optional[int]] = [None] * num_bins
+            for i in range(min(len(picks), num_bins)):
+                picks_norm[i] = picks[i]
+            class_to_samples[w] = picks_norm
+    else:
+        for w in chosen_wnids:
+            indices_sorted = sorted([i for i in wnid_to_indices.get(w, []) if start_idx <= i < end_idx_exclusive])
+            # Build per-bin candidate lists sorted by distance to center
+            bin_candidates: List[List[int]] = [[] for _ in range(num_bins)]
+            for idx in indices_sorted:
+                b = min(int((idx - start_idx) * num_bins / total_in_window), num_bins - 1)
+                bin_candidates[b].append(idx)
+            for b in range(num_bins):
+                bin_candidates[b].sort(key=lambda j: abs(j - bin_centers[b]))
+            # Greedy assignment with stochastic tie-breaking to vary picks across runs
+            rng = random.Random()
+            order = list(range(num_bins))
+            order.sort(key=lambda b: (len(bin_candidates[b]), b))
+            used: set[int] = set()
+            picks_by_bin: List[Optional[int]] = [None] * num_bins
+            for b in order:
+                cands = bin_candidates[b]
+                if not cands:
+                    continue
+                # among top-k closest (k up to 3), pick randomly for variety
+                k = min(3, len(cands))
+                top_k = cands[:k]
+                top_k = [j for j in top_k if j not in used]
+                if top_k:
+                    j = rng.choice(top_k)
                     picks_by_bin[b] = j
                     used.add(j)
+                    continue
+                # otherwise pick the nearest unused
+                for j in cands:
+                    if j not in used:
+                        picks_by_bin[b] = j
+                        used.add(j)
+                        break
+            # Fallback for bins not filled: take nearest from remaining indices
+            remain = [i for i in indices_sorted if i not in used]
+            for b in range(num_bins):
+                if picks_by_bin[b] is not None:
+                    continue
+                if not remain:
                     break
-        # Fallback for bins not filled: take nearest from remaining indices
-        remain = [i for i in indices_sorted if i not in used]
-        for b in range(num_bins):
-            if picks_by_bin[b] is not None:
-                continue
-            if not remain:
-                break
-            # pick nearest remaining to center
-            j = min(remain, key=lambda x: abs(x - bin_centers[b]))
-            picks_by_bin[b] = j
-            remain.remove(j)
-        class_to_samples[w] = picks_by_bin
+                # pick nearest remaining to center
+                j = min(remain, key=lambda x: abs(x - bin_centers[b]))
+                picks_by_bin[b] = j
+                remain.remove(j)
+            class_to_samples[w] = picks_by_bin
 
     # Plot: top difficulty spectrum + K class rows, label + images + small gaps between pairs
     rows = len(chosen_wnids)
@@ -519,6 +550,97 @@ def main() -> None:
         second_out = args.second_out
     if args.second_wnids:
         build_and_save_collage(paths_all, labels, args, args.second_wnids, second_out, collage_index=2)
+
+    # Third collage with explicit ranks you provided
+    explicit_map: Dict[str, List[int]] = {}
+    # Helper to find index by rank and filename
+    def find_index_by_rank_and_name(rank: int, name_stub: str) -> Optional[int]:
+        idx = int(rank) - 1
+        if 0 <= idx < len(paths_all):
+            path = paths_all[idx]
+            if path and path != "None" and name_stub in os.path.basename(path):
+                return idx
+        # fallback: scan close by
+        for delta in range(1, 5):
+            for sign in (-1, 1):
+                j = idx + sign * delta
+                if 0 <= j < len(paths_all):
+                    path = paths_all[j]
+                    if path and path != "None" and name_stub in os.path.basename(path):
+                        return j
+        return None
+
+    # Dial phone n03187595
+    explicit_map["n03187595"] = [
+        find_index_by_rank_and_name(1203, "ILSVRC2012_val_00034672"),
+        find_index_by_rank_and_name(1903, "ILSVRC2012_val_00022385"),
+        find_index_by_rank_and_name(10502, "ILSVRC2012_val_00029045"),
+        find_index_by_rank_and_name(13362, "ILSVRC2012_val_00013729"),
+        find_index_by_rank_and_name(22345, "ILSVRC2012_val_00016388"),
+        find_index_by_rank_and_name(22559, "ILSVRC2012_val_00029370"),
+        find_index_by_rank_and_name(31523, "ILSVRC2012_val_00017123"),
+        find_index_by_rank_and_name(36050, "ILSVRC2012_val_00033592"),
+        find_index_by_rank_and_name(42722, "ILSVRC2012_val_00016249"),
+        find_index_by_rank_and_name(43886, "ILSVRC2012_val_00000137"),
+    ]
+    # Grand piano n03452741
+    explicit_map["n03452741"] = [
+        find_index_by_rank_and_name(2581, "ILSVRC2012_val_00021661"),
+        find_index_by_rank_and_name(6089, "ILSVRC2012_val_00007940"),
+        find_index_by_rank_and_name(13804, "ILSVRC2012_val_00013511"),
+        find_index_by_rank_and_name(13855, "ILSVRC2012_val_00034629"),
+        find_index_by_rank_and_name(20036, "ILSVRC2012_val_00022718"),
+        find_index_by_rank_and_name(21815, "ILSVRC2012_val_00043659"),
+        find_index_by_rank_and_name(31039, "ILSVRC2012_val_00043735"),
+        find_index_by_rank_and_name(34554, "ILSVRC2012_val_00008996"),
+        find_index_by_rank_and_name(44344, "ILSVRC2012_val_00010946"),
+        find_index_by_rank_and_name(48005, "ILSVRC2012_val_00034400"),
+    ]
+    # Hammer n03481172
+    explicit_map["n03481172"] = [
+        find_index_by_rank_and_name(2870, "ILSVRC2012_val_00037086"),
+        find_index_by_rank_and_name(14579, "ILSVRC2012_val_00038221"),
+        find_index_by_rank_and_name(17143, "ILSVRC2012_val_00003387"),
+        find_index_by_rank_and_name(19992, "ILSVRC2012_val_00024678"),
+        find_index_by_rank_and_name(22554, "ILSVRC2012_val_00039315"),
+        find_index_by_rank_and_name(27201, "ILSVRC2012_val_00029860"),
+        find_index_by_rank_and_name(31657, "ILSVRC2012_val_00026993"),
+        find_index_by_rank_and_name(33381, "ILSVRC2012_val_00026527"),
+        find_index_by_rank_and_name(42372, "ILSVRC2012_val_00017991"),
+        find_index_by_rank_and_name(41976, "ILSVRC2012_val_00000887"),
+    ]
+    # Lampshade n03637318
+    explicit_map["n03637318"] = [
+        find_index_by_rank_and_name(5850, "ILSVRC2012_val_00007691"),
+        find_index_by_rank_and_name(14994, "ILSVRC2012_val_00045527"),
+        find_index_by_rank_and_name(13793, "ILSVRC2012_val_00021095"),
+        find_index_by_rank_and_name(24118, "ILSVRC2012_val_00049145"),
+        find_index_by_rank_and_name(22945, "ILSVRC2012_val_00033621"),
+        find_index_by_rank_and_name(24418, "ILSVRC2012_val_00035240"),
+        find_index_by_rank_and_name(39278, "ILSVRC2012_val_00038494"),
+        find_index_by_rank_and_name(33478, "ILSVRC2012_val_00044807"),
+        find_index_by_rank_and_name(47141, "ILSVRC2012_val_00046581"),
+        find_index_by_rank_and_name(47243, "ILSVRC2012_val_00017175"),
+    ]
+    # Elephant n02504458
+    explicit_map["n02504458"] = [
+        find_index_by_rank_and_name(11936, "ILSVRC2012_val_00015578"),
+        find_index_by_rank_and_name(18624, "ILSVRC2012_val_00001958"),
+        find_index_by_rank_and_name(22679, "ILSVRC2012_val_00038578"),
+        find_index_by_rank_and_name(23748, "ILSVRC2012_val_00003747"),
+        find_index_by_rank_and_name(29739, "ILSVRC2012_val_00033861"),
+        find_index_by_rank_and_name(30376, "ILSVRC2012_val_00025941"),
+        find_index_by_rank_and_name(32801, "ILSVRC2012_val_00040375"),
+        find_index_by_rank_and_name(40351, "ILSVRC2012_val_00007292"),
+        find_index_by_rank_and_name(45533, "ILSVRC2012_val_00018263"),
+        find_index_by_rank_and_name(48709, "ILSVRC2012_val_00003538"),
+    ]
+
+    # Build the third collage
+    third_wnids = "n03187595,n03452741,n03481172,n03637318,n02504458"
+    root, ext = os.path.splitext(args.out)
+    third_out = f"{root}_third{ext or '.png'}"
+    build_and_save_collage(paths_all, labels, args, third_wnids, third_out, collage_index=3, explicit_picks_by_wnid=explicit_map)
 
 
 if __name__ == "__main__":
