@@ -433,8 +433,11 @@ def build_and_save_collage(
     bg_mode = getattr(args, "_bg_mode", "cmap")
     alpha = float(getattr(args, "_bg_alpha", 0.75))
     if bg_mode == "custom_yellow_blue":
-        # Light yellow (#FFF8B0) to light blue (#B0E1FF)
-        gradient = linear_gradient_rgb(2000, (255, 248, 176), (176, 225, 255))
+        # Slightly more vivid light yellow → light blue
+        gradient = linear_gradient_rgb(2000, (255, 244, 160), (160, 220, 255))
+    elif bg_mode == "custom_yellow_blue_fixed":
+        # Exact colors requested: left #FFDD59 (255,221,89) → right #80A9FF (128,169,255)
+        gradient = linear_gradient_rgb(2000, (255, 221, 89), (128, 169, 255))
     else:
         cmap_name = getattr(args, "_bg_cmap", "magma")
         vmin = float(getattr(args, "_bg_vmin", 0.15))
