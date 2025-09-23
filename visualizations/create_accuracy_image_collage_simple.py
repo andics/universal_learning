@@ -247,6 +247,32 @@ def build_pairs_collage_with_bg(
         draw_outlined_text(tile // 2, left_text)
         draw_outlined_text(tile + (tile // 2), right_text)
 
+        # draw tiny rank text at top of each half (same style)
+        def rank_text_for(index: Optional[int]) -> str:
+            if index is None:
+                return ""
+            return f"{int(index) + 1}"
+
+        left_rank = rank_text_for(left_idx)
+        right_rank = rank_text_for(right_idx)
+
+        y_top = margin  # a few pixels below the top edge
+        def draw_outlined_text_top(x_center: int, text: str) -> None:
+            if not text:
+                return
+            try:
+                w, h = draw.textsize(text, font=font) if font else draw.textsize(text)
+            except Exception:
+                w, h = (len(text) * 3, 6)
+            x = int(x_center - w / 2)
+            y = int(y_top)
+            for dx, dy in [(-1,0),(1,0),(0,-1),(0,1)]:
+                draw.text((x+dx, y+dy), text, fill=(0,0,0,255), font=font)
+            draw.text((x, y), text, fill=(255,255,255,255), font=font)
+
+        draw_outlined_text_top(tile // 2, left_rank)
+        draw_outlined_text_top(tile + (tile // 2), right_rank)
+
         # black border around pair (inside bounds)
         border_px = max(1, int(round(tile * 0.02)))
         for k in range(border_px):
