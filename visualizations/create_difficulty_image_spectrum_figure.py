@@ -126,6 +126,17 @@ def continuous_colormap(width: int, cmap_name: str = "plasma", vmin: float = 0.0
     return np.expand_dims(rgb, axis=0)
 
 
+def linear_gradient_rgb(width: int, start_rgb: Tuple[int, int, int], end_rgb: Tuple[int, int, int]) -> np.ndarray:
+    """Return a 1xW RGB image for a linear gradient between two sRGB colors.
+    Colors are provided as 0-255 integer tuples.
+    """
+    start = np.asarray(start_rgb, dtype=float) / 255.0
+    end = np.asarray(end_rgb, dtype=float) / 255.0
+    xs = np.linspace(0.0, 1.0, int(width))[:, None]
+    grad = start[None, :] + (end - start)[None, :] * xs
+    return np.expand_dims(grad, axis=0)
+
+
 def load_hierarchy_labels(hier_path: str) -> Dict[str, str]:
     try:
         with open(hier_path, "r", encoding="utf-8") as f:
@@ -418,12 +429,17 @@ def build_and_save_collage(
 
     # Full-figure gradient background
     bg_ax = fig.add_axes([0, 0, 1, 1], zorder=-100)
-    # Allow external overrides for third-collage variations
-    cmap_name = getattr(args, "_bg_cmap", "magma")
-    vmin = float(getattr(args, "_bg_vmin", 0.15))
-    vmax = float(getattr(args, "_bg_vmax", 0.55))
+    # Allow external overrides for third-collage variations; also support custom light yellow→light blue
+    bg_mode = getattr(args, "_bg_mode", "cmap")
     alpha = float(getattr(args, "_bg_alpha", 0.75))
-    gradient = continuous_colormap(2000, cmap_name=cmap_name, vmin=vmin, vmax=vmax)
+    if bg_mode == "custom_yellow_blue":
+        # Light yellow (#FFF8B0) to light blue (#B0E1FF)
+        gradient = linear_gradient_rgb(2000, (255, 248, 176), (176, 225, 255))
+    else:
+        cmap_name = getattr(args, "_bg_cmap", "magma")
+        vmin = float(getattr(args, "_bg_vmin", 0.15))
+        vmax = float(getattr(args, "_bg_vmax", 0.55))
+        gradient = continuous_colormap(2000, cmap_name=cmap_name, vmin=vmin, vmax=vmax)
     bg_ax.imshow(gradient, aspect="auto", extent=[0, 1, 0, 1], alpha=alpha)
     bg_ax.set_axis_off()
     # No overlay lines on the gradient background
@@ -686,13 +702,16 @@ def main() -> None:
     # Generate multiple lighter/softer gradient variations for the third collage
     base_third = f"{root}_third"
     variations = [
-        ("magma", 0.10, 0.60, 0.70),
-        ("cividis", 0.20, 0.80, 0.70),
-        ("viridis", 0.30, 0.80, 0.65),
+        ("cmap", "magma", 0.10, 0.60, 0.70),
+        ("cmap", "cividis", 0.20, 0.80, 0.70),
+        ("cmap", "viridis", 0.30, 0.80, 0.65),
+        ("custom_yellow_blue", None, 0.0, 1.0, 0.70),
     ]
-    for vidx, (cmap_name, vmin, vmax, alpha) in enumerate(variations):
-        # Temporarily monkey-patch the background rendering parameters by setting env vars on args
-        setattr(args, "_bg_cmap", cmap_name)
+    for vidx, (mode, cmap_name, vmin, vmax, alpha) in enumerate(variations):
+        # Temporarily set background parameters on args
+        setattr(args, "_bg_mode", mode)
+        if cmap_name is not None:
+            setattr(args, "_bg_cmap", cmap_name)
         setattr(args, "_bg_vmin", vmin)
         setattr(args, "_bg_vmax", vmax)
         setattr(args, "_bg_alpha", alpha)
