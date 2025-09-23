@@ -124,9 +124,9 @@ def continuous_colormap(width: int, cmap_name: str = "plasma") -> np.ndarray:
 
 def load_hierarchy_labels(hier_path: str) -> Dict[str, str]:
     try:
-    with open(hier_path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    return {wnid: meta.get("words", wnid) for wnid, meta in data.items()}
+        with open(hier_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return {wnid: meta.get("words", wnid) for wnid, meta in data.items()}
     except Exception:
         return {}
 
@@ -162,7 +162,7 @@ def build_and_save_collage(
     if args.seed is None:
         random.seed()
     else:
-    random.seed(args.seed)
+        random.seed(args.seed)
 
     paths_all = parse_imagenet_examples_csv(args.csv)
     num_images = len(paths_all)
@@ -251,13 +251,13 @@ def build_and_save_collage(
     if len(chosen_wnids) < int(args.classes):
         class_scores: List[Tuple[str, float]] = []
     for wnid, idxs in wnid_to_indices.items():
-            if wnid in chosen_wnids:
-                continue
-            in_window = [i for i in idxs if start_idx <= i < end_idx_exclusive]
-            if len(in_window) < num_bins:
-                continue
-            score = compute_class_score(in_window)
-            class_scores.append((wnid, score))
+        if wnid in chosen_wnids:
+            continue
+        in_window = [i for i in idxs if start_idx <= i < end_idx_exclusive]
+        if len(in_window) < num_bins:
+            continue
+        score = compute_class_score(in_window)
+        class_scores.append((wnid, score))
         class_scores.sort(key=lambda t: t[1])
         for wnid, _ in class_scores:
             if len(chosen_wnids) >= int(args.classes):

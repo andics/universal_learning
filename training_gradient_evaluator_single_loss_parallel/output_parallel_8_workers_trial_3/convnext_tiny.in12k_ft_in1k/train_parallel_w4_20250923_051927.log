@@ -1,0 +1,1067 @@
+2025-09-23 05:19:27,379 - INFO - Parsed arguments:
+2025-09-23 05:19:27,379 - INFO -   amp_dtype = None
+2025-09-23 05:19:27,380 - INFO -   bars_npy = /home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/geq6wrong_21017_geq6correct_1525_imagenet.npy
+2025-09-23 05:19:27,380 - INFO -   cka_layer_fraction = 0.05
+2025-09-23 05:19:27,380 - INFO -   current_worker = 4
+2025-09-23 05:19:27,380 - INFO -   deterministic = True
+2025-09-23 05:19:27,380 - INFO -   device = cuda
+2025-09-23 05:19:27,380 - INFO -   epsilon = 0.001
+2025-09-23 05:19:27,380 - INFO -   examples_csv = /home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/geq6wrong_21017_geq6correct_1525_imagenet_examples_ammended.csv
+2025-09-23 05:19:27,380 - INFO -   explicit_examples_for_training = None
+2025-09-23 05:19:27,380 - INFO -   grad_clip_norm = 1.0
+2025-09-23 05:19:27,380 - INFO -   hierarchy_json = /home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/imagenet_synset_hierarchy.json
+2025-09-23 05:19:27,380 - INFO -   imagenet_models_csv = /home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/imagenet_models.csv
+2025-09-23 05:19:27,380 - INFO -   lr = 0.0001
+2025-09-23 05:19:27,380 - INFO -   max_examples = 50000
+2025-09-23 05:19:27,380 - INFO -   max_steps_per_example = 10000
+2025-09-23 05:19:27,380 - INFO -   model_csv_name = convnext_tiny_224_classification_imagenet_12k_ft_classification_imagenet_1k
+2025-09-23 05:19:27,380 - INFO -   model_name = convnext_tiny.in12k_ft_in1k
+2025-09-23 05:19:27,380 - INFO -   no_amp = False
+2025-09-23 05:19:27,380 - INFO -   num_workers = 8
+2025-09-23 05:19:27,380 - INFO -   output_dir = /home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/training_gradient_evaluator_single_loss_parallel/output_parallel_8_workers_trial_3
+2025-09-23 05:19:27,380 - INFO -   root_dir = None
+2025-09-23 05:19:27,380 - INFO -   seed = 1337
+2025-09-23 05:19:27,380 - INFO -   time_limit_seconds = 6300
+2025-09-23 05:19:27,380 - INFO -   weight_decay = 0.0
+2025-09-23 05:19:27,380 - INFO -   zero_aug_train = False
+2025-09-23 05:19:28,328 - INFO - Loaded TIMM pretrained weights for convnext_tiny.in12k_ft_in1k
+2025-09-23 05:19:28,328 - INFO - pretrained_cfg.url= hf_hub_id=timm/convnext_tiny.in12k_ft_in1k
+2025-09-23 05:19:28,699 - INFO - Training configuration:
+2025-09-23 05:19:28,700 - INFO -   lr = 0.0001
+2025-09-23 05:19:28,700 - INFO -   weight_decay = 0.0
+2025-09-23 05:19:28,700 - INFO -   max_steps = 10000
+2025-09-23 05:19:28,700 - INFO -   epsilon = 0.001
+2025-09-23 05:19:28,700 - INFO -   device = cuda
+2025-09-23 05:19:28,700 - INFO -   use_amp = True
+2025-09-23 05:19:28,700 - INFO -   amp_dtype = None
+2025-09-23 05:19:28,700 - INFO -   gradient_clip_norm = 1.0
+2025-09-23 05:19:31,610 - INFO - Global worker partitions (by ordered examples): [0, 799) [799, 1598) [1598, 2396) [2396, 3194) [3194, 3992) [3992, 4790) [4790, 5588) [5588, 6386)
+2025-09-23 05:19:31,611 - INFO - Assigned slice for worker 4/8: [3194, 3992) with 798 examples
+2025-09-23 05:19:31,612 - INFO - Assigned universal ranks (798): 45045, 45046, 45047, 45048, 45049, 45050, 45051, 45052, 45053, 45055, 45056, 45057, 45058, 45060, 45064, 45065, 45067, 45068, 45069, 45070, 45071, 45072, 45073, 45074, 45075, 45077, 45078, 45079, 45080, 45081, 45082, 45083, 45084, 45085, 45086, 45087, 45089, 45090, 45091, 45092, 45093, 45094, 45095, 45096, 45098, 45099, 45100, 45101, 45102, 45103, 45104, 45105, 45106, 45107, 45108, 45110, 45111, 45113, 45114, 45117, 45118, 45119, 45121, 45122, 45123, 45124, 45126, 45127, 45128, 45129, 45130, 45131, 45134, 45135, 45136, 45137, 45139, 45141, 45142, 45144, 45146, 45148, 45149, 45150, 45151, 45152, 45154, 45155, 45157, 45158, 45159, 45161, 45163, 45164, 45165, 45166, 45169, 45170, 45172, 45173, 45174, 45175, 45178, 45179, 45181, 45184, 45187, 45188, 45189, 45191, 45192, 45193, 45194, 45195, 45197, 45198, 45200, 45201, 45202, 45204, 45206, 45208, 45209, 45210, 45211, 45213, 45214, 45215, 45216, 45217, 45218, 45219, 45221, 45222, 45224, 45225, 45226, 45227, 45228, 45229, 45231, 45233, 45234, 45235, 45236, 45237, 45238, 45239, 45241, 45242, 45243, 45244, 45245, 45246, 45247, 45249, 45250, 45251, 45253, 45254, 45255, 45256, 45258, 45259, 45262, 45263, 45264, 45265, 45266, 45267, 45268, 45269, 45270, 45272, 45273, 45274, 45275, 45276, 45277, 45278, 45279, 45280, 45281, 45283, 45284, 45285, 45286, 45287, 45288, 45289, 45290, 45291, 45292, 45293, 45294, 45295, 45297, 45298, 45299, 45300, 45301, 45302, 45303, 45304, 45305, 45306, 45308, 45309, 45310, 45311, 45312, 45313, 45314, 45315, 45316, 45317, 45320, 45321, 45323, 45325, 45327, 45328, 45329, 45330, 45331, 45332, 45334, 45335, 45336, 45337, 45338, 45339, 45340, 45341, 45342, 45343, 45344, 45345, 45346, 45347, 45348, 45349, 45352, 45353, 45354, 45355, 45356, 45357, 45358, 45359, 45360, 45361, 45362, 45363, 45364, 45366, 45368, 45369, 45370, 45371, 45372, 45373, 45375, 45376, 45379, 45380, 45382, 45383, 45384, 45385, 45386, 45389, 45390, 45391, 45392, 45393, 45394, 45395, 45396, 45397, 45400, 45401, 45402, 45403, 45404, 45405, 45406, 45407, 45408, 45410, 45411, 45412, 45414, 45415, 45416, 45417, 45418, 45419, 45420, 45421, 45423, 45424, 45425, 45426, 45427, 45428, 45429, 45430, 45431, 45432, 45434, 45435, 45437, 45438, 45439, 45440, 45441, 45442, 45444, 45445, 45446, 45447, 45448, 45449, 45450, 45451, 45452, 45453, 45454, 45455, 45456, 45460, 45462, 45463, 45464, 45465, 45466, 45467, 45468, 45469, 45471, 45472, 45473, 45474, 45475, 45476, 45477, 45478, 45479, 45480, 45481, 45482, 45483, 45484, 45485, 45486, 45487, 45488, 45489, 45490, 45491, 45492, 45493, 45494, 45495, 45496, 45497, 45498, 45499, 45500, 45501, 45502, 45503, 45504, 45505, 45506, 45507, 45508, 45509, 45510, 45511, 45512, 45514, 45515, 45517, 45518, 45519, 45520, 45521, 45522, 45523, 45526, 45527, 45528, 45529, 45530, 45531, 45532, 45533, 45534, 45536, 45537, 45538, 45539, 45540, 45541, 45542, 45543, 45544, 45545, 45546, 45547, 45548, 45549, 45550, 45551, 45552, 45553, 45554, 45555, 45556, 45557, 45558, 45560, 45561, 45562, 45563, 45564, 45566, 45567, 45568, 45571, 45572, 45573, 45574, 45576, 45577, 45578, 45579, 45580, 45582, 45583, 45584, 45585, 45586, 45588, 45589, 45590, 45591, 45592, 45593, 45594, 45595, 45597, 45598, 45599, 45600, 45601, 45602, 45603, 45604, 45606, 45607, 45609, 45610, 45611, 45612, 45613, 45614, 45617, 45618, 45619, 45620, 45621, 45622, 45624, 45625, 45626, 45627, 45629, 45630, 45631, 45633, 45634, 45635, 45636, 45637, 45638, 45639, 45640, 45641, 45642, 45643, 45644, 45645, 45646, 45648, 45650, 45651, 45652, 45653, 45654, 45655, 45656, 45657, 45658, 45659, 45660, 45661, 45662, 45663, 45664, 45667, 45668, 45669, 45670, 45671, 45672, 45673, 45674, 45677, 45678, 45679, 45680, 45681, 45682, 45683, 45684, 45685, 45686, 45687, 45688, 45689, 45690, 45691, 45692, 45693, 45694, 45695, 45698, 45699, 45700, 45701, 45702, 45703, 45706, 45708, 45709, 45710, 45711, 45712, 45713, 45714, 45715, 45716, 45717, 45718, 45719, 45720, 45721, 45723, 45724, 45725, 45726, 45727, 45728, 45729, 45730, 45731, 45732, 45733, 45734, 45735, 45736, 45737, 45738, 45740, 45742, 45743, 45744, 45745, 45747, 45748, 45749, 45750, 45753, 45754, 45755, 45756, 45757, 45758, 45759, 45760, 45761, 45762, 45763, 45764, 45765, 45766, 45768, 45769, 45770, 45772, 45773, 45774, 45775, 45776, 45777, 45778, 45779, 45780, 45781, 45782, 45784, 45785, 45786, 45787, 45788, 45789, 45791, 45792, 45793, 45794, 45795, 45796, 45797, 45799, 45800, 45801, 45802, 45803, 45804, 45805, 45806, 45807, 45808, 45809, 45810, 45811, 45812, 45813, 45814, 45815, 45816, 45817, 45818, 45819, 45820, 45821, 45822, 45824, 45825, 45826, 45827, 45828, 45829, 45830, 45831, 45832, 45833, 45834, 45835, 45837, 45838, 45839, 45840, 45841, 45842, 45843, 45844, 45846, 45847, 45848, 45849, 45850, 45851, 45852, 45853, 45854, 45855, 45856, 45857, 45858, 45861, 45862, 45863, 45864, 45865, 45866, 45867, 45868, 45869, 45870, 45872, 45873, 45874, 45875, 45876, 45877, 45878, 45879, 45881, 45883, 45884, 45885, 45886, 45887, 45888, 45889, 45890, 45891, 45892, 45893, 45895, 45896, 45897, 45898, 45900, 45901, 45902, 45903, 45904, 45905, 45906, 45907, 45908, 45909, 45910, 45911, 45912, 45913, 45914, 45915, 45916, 45917, 45919, 45922, 45925, 45926, 45927, 45928, 45929, 45930, 45932, 45933, 45934, 45935, 45936, 45937, 45938, 45939, 45940, 45941, 45943, 45944, 45945, 45946, 45947, 45948, 45949, 45950, 45952, 45953, 45954, 45955, 45956, 45957, 45958, 45960, 45961, 45962, 45963, 45964, 45965, 45966, 45967, 45968, 45969, 45970, 45971, 45972, 45973, 45974, 45975, 45976, 45977, 45978, 45979, 45980, 45982, 45983, 45984, 45985, 45986, 45987, 45988, 45989, 45990
+2025-09-23 05:19:31,612 - INFO - Assigned example paths (one per line):
+/home/projects/bagon/shared/imagenet512/val/n07932039/ILSVRC2012_val_00029971.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04591157/ILSVRC2012_val_00005426.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04355338/ILSVRC2012_val_00031308.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04435653/ILSVRC2012_val_00008528.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07714571/ILSVRC2012_val_00043273.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04376876/ILSVRC2012_val_00044486.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02939185/ILSVRC2012_val_00031452.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03216828/ILSVRC2012_val_00005968.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01630670/ILSVRC2012_val_00048295.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03461385/ILSVRC2012_val_00000372.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03047690/ILSVRC2012_val_00004108.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01694178/ILSVRC2012_val_00022997.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04081281/ILSVRC2012_val_00015832.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03476684/ILSVRC2012_val_00032145.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01734418/ILSVRC2012_val_00031390.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02669723/ILSVRC2012_val_00046320.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02727426/ILSVRC2012_val_00014240.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02110806/ILSVRC2012_val_00040381.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03180011/ILSVRC2012_val_00034300.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01981276/ILSVRC2012_val_00021241.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07684084/ILSVRC2012_val_00032674.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02233338/ILSVRC2012_val_00039550.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03710193/ILSVRC2012_val_00025673.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04418357/ILSVRC2012_val_00034027.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04542943/ILSVRC2012_val_00016069.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04356056/ILSVRC2012_val_00037040.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01491361/ILSVRC2012_val_00023935.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03291819/ILSVRC2012_val_00035328.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03642806/ILSVRC2012_val_00008787.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03902125/ILSVRC2012_val_00040702.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04275548/ILSVRC2012_val_00043164.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03764736/ILSVRC2012_val_00001770.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03483316/ILSVRC2012_val_00002351.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02128757/ILSVRC2012_val_00024910.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07920052/ILSVRC2012_val_00013375.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04090263/ILSVRC2012_val_00038216.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02105505/ILSVRC2012_val_00007059.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03770439/ILSVRC2012_val_00006000.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04522168/ILSVRC2012_val_00042916.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02825657/ILSVRC2012_val_00006205.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03899768/ILSVRC2012_val_00046336.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03249569/ILSVRC2012_val_00002905.JPEG
+/home/projects/bagon/shared/imagenet512/val/n09246464/ILSVRC2012_val_00031523.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04604644/ILSVRC2012_val_00021154.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03483316/ILSVRC2012_val_00011813.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03958227/ILSVRC2012_val_00015775.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03259280/ILSVRC2012_val_00010219.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04548362/ILSVRC2012_val_00008472.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03376595/ILSVRC2012_val_00014479.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02100236/ILSVRC2012_val_00031655.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03028079/ILSVRC2012_val_00039053.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02111500/ILSVRC2012_val_00036075.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02727426/ILSVRC2012_val_00018413.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02894605/ILSVRC2012_val_00015515.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03788195/ILSVRC2012_val_00030336.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02749479/ILSVRC2012_val_00033972.JPEG
+/home/projects/bagon/shared/imagenet512/val/n13133613/ILSVRC2012_val_00011122.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02971356/ILSVRC2012_val_00035114.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03141823/ILSVRC2012_val_00038458.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04350905/ILSVRC2012_val_00033166.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03763968/ILSVRC2012_val_00031265.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03598930/ILSVRC2012_val_00010088.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03047690/ILSVRC2012_val_00018631.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02096294/ILSVRC2012_val_00034554.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02791270/ILSVRC2012_val_00035205.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03710637/ILSVRC2012_val_00007816.JPEG
+/home/projects/bagon/shared/imagenet512/val/n15075141/ILSVRC2012_val_00046353.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03627232/ILSVRC2012_val_00013065.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04147183/ILSVRC2012_val_00010749.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02105056/ILSVRC2012_val_00049815.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03476684/ILSVRC2012_val_00008183.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02089867/ILSVRC2012_val_00009220.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07836838/ILSVRC2012_val_00020034.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01644900/ILSVRC2012_val_00028673.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03854065/ILSVRC2012_val_00031331.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02483362/ILSVRC2012_val_00038037.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01798484/ILSVRC2012_val_00006790.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07745940/ILSVRC2012_val_00012645.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04356056/ILSVRC2012_val_00028254.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03355925/ILSVRC2012_val_00027876.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07730033/ILSVRC2012_val_00041676.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02105251/ILSVRC2012_val_00006419.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03920288/ILSVRC2012_val_00049112.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03787032/ILSVRC2012_val_00035779.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03126707/ILSVRC2012_val_00047451.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04286575/ILSVRC2012_val_00032647.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02910353/ILSVRC2012_val_00008958.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04522168/ILSVRC2012_val_00028768.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02504458/ILSVRC2012_val_00039678.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03692522/ILSVRC2012_val_00049785.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04228054/ILSVRC2012_val_00008835.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04597913/ILSVRC2012_val_00008202.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04487394/ILSVRC2012_val_00049208.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04355933/ILSVRC2012_val_00031126.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02107312/ILSVRC2012_val_00015511.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01632777/ILSVRC2012_val_00011474.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02939185/ILSVRC2012_val_00008169.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02981792/ILSVRC2012_val_00049543.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01739381/ILSVRC2012_val_00005827.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04357314/ILSVRC2012_val_00023241.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04154565/ILSVRC2012_val_00019043.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02892767/ILSVRC2012_val_00000808.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03980874/ILSVRC2012_val_00027107.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02892767/ILSVRC2012_val_00005423.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02090721/ILSVRC2012_val_00017327.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02089078/ILSVRC2012_val_00037609.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02974003/ILSVRC2012_val_00006952.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02089973/ILSVRC2012_val_00045799.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02113186/ILSVRC2012_val_00023268.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03125729/ILSVRC2012_val_00008716.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03532672/ILSVRC2012_val_00024123.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03775071/ILSVRC2012_val_00022216.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02840245/ILSVRC2012_val_00041698.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04008634/ILSVRC2012_val_00049362.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03476991/ILSVRC2012_val_00025365.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03706229/ILSVRC2012_val_00008728.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02236044/ILSVRC2012_val_00012127.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04579145/ILSVRC2012_val_00033173.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02090721/ILSVRC2012_val_00030412.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02109961/ILSVRC2012_val_00028523.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04456115/ILSVRC2012_val_00035674.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01871265/ILSVRC2012_val_00011218.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03838899/ILSVRC2012_val_00044509.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02988304/ILSVRC2012_val_00035511.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02667093/ILSVRC2012_val_00044339.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03461385/ILSVRC2012_val_00003568.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01744401/ILSVRC2012_val_00001482.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02869837/ILSVRC2012_val_00016535.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04069434/ILSVRC2012_val_00030477.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04136333/ILSVRC2012_val_00002902.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07860988/ILSVRC2012_val_00033051.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03400231/ILSVRC2012_val_00015404.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03085013/ILSVRC2012_val_00025409.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01843383/ILSVRC2012_val_00029589.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04111531/ILSVRC2012_val_00029341.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04235860/ILSVRC2012_val_00007955.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01985128/ILSVRC2012_val_00013580.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03724870/ILSVRC2012_val_00003148.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03929855/ILSVRC2012_val_00022617.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04259630/ILSVRC2012_val_00013340.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04332243/ILSVRC2012_val_00030726.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02110185/ILSVRC2012_val_00041189.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02988304/ILSVRC2012_val_00007354.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02124075/ILSVRC2012_val_00041579.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04009552/ILSVRC2012_val_00047644.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04423845/ILSVRC2012_val_00026989.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07711569/ILSVRC2012_val_00013084.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03958227/ILSVRC2012_val_00027015.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04372370/ILSVRC2012_val_00041016.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04409515/ILSVRC2012_val_00019125.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03272010/ILSVRC2012_val_00006680.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07930864/ILSVRC2012_val_00048321.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03793489/ILSVRC2012_val_00017816.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02981792/ILSVRC2012_val_00020540.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02113186/ILSVRC2012_val_00049884.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02074367/ILSVRC2012_val_00002000.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02992529/ILSVRC2012_val_00031438.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03733805/ILSVRC2012_val_00033697.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03249569/ILSVRC2012_val_00002043.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07742313/ILSVRC2012_val_00034491.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03141823/ILSVRC2012_val_00037313.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04081281/ILSVRC2012_val_00039444.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01756291/ILSVRC2012_val_00020569.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03014705/ILSVRC2012_val_00044628.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04392985/ILSVRC2012_val_00029455.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04522168/ILSVRC2012_val_00046271.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03637318/ILSVRC2012_val_00047460.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03534580/ILSVRC2012_val_00042152.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07583066/ILSVRC2012_val_00038089.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03933933/ILSVRC2012_val_00040499.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01667114/ILSVRC2012_val_00016550.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02108089/ILSVRC2012_val_00023231.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04033901/ILSVRC2012_val_00003041.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02640242/ILSVRC2012_val_00032922.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07695742/ILSVRC2012_val_00004195.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02018795/ILSVRC2012_val_00044999.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04525038/ILSVRC2012_val_00036415.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03796401/ILSVRC2012_val_00000365.JPEG
+/home/projects/bagon/shared/imagenet512/val/n09193705/ILSVRC2012_val_00027422.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04493381/ILSVRC2012_val_00006781.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04270147/ILSVRC2012_val_00028618.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07932039/ILSVRC2012_val_00017072.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02910353/ILSVRC2012_val_00028342.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02088632/ILSVRC2012_val_00032000.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03690938/ILSVRC2012_val_00003466.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03476991/ILSVRC2012_val_00039891.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02443114/ILSVRC2012_val_00030469.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02363005/ILSVRC2012_val_00028074.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01985128/ILSVRC2012_val_00025521.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02483708/ILSVRC2012_val_00022740.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01980166/ILSVRC2012_val_00000818.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02966687/ILSVRC2012_val_00025709.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03782006/ILSVRC2012_val_00018187.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03063599/ILSVRC2012_val_00010857.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02526121/ILSVRC2012_val_00042915.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01682714/ILSVRC2012_val_00042070.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02422699/ILSVRC2012_val_00025116.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01698640/ILSVRC2012_val_00007238.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03773504/ILSVRC2012_val_00010189.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02493793/ILSVRC2012_val_00045444.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03179701/ILSVRC2012_val_00032302.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04008634/ILSVRC2012_val_00014988.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04479046/ILSVRC2012_val_00043734.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03355925/ILSVRC2012_val_00001962.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03017168/ILSVRC2012_val_00035306.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03443371/ILSVRC2012_val_00017478.JPEG
+/home/projects/bagon/shared/imagenet512/val/n06785654/ILSVRC2012_val_00046723.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02098105/ILSVRC2012_val_00031531.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03958227/ILSVRC2012_val_00008350.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04599235/ILSVRC2012_val_00028150.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03124170/ILSVRC2012_val_00037403.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03976657/ILSVRC2012_val_00044719.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02268443/ILSVRC2012_val_00046231.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03125729/ILSVRC2012_val_00016343.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03884397/ILSVRC2012_val_00039417.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03803284/ILSVRC2012_val_00049210.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04285008/ILSVRC2012_val_00033293.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03843555/ILSVRC2012_val_00047442.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04428191/ILSVRC2012_val_00031546.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03124170/ILSVRC2012_val_00017204.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04141975/ILSVRC2012_val_00006418.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03599486/ILSVRC2012_val_00029813.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03929660/ILSVRC2012_val_00022149.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02169497/ILSVRC2012_val_00001539.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03196217/ILSVRC2012_val_00019501.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02093991/ILSVRC2012_val_00043404.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03961711/ILSVRC2012_val_00017668.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02837789/ILSVRC2012_val_00038813.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02415577/ILSVRC2012_val_00017949.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02999410/ILSVRC2012_val_00024021.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03970156/ILSVRC2012_val_00011268.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01749939/ILSVRC2012_val_00014575.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01756291/ILSVRC2012_val_00036067.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02101556/ILSVRC2012_val_00045011.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02395406/ILSVRC2012_val_00030014.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02815834/ILSVRC2012_val_00012908.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04599235/ILSVRC2012_val_00001417.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02229544/ILSVRC2012_val_00026894.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02807133/ILSVRC2012_val_00037542.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01749939/ILSVRC2012_val_00026739.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02085620/ILSVRC2012_val_00016688.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02104365/ILSVRC2012_val_00027051.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04204347/ILSVRC2012_val_00004046.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01667778/ILSVRC2012_val_00015475.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03742115/ILSVRC2012_val_00003433.JPEG
+/home/projects/bagon/shared/imagenet512/val/n09332890/ILSVRC2012_val_00039635.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07714990/ILSVRC2012_val_00048012.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03297495/ILSVRC2012_val_00022933.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02206856/ILSVRC2012_val_00049624.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01740131/ILSVRC2012_val_00025727.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03496892/ILSVRC2012_val_00030173.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02769748/ILSVRC2012_val_00036598.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02027492/ILSVRC2012_val_00001643.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02951585/ILSVRC2012_val_00012878.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03998194/ILSVRC2012_val_00014123.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01980166/ILSVRC2012_val_00023339.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03782006/ILSVRC2012_val_00032019.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02099267/ILSVRC2012_val_00035881.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03535780/ILSVRC2012_val_00030841.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04033995/ILSVRC2012_val_00038032.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02747177/ILSVRC2012_val_00018345.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02788148/ILSVRC2012_val_00016716.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04392985/ILSVRC2012_val_00001738.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04467665/ILSVRC2012_val_00038561.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02493793/ILSVRC2012_val_00017507.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07711569/ILSVRC2012_val_00016562.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03527444/ILSVRC2012_val_00027822.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02231487/ILSVRC2012_val_00047952.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02107312/ILSVRC2012_val_00039020.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02892767/ILSVRC2012_val_00047165.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02085620/ILSVRC2012_val_00028943.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03977966/ILSVRC2012_val_00023057.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03709823/ILSVRC2012_val_00032247.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03110669/ILSVRC2012_val_00008033.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02669723/ILSVRC2012_val_00045424.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03729826/ILSVRC2012_val_00037724.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04522168/ILSVRC2012_val_00018777.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04154565/ILSVRC2012_val_00000310.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04493381/ILSVRC2012_val_00038337.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01914609/ILSVRC2012_val_00000017.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02098413/ILSVRC2012_val_00030660.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03710721/ILSVRC2012_val_00029807.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04522168/ILSVRC2012_val_00041967.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03976657/ILSVRC2012_val_00002567.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01729977/ILSVRC2012_val_00014472.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02107574/ILSVRC2012_val_00034266.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04347754/ILSVRC2012_val_00042324.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02909870/ILSVRC2012_val_00010175.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04229816/ILSVRC2012_val_00009290.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03595614/ILSVRC2012_val_00007268.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03776460/ILSVRC2012_val_00026878.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04389033/ILSVRC2012_val_00042641.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04356056/ILSVRC2012_val_00034446.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03482405/ILSVRC2012_val_00035547.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04275548/ILSVRC2012_val_00009763.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02099712/ILSVRC2012_val_00027534.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02676566/ILSVRC2012_val_00044937.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02797295/ILSVRC2012_val_00016353.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02037110/ILSVRC2012_val_00037288.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03983396/ILSVRC2012_val_00030749.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01682714/ILSVRC2012_val_00041164.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03445924/ILSVRC2012_val_00022035.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03764736/ILSVRC2012_val_00013680.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03814639/ILSVRC2012_val_00007014.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04355338/ILSVRC2012_val_00002015.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03690938/ILSVRC2012_val_00032191.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07932039/ILSVRC2012_val_00048392.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03782006/ILSVRC2012_val_00047803.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04429376/ILSVRC2012_val_00029561.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02096177/ILSVRC2012_val_00033231.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07871810/ILSVRC2012_val_00016553.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04404412/ILSVRC2012_val_00001532.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03995372/ILSVRC2012_val_00048981.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04326547/ILSVRC2012_val_00030823.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03710721/ILSVRC2012_val_00003089.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03769881/ILSVRC2012_val_00042007.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03786901/ILSVRC2012_val_00025293.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07716358/ILSVRC2012_val_00040637.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02795169/ILSVRC2012_val_00037322.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04239074/ILSVRC2012_val_00014865.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02799071/ILSVRC2012_val_00020572.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04116512/ILSVRC2012_val_00029621.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03782006/ILSVRC2012_val_00041449.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01737021/ILSVRC2012_val_00042105.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04392985/ILSVRC2012_val_00003844.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02100583/ILSVRC2012_val_00005923.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01784675/ILSVRC2012_val_00028449.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04008634/ILSVRC2012_val_00039495.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03995372/ILSVRC2012_val_00014379.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02102318/ILSVRC2012_val_00026540.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04090263/ILSVRC2012_val_00013481.JPEG
+/home/projects/bagon/shared/imagenet512/val/n12144580/ILSVRC2012_val_00040756.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02974003/ILSVRC2012_val_00015230.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02091831/ILSVRC2012_val_00027810.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02169497/ILSVRC2012_val_00024558.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02412080/ILSVRC2012_val_00048002.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03535780/ILSVRC2012_val_00026801.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02776631/ILSVRC2012_val_00042857.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02837789/ILSVRC2012_val_00006332.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03877472/ILSVRC2012_val_00013462.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01644900/ILSVRC2012_val_00049287.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04259630/ILSVRC2012_val_00040383.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03692522/ILSVRC2012_val_00036273.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04357314/ILSVRC2012_val_00016583.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04152593/ILSVRC2012_val_00041664.JPEG
+/home/projects/bagon/shared/imagenet512/val/n09421951/ILSVRC2012_val_00040169.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04584207/ILSVRC2012_val_00043846.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01985128/ILSVRC2012_val_00002693.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03146219/ILSVRC2012_val_00026209.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03983396/ILSVRC2012_val_00008437.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01773797/ILSVRC2012_val_00034972.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03530642/ILSVRC2012_val_00022717.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02837789/ILSVRC2012_val_00036936.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02834397/ILSVRC2012_val_00013913.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03690938/ILSVRC2012_val_00004618.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02096294/ILSVRC2012_val_00012556.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03775546/ILSVRC2012_val_00037888.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02325366/ILSVRC2012_val_00013125.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04465501/ILSVRC2012_val_00013518.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03777568/ILSVRC2012_val_00042791.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02110185/ILSVRC2012_val_00041649.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04201297/ILSVRC2012_val_00030601.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03868863/ILSVRC2012_val_00033355.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02814533/ILSVRC2012_val_00031765.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07711569/ILSVRC2012_val_00021770.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03976657/ILSVRC2012_val_00026833.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01632777/ILSVRC2012_val_00044893.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04443257/ILSVRC2012_val_00043259.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02127052/ILSVRC2012_val_00044715.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01729977/ILSVRC2012_val_00016703.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02815834/ILSVRC2012_val_00027061.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04336792/ILSVRC2012_val_00016751.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03770439/ILSVRC2012_val_00003742.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01882714/ILSVRC2012_val_00014284.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02321529/ILSVRC2012_val_00007344.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07579787/ILSVRC2012_val_00015280.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03814639/ILSVRC2012_val_00010868.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03637318/ILSVRC2012_val_00010971.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03492542/ILSVRC2012_val_00014717.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01692333/ILSVRC2012_val_00035069.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03179701/ILSVRC2012_val_00024153.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01740131/ILSVRC2012_val_00044557.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04515003/ILSVRC2012_val_00003401.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02096177/ILSVRC2012_val_00048476.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02105056/ILSVRC2012_val_00035640.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07860988/ILSVRC2012_val_00038923.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03065424/ILSVRC2012_val_00007436.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07684084/ILSVRC2012_val_00006422.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03954731/ILSVRC2012_val_00025108.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04404412/ILSVRC2012_val_00037104.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01644900/ILSVRC2012_val_00005532.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04192698/ILSVRC2012_val_00016932.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04040759/ILSVRC2012_val_00013737.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02870880/ILSVRC2012_val_00040682.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04443257/ILSVRC2012_val_00015268.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02877765/ILSVRC2012_val_00006337.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03903868/ILSVRC2012_val_00010985.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02504458/ILSVRC2012_val_00018263.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02089973/ILSVRC2012_val_00043610.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01667778/ILSVRC2012_val_00021291.JPEG
+/home/projects/bagon/shared/imagenet512/val/n13133613/ILSVRC2012_val_00025296.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04285008/ILSVRC2012_val_00025465.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02909870/ILSVRC2012_val_00005035.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04005630/ILSVRC2012_val_00014718.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04116512/ILSVRC2012_val_00042224.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03832673/ILSVRC2012_val_00041094.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04350905/ILSVRC2012_val_00044549.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03062245/ILSVRC2012_val_00040906.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03657121/ILSVRC2012_val_00028008.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02123045/ILSVRC2012_val_00038672.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03125729/ILSVRC2012_val_00000210.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01689811/ILSVRC2012_val_00025909.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07747607/ILSVRC2012_val_00039277.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03482405/ILSVRC2012_val_00038888.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07745940/ILSVRC2012_val_00012728.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03840681/ILSVRC2012_val_00005995.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03347037/ILSVRC2012_val_00023102.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03804744/ILSVRC2012_val_00043967.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01560419/ILSVRC2012_val_00001720.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03942813/ILSVRC2012_val_00049680.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04090263/ILSVRC2012_val_00043093.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01773797/ILSVRC2012_val_00049478.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01514668/ILSVRC2012_val_00000911.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03724870/ILSVRC2012_val_00046920.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04259630/ILSVRC2012_val_00010377.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01728920/ILSVRC2012_val_00018041.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04371430/ILSVRC2012_val_00015877.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02814533/ILSVRC2012_val_00029057.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07579787/ILSVRC2012_val_00007076.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01677366/ILSVRC2012_val_00046740.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02791124/ILSVRC2012_val_00000804.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01871265/ILSVRC2012_val_00005860.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03482405/ILSVRC2012_val_00048126.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01693334/ILSVRC2012_val_00013392.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04376876/ILSVRC2012_val_00034016.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04522168/ILSVRC2012_val_00037121.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03796401/ILSVRC2012_val_00042891.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03873416/ILSVRC2012_val_00007150.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03250847/ILSVRC2012_val_00036385.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04443257/ILSVRC2012_val_00021419.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02443114/ILSVRC2012_val_00006629.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04389033/ILSVRC2012_val_00017065.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01914609/ILSVRC2012_val_00041548.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02483708/ILSVRC2012_val_00003170.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02749479/ILSVRC2012_val_00019363.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03530642/ILSVRC2012_val_00007383.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02317335/ILSVRC2012_val_00003537.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04326547/ILSVRC2012_val_00015034.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04552348/ILSVRC2012_val_00018638.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04209239/ILSVRC2012_val_00032893.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01807496/ILSVRC2012_val_00021090.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04525038/ILSVRC2012_val_00025705.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04370456/ILSVRC2012_val_00019805.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04548280/ILSVRC2012_val_00015199.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04026417/ILSVRC2012_val_00030223.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03658185/ILSVRC2012_val_00045642.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02804414/ILSVRC2012_val_00017317.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04522168/ILSVRC2012_val_00013199.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04376876/ILSVRC2012_val_00027991.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07747607/ILSVRC2012_val_00021528.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04417672/ILSVRC2012_val_00025905.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02104365/ILSVRC2012_val_00008860.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02123159/ILSVRC2012_val_00022896.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07584110/ILSVRC2012_val_00006602.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04612504/ILSVRC2012_val_00040974.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03782006/ILSVRC2012_val_00049772.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04447861/ILSVRC2012_val_00027324.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04286575/ILSVRC2012_val_00011571.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03729826/ILSVRC2012_val_00035659.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02107312/ILSVRC2012_val_00040747.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02097047/ILSVRC2012_val_00015427.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02895154/ILSVRC2012_val_00023971.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01682714/ILSVRC2012_val_00049851.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02916936/ILSVRC2012_val_00020902.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03388549/ILSVRC2012_val_00009375.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02124075/ILSVRC2012_val_00024000.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02321529/ILSVRC2012_val_00042639.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07714571/ILSVRC2012_val_00031177.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02988304/ILSVRC2012_val_00014002.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04120489/ILSVRC2012_val_00026868.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02895154/ILSVRC2012_val_00037025.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03495258/ILSVRC2012_val_00009425.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04522168/ILSVRC2012_val_00011020.JPEG
+/home/projects/bagon/shared/imagenet512/val/n15075141/ILSVRC2012_val_00042643.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04325704/ILSVRC2012_val_00045762.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02808304/ILSVRC2012_val_00021340.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04596742/ILSVRC2012_val_00044190.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03832673/ILSVRC2012_val_00035825.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02971356/ILSVRC2012_val_00043603.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07745940/ILSVRC2012_val_00046437.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04392985/ILSVRC2012_val_00001666.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03594734/ILSVRC2012_val_00047544.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01797886/ILSVRC2012_val_00005315.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02979186/ILSVRC2012_val_00034563.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04355933/ILSVRC2012_val_00040473.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03930630/ILSVRC2012_val_00017708.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03450230/ILSVRC2012_val_00021132.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03895866/ILSVRC2012_val_00048083.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04550184/ILSVRC2012_val_00034519.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04026417/ILSVRC2012_val_00017752.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07871810/ILSVRC2012_val_00012785.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07584110/ILSVRC2012_val_00021669.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03874599/ILSVRC2012_val_00037449.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03249569/ILSVRC2012_val_00044932.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03124043/ILSVRC2012_val_00043569.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02910353/ILSVRC2012_val_00017543.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02825657/ILSVRC2012_val_00036386.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04536866/ILSVRC2012_val_00036501.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04336792/ILSVRC2012_val_00044134.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02950826/ILSVRC2012_val_00027001.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03661043/ILSVRC2012_val_00036001.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01751748/ILSVRC2012_val_00033108.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03866082/ILSVRC2012_val_00047430.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02123159/ILSVRC2012_val_00011854.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02895154/ILSVRC2012_val_00011775.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03773504/ILSVRC2012_val_00001525.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03832673/ILSVRC2012_val_00008237.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03866082/ILSVRC2012_val_00011988.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03666591/ILSVRC2012_val_00018595.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03724870/ILSVRC2012_val_00008913.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02087046/ILSVRC2012_val_00004717.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04208210/ILSVRC2012_val_00042371.JPEG
+/home/projects/bagon/shared/imagenet512/val/n06794110/ILSVRC2012_val_00035300.JPEG
+/home/projects/bagon/shared/imagenet512/val/n06596364/ILSVRC2012_val_00015936.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01667778/ILSVRC2012_val_00037154.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03028079/ILSVRC2012_val_00017198.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03871628/ILSVRC2012_val_00027103.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02494079/ILSVRC2012_val_00012384.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01664065/ILSVRC2012_val_00022842.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02950826/ILSVRC2012_val_00022031.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03950228/ILSVRC2012_val_00009107.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02948072/ILSVRC2012_val_00010256.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04251144/ILSVRC2012_val_00045219.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02963159/ILSVRC2012_val_00016246.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03770439/ILSVRC2012_val_00006164.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07753275/ILSVRC2012_val_00035283.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07930864/ILSVRC2012_val_00012871.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02113712/ILSVRC2012_val_00016673.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01944390/ILSVRC2012_val_00003625.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04536866/ILSVRC2012_val_00027728.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03452741/ILSVRC2012_val_00029142.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03792972/ILSVRC2012_val_00012130.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04591157/ILSVRC2012_val_00023814.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02364673/ILSVRC2012_val_00022509.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02085620/ILSVRC2012_val_00019402.JPEG
+/home/projects/bagon/shared/imagenet512/val/n09399592/ILSVRC2012_val_00002476.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07590611/ILSVRC2012_val_00031682.JPEG
+/home/projects/bagon/shared/imagenet512/val/n06794110/ILSVRC2012_val_00032268.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02123159/ILSVRC2012_val_00013788.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04517823/ILSVRC2012_val_00036519.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04591157/ILSVRC2012_val_00049283.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02363005/ILSVRC2012_val_00021586.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02974003/ILSVRC2012_val_00044439.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07584110/ILSVRC2012_val_00000267.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03838899/ILSVRC2012_val_00032360.JPEG
+/home/projects/bagon/shared/imagenet512/val/n09472597/ILSVRC2012_val_00033527.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01749939/ILSVRC2012_val_00014252.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03527444/ILSVRC2012_val_00028910.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02115641/ILSVRC2012_val_00004372.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02951585/ILSVRC2012_val_00021257.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07932039/ILSVRC2012_val_00032432.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02939185/ILSVRC2012_val_00043061.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01744401/ILSVRC2012_val_00006262.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04392985/ILSVRC2012_val_00006037.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02169497/ILSVRC2012_val_00025729.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04204347/ILSVRC2012_val_00013003.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03447447/ILSVRC2012_val_00023392.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03196217/ILSVRC2012_val_00014987.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02999410/ILSVRC2012_val_00023200.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03920288/ILSVRC2012_val_00042530.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04026417/ILSVRC2012_val_00024778.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04259630/ILSVRC2012_val_00048568.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02497673/ILSVRC2012_val_00014914.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04356056/ILSVRC2012_val_00031656.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07860988/ILSVRC2012_val_00016961.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03908714/ILSVRC2012_val_00034235.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02641379/ILSVRC2012_val_00033535.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04259630/ILSVRC2012_val_00025763.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04026417/ILSVRC2012_val_00019863.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01775062/ILSVRC2012_val_00036773.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02101006/ILSVRC2012_val_00003714.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04493381/ILSVRC2012_val_00027916.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02727426/ILSVRC2012_val_00042797.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01753488/ILSVRC2012_val_00045247.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04371430/ILSVRC2012_val_00026485.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01817953/ILSVRC2012_val_00049313.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04192698/ILSVRC2012_val_00012874.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02815834/ILSVRC2012_val_00002035.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02977058/ILSVRC2012_val_00037304.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04584207/ILSVRC2012_val_00046684.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03690938/ILSVRC2012_val_00043006.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03868863/ILSVRC2012_val_00011326.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03832673/ILSVRC2012_val_00044609.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04493381/ILSVRC2012_val_00032144.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04004767/ILSVRC2012_val_00002985.JPEG
+/home/projects/bagon/shared/imagenet512/val/n09193705/ILSVRC2012_val_00001986.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03680355/ILSVRC2012_val_00000385.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03141823/ILSVRC2012_val_00022136.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03240683/ILSVRC2012_val_00016893.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02105056/ILSVRC2012_val_00032837.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04332243/ILSVRC2012_val_00007118.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03450230/ILSVRC2012_val_00002275.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04579432/ILSVRC2012_val_00034891.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03871628/ILSVRC2012_val_00002169.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02106382/ILSVRC2012_val_00027219.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03764736/ILSVRC2012_val_00020546.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04328186/ILSVRC2012_val_00020153.JPEG
+/home/projects/bagon/shared/imagenet512/val/n09399592/ILSVRC2012_val_00004005.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02087046/ILSVRC2012_val_00002521.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03868242/ILSVRC2012_val_00035457.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03124043/ILSVRC2012_val_00027845.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01601694/ILSVRC2012_val_00012797.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03018349/ILSVRC2012_val_00014428.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01748264/ILSVRC2012_val_00005033.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04461696/ILSVRC2012_val_00025748.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02776631/ILSVRC2012_val_00040240.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04326547/ILSVRC2012_val_00017530.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04493381/ILSVRC2012_val_00034803.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03452741/ILSVRC2012_val_00035196.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02108915/ILSVRC2012_val_00032262.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03770679/ILSVRC2012_val_00016527.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02825657/ILSVRC2012_val_00018151.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02804414/ILSVRC2012_val_00023356.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04604644/ILSVRC2012_val_00037279.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04596742/ILSVRC2012_val_00008899.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07745940/ILSVRC2012_val_00023512.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03223299/ILSVRC2012_val_00021082.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02108422/ILSVRC2012_val_00041422.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03259280/ILSVRC2012_val_00030669.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04447861/ILSVRC2012_val_00004573.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02321529/ILSVRC2012_val_00016075.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03770679/ILSVRC2012_val_00034281.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03958227/ILSVRC2012_val_00020834.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03146219/ILSVRC2012_val_00043567.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03062245/ILSVRC2012_val_00017747.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04371430/ILSVRC2012_val_00027225.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01978287/ILSVRC2012_val_00018673.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01807496/ILSVRC2012_val_00041361.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03710721/ILSVRC2012_val_00019278.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03272010/ILSVRC2012_val_00033727.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01644373/ILSVRC2012_val_00020321.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02797295/ILSVRC2012_val_00025847.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03691459/ILSVRC2012_val_00014908.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04355933/ILSVRC2012_val_00043078.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03000247/ILSVRC2012_val_00024215.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02089973/ILSVRC2012_val_00012875.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04550184/ILSVRC2012_val_00046925.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02110185/ILSVRC2012_val_00020432.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04008634/ILSVRC2012_val_00000468.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02109047/ILSVRC2012_val_00047250.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04136333/ILSVRC2012_val_00033983.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02776631/ILSVRC2012_val_00040321.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03995372/ILSVRC2012_val_00009204.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02106382/ILSVRC2012_val_00010765.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03929660/ILSVRC2012_val_00023274.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01873310/ILSVRC2012_val_00036442.JPEG
+/home/projects/bagon/shared/imagenet512/val/n09193705/ILSVRC2012_val_00029110.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01944390/ILSVRC2012_val_00040504.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04372370/ILSVRC2012_val_00047391.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03796401/ILSVRC2012_val_00013011.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03970156/ILSVRC2012_val_00040215.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07565083/ILSVRC2012_val_00005232.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07892512/ILSVRC2012_val_00020261.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01774384/ILSVRC2012_val_00029029.JPEG
+/home/projects/bagon/shared/imagenet512/val/n06794110/ILSVRC2012_val_00020350.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03095699/ILSVRC2012_val_00043479.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02895154/ILSVRC2012_val_00030994.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04392985/ILSVRC2012_val_00008785.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03207941/ILSVRC2012_val_00044218.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01978287/ILSVRC2012_val_00028594.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03485794/ILSVRC2012_val_00036155.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02097474/ILSVRC2012_val_00014109.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03891251/ILSVRC2012_val_00013082.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03498962/ILSVRC2012_val_00047210.JPEG
+/home/projects/bagon/shared/imagenet512/val/n12985857/ILSVRC2012_val_00035903.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02641379/ILSVRC2012_val_00036245.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07615774/ILSVRC2012_val_00047951.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02992529/ILSVRC2012_val_00002114.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04154565/ILSVRC2012_val_00049890.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02002724/ILSVRC2012_val_00017388.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03372029/ILSVRC2012_val_00044942.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01755581/ILSVRC2012_val_00022486.JPEG
+/home/projects/bagon/shared/imagenet512/val/n09468604/ILSVRC2012_val_00037477.JPEG
+/home/projects/bagon/shared/imagenet512/val/n09229709/ILSVRC2012_val_00026688.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04357314/ILSVRC2012_val_00001102.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04254777/ILSVRC2012_val_00013213.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01773549/ILSVRC2012_val_00008352.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03220513/ILSVRC2012_val_00044722.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02504458/ILSVRC2012_val_00033832.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04336792/ILSVRC2012_val_00004166.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01728572/ILSVRC2012_val_00049017.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04347754/ILSVRC2012_val_00020107.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03476991/ILSVRC2012_val_00027282.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02093256/ILSVRC2012_val_00034733.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04548362/ILSVRC2012_val_00013857.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04008634/ILSVRC2012_val_00009436.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02109961/ILSVRC2012_val_00033758.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02788148/ILSVRC2012_val_00039546.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01729977/ILSVRC2012_val_00007710.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03443371/ILSVRC2012_val_00020444.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04208210/ILSVRC2012_val_00040253.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03773504/ILSVRC2012_val_00006868.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03481172/ILSVRC2012_val_00009152.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04325704/ILSVRC2012_val_00042632.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04553703/ILSVRC2012_val_00013534.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02988304/ILSVRC2012_val_00013693.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02361337/ILSVRC2012_val_00042013.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07742313/ILSVRC2012_val_00031019.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04328186/ILSVRC2012_val_00000290.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03976657/ILSVRC2012_val_00000334.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02950826/ILSVRC2012_val_00041215.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04254777/ILSVRC2012_val_00026534.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02841315/ILSVRC2012_val_00013969.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03929855/ILSVRC2012_val_00017885.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02190166/ILSVRC2012_val_00014356.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04026417/ILSVRC2012_val_00049451.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02871525/ILSVRC2012_val_00013599.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01729322/ILSVRC2012_val_00003071.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02114367/ILSVRC2012_val_00043363.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04591157/ILSVRC2012_val_00020606.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02113624/ILSVRC2012_val_00018755.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04429376/ILSVRC2012_val_00046304.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02090721/ILSVRC2012_val_00014293.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04275548/ILSVRC2012_val_00045648.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04005630/ILSVRC2012_val_00031106.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07920052/ILSVRC2012_val_00006067.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03692522/ILSVRC2012_val_00021030.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03498962/ILSVRC2012_val_00030655.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04265275/ILSVRC2012_val_00013439.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03710637/ILSVRC2012_val_00000184.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04479046/ILSVRC2012_val_00047064.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03141823/ILSVRC2012_val_00040956.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02094258/ILSVRC2012_val_00043451.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03207941/ILSVRC2012_val_00040127.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02978881/ILSVRC2012_val_00014469.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04487394/ILSVRC2012_val_00012290.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04532106/ILSVRC2012_val_00014166.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01775062/ILSVRC2012_val_00006378.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04591157/ILSVRC2012_val_00048707.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03089624/ILSVRC2012_val_00046798.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03920288/ILSVRC2012_val_00023452.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02776631/ILSVRC2012_val_00022863.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03777754/ILSVRC2012_val_00029230.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04592741/ILSVRC2012_val_00036435.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04229816/ILSVRC2012_val_00033073.JPEG
+/home/projects/bagon/shared/imagenet512/val/n07695742/ILSVRC2012_val_00013996.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01693334/ILSVRC2012_val_00018857.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01694178/ILSVRC2012_val_00001375.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04435653/ILSVRC2012_val_00044409.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01667778/ILSVRC2012_val_00010792.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02106662/ILSVRC2012_val_00022209.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03347037/ILSVRC2012_val_00026804.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03627232/ILSVRC2012_val_00002377.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04147183/ILSVRC2012_val_00015783.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01753488/ILSVRC2012_val_00033125.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03871628/ILSVRC2012_val_00028843.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01978455/ILSVRC2012_val_00014921.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02128757/ILSVRC2012_val_00004135.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03710721/ILSVRC2012_val_00031620.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03045698/ILSVRC2012_val_00023868.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03710637/ILSVRC2012_val_00015163.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02444819/ILSVRC2012_val_00016665.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04228054/ILSVRC2012_val_00047702.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02769748/ILSVRC2012_val_00036510.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02093428/ILSVRC2012_val_00039832.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03838899/ILSVRC2012_val_00004639.JPEG
+/home/projects/bagon/shared/imagenet512/val/n01981276/ILSVRC2012_val_00004965.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02490219/ILSVRC2012_val_00006219.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03933933/ILSVRC2012_val_00045336.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03710637/ILSVRC2012_val_00026276.JPEG
+/home/projects/bagon/shared/imagenet512/val/n15075141/ILSVRC2012_val_00014649.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02749479/ILSVRC2012_val_00042983.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04004767/ILSVRC2012_val_00008544.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03920288/ILSVRC2012_val_00026927.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02730930/ILSVRC2012_val_00001258.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03014705/ILSVRC2012_val_00037817.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04467665/ILSVRC2012_val_00014857.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03947888/ILSVRC2012_val_00006118.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04296562/ILSVRC2012_val_00031263.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04192698/ILSVRC2012_val_00025337.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03642806/ILSVRC2012_val_00005001.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02229544/ILSVRC2012_val_00026590.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02108000/ILSVRC2012_val_00041093.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02422106/ILSVRC2012_val_00014740.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03838899/ILSVRC2012_val_00023184.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03724870/ILSVRC2012_val_00038854.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04154565/ILSVRC2012_val_00010044.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04476259/ILSVRC2012_val_00042785.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02107574/ILSVRC2012_val_00007071.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02776631/ILSVRC2012_val_00014946.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03141823/ILSVRC2012_val_00022939.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02018207/ILSVRC2012_val_00034172.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03895866/ILSVRC2012_val_00014820.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02088364/ILSVRC2012_val_00017873.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02110185/ILSVRC2012_val_00013150.JPEG
+/home/projects/bagon/shared/imagenet512/val/n03998194/ILSVRC2012_val_00042119.JPEG
+/home/projects/bagon/shared/imagenet512/val/n02895154/ILSVRC2012_val_00048989.JPEG
+/home/projects/bagon/shared/imagenet512/val/n04560804/ILSVRC2012_val_00049951.JPEG
+2025-09-23 05:19:31,691 - INFO - CKA layer subset: selecting 5/100 layers (~5%)
+2025-09-23 05:19:53,245 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n07932039/ILSVRC2012_val_00029971.JPEG reached epsilon at step 325, loss sum: 43.0107, final loss: 0.00099945, weight distance: 0.0192
+2025-09-23 05:20:16,188 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04591157/ILSVRC2012_val_00005426.JPEG reached epsilon at step 425, loss sum: 284.4517, final loss: 0.00098801, weight distance: 0.0241
+2025-09-23 05:20:36,932 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04355338/ILSVRC2012_val_00031308.JPEG reached epsilon at step 386, loss sum: 57.0139, final loss: 0.00099373, weight distance: 0.0202
+2025-09-23 05:20:48,803 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04435653/ILSVRC2012_val_00008528.JPEG reached epsilon at step 211, loss sum: 115.4279, final loss: 0.00099182, weight distance: 0.0144
+2025-09-23 05:21:06,916 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n07714571/ILSVRC2012_val_00043273.JPEG reached epsilon at step 334, loss sum: 115.4205, final loss: 0.00099564, weight distance: 0.0210
+2025-09-23 05:21:14,365 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04376876/ILSVRC2012_val_00044486.JPEG reached epsilon at step 126, loss sum: 20.3288, final loss: 0.00099945, weight distance: 0.0067
+2025-09-23 05:21:26,604 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02939185/ILSVRC2012_val_00031452.JPEG reached epsilon at step 226, loss sum: 63.4668, final loss: 0.00098705, weight distance: 0.0151
+2025-09-23 05:21:49,640 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03216828/ILSVRC2012_val_00005968.JPEG reached epsilon at step 427, loss sum: 139.6433, final loss: 0.00099373, weight distance: 0.0237
+2025-09-23 05:22:21,668 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n01630670/ILSVRC2012_val_00048295.JPEG reached epsilon at step 593, loss sum: 124.9934, final loss: 0.00099659, weight distance: 0.0335
+2025-09-23 05:22:44,272 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03461385/ILSVRC2012_val_00000372.JPEG reached epsilon at step 416, loss sum: 177.7263, final loss: 0.00099754, weight distance: 0.0275
+2025-09-23 05:23:16,322 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03047690/ILSVRC2012_val_00004108.JPEG reached epsilon at step 589, loss sum: 42.3908, final loss: 0.00099373, weight distance: 0.0250
+2025-09-23 05:23:34,655 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n01694178/ILSVRC2012_val_00022997.JPEG reached epsilon at step 331, loss sum: 95.3224, final loss: 0.00099277, weight distance: 0.0188
+2025-09-23 05:23:58,962 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04081281/ILSVRC2012_val_00015832.JPEG reached epsilon at step 443, loss sum: 71.8527, final loss: 0.00099373, weight distance: 0.0257
+2025-09-23 05:24:24,678 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03476684/ILSVRC2012_val_00032145.JPEG reached epsilon at step 476, loss sum: 179.3060, final loss: 0.00099754, weight distance: 0.0301
+2025-09-23 05:24:49,494 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n01734418/ILSVRC2012_val_00031390.JPEG reached epsilon at step 415, loss sum: 129.7649, final loss: 0.00099659, weight distance: 0.0264
+2025-09-23 05:25:21,546 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02669723/ILSVRC2012_val_00046320.JPEG reached epsilon at step 585, loss sum: 53.9964, final loss: 0.00099468, weight distance: 0.0290
+2025-09-23 05:25:57,057 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02727426/ILSVRC2012_val_00014240.JPEG reached epsilon at step 645, loss sum: 42.9178, final loss: 0.00099754, weight distance: 0.0329
+2025-09-23 05:26:35,367 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02110806/ILSVRC2012_val_00040381.JPEG reached epsilon at step 728, loss sum: 55.2069, final loss: 0.00099850, weight distance: 0.0321
+2025-09-23 05:27:26,948 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03180011/ILSVRC2012_val_00034300.JPEG reached epsilon at step 988, loss sum: 83.1231, final loss: 0.00099373, weight distance: 0.0396
+2025-09-23 05:27:58,960 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n01981276/ILSVRC2012_val_00021241.JPEG reached epsilon at step 610, loss sum: 210.2424, final loss: 0.00099468, weight distance: 0.0308
+2025-09-23 05:28:32,873 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n07684084/ILSVRC2012_val_00032674.JPEG reached epsilon at step 632, loss sum: 44.7057, final loss: 0.00099564, weight distance: 0.0314
+2025-09-23 05:28:57,349 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02233338/ILSVRC2012_val_00039550.JPEG reached epsilon at step 455, loss sum: 298.1871, final loss: 0.00099659, weight distance: 0.0195
+2025-09-23 05:29:11,427 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03710193/ILSVRC2012_val_00025673.JPEG reached epsilon at step 260, loss sum: 75.7114, final loss: 0.00099659, weight distance: 0.0147
+2025-09-23 05:29:21,653 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04418357/ILSVRC2012_val_00034027.JPEG reached epsilon at step 185, loss sum: 46.5304, final loss: 0.00099754, weight distance: 0.0119
+2025-09-23 05:29:39,738 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04542943/ILSVRC2012_val_00016069.JPEG reached epsilon at step 336, loss sum: 51.9984, final loss: 0.00099277, weight distance: 0.0195
+2025-09-23 05:30:06,728 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04356056/ILSVRC2012_val_00037040.JPEG reached epsilon at step 509, loss sum: 33.8543, final loss: 0.00099945, weight distance: 0.0276
+2025-09-23 05:31:06,497 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n01491361/ILSVRC2012_val_00023935.JPEG reached epsilon at step 1153, loss sum: 256.0565, final loss: 0.00099659, weight distance: 0.0273
+2025-09-23 05:31:28,000 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03291819/ILSVRC2012_val_00035328.JPEG reached epsilon at step 403, loss sum: 66.7565, final loss: 0.00099182, weight distance: 0.0177
+2025-09-23 05:31:54,086 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03642806/ILSVRC2012_val_00008787.JPEG reached epsilon at step 495, loss sum: 95.0215, final loss: 0.00099945, weight distance: 0.0281
+2025-09-23 05:32:13,230 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03902125/ILSVRC2012_val_00040702.JPEG reached epsilon at step 360, loss sum: 83.7486, final loss: 0.00099850, weight distance: 0.0163
+2025-09-23 05:32:29,063 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04275548/ILSVRC2012_val_00043164.JPEG reached epsilon at step 292, loss sum: 25.9950, final loss: 0.00099468, weight distance: 0.0168
+2025-09-23 05:33:24,546 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03764736/ILSVRC2012_val_00001770.JPEG reached epsilon at step 1059, loss sum: 58.3169, final loss: 0.00099564, weight distance: 0.0155
+2025-09-23 05:33:53,278 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03483316/ILSVRC2012_val_00002351.JPEG reached epsilon at step 538, loss sum: 711.5156, final loss: 0.00099468, weight distance: 0.0186
+2025-09-23 05:34:13,918 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02128757/ILSVRC2012_val_00024910.JPEG reached epsilon at step 387, loss sum: 132.9890, final loss: 0.00099945, weight distance: 0.0215
+2025-09-23 05:34:42,443 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n07920052/ILSVRC2012_val_00013375.JPEG reached epsilon at step 540, loss sum: 114.4849, final loss: 0.00099659, weight distance: 0.0312
+2025-09-23 05:35:02,007 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04090263/ILSVRC2012_val_00038216.JPEG reached epsilon at step 344, loss sum: 122.9214, final loss: 0.00099945, weight distance: 0.0215
+2025-09-23 05:35:31,347 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02105505/ILSVRC2012_val_00007059.JPEG reached epsilon at step 549, loss sum: 105.0508, final loss: 0.00099373, weight distance: 0.0277
+2025-09-23 05:35:44,280 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03770439/ILSVRC2012_val_00006000.JPEG reached epsilon at step 234, loss sum: 38.5956, final loss: 0.00099659, weight distance: 0.0142
+2025-09-23 05:35:56,396 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04522168/ILSVRC2012_val_00042916.JPEG reached epsilon at step 220, loss sum: 148.6655, final loss: 0.00099182, weight distance: 0.0159
+2025-09-23 05:36:29,001 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02825657/ILSVRC2012_val_00006205.JPEG reached epsilon at step 620, loss sum: 153.7554, final loss: 0.00099850, weight distance: 0.0188
+2025-09-23 05:36:55,228 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03899768/ILSVRC2012_val_00046336.JPEG reached epsilon at step 494, loss sum: 62.2442, final loss: 0.00099277, weight distance: 0.0254
+2025-09-23 05:37:12,947 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03249569/ILSVRC2012_val_00002905.JPEG reached epsilon at step 331, loss sum: 29.9771, final loss: 0.00099373, weight distance: 0.0213
+2025-09-23 05:37:27,783 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n09246464/ILSVRC2012_val_00031523.JPEG reached epsilon at step 275, loss sum: 54.1620, final loss: 0.00099754, weight distance: 0.0153
+2025-09-23 05:37:46,817 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04604644/ILSVRC2012_val_00021154.JPEG reached epsilon at step 357, loss sum: 68.4930, final loss: 0.00099373, weight distance: 0.0209
+2025-09-23 05:38:03,183 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03483316/ILSVRC2012_val_00011813.JPEG reached epsilon at step 302, loss sum: 100.1063, final loss: 0.00098896, weight distance: 0.0186
+2025-09-23 05:38:22,204 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03958227/ILSVRC2012_val_00015775.JPEG reached epsilon at step 356, loss sum: 56.2580, final loss: 0.00099945, weight distance: 0.0232
+2025-09-23 05:38:45,090 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03259280/ILSVRC2012_val_00010219.JPEG reached epsilon at step 431, loss sum: 50.7226, final loss: 0.00099850, weight distance: 0.0245
+2025-09-23 05:39:05,840 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04548362/ILSVRC2012_val_00008472.JPEG reached epsilon at step 391, loss sum: 42.3158, final loss: 0.00099277, weight distance: 0.0183
+2025-09-23 05:39:22,658 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03376595/ILSVRC2012_val_00014479.JPEG reached epsilon at step 313, loss sum: 431.2684, final loss: 0.00099659, weight distance: 0.0243
+2025-09-23 05:39:53,974 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02100236/ILSVRC2012_val_00031655.JPEG reached epsilon at step 577, loss sum: 137.4204, final loss: 0.00099468, weight distance: 0.0311
+2025-09-23 05:40:16,074 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03028079/ILSVRC2012_val_00039053.JPEG reached epsilon at step 405, loss sum: 76.8465, final loss: 0.00099373, weight distance: 0.0253
+2025-09-23 05:40:37,335 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02111500/ILSVRC2012_val_00036075.JPEG reached epsilon at step 398, loss sum: 46.7683, final loss: 0.00099850, weight distance: 0.0212
+2025-09-23 05:40:56,559 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02727426/ILSVRC2012_val_00018413.JPEG reached epsilon at step 358, loss sum: 140.9532, final loss: 0.00099659, weight distance: 0.0198
+2025-09-23 05:41:18,009 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02894605/ILSVRC2012_val_00015515.JPEG reached epsilon at step 403, loss sum: 55.2598, final loss: 0.00099659, weight distance: 0.0212
+2025-09-23 05:41:39,605 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03788195/ILSVRC2012_val_00030336.JPEG reached epsilon at step 407, loss sum: 57.3959, final loss: 0.00099468, weight distance: 0.0215
+2025-09-23 05:42:13,722 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02749479/ILSVRC2012_val_00033972.JPEG reached epsilon at step 653, loss sum: 65.0045, final loss: 0.00099945, weight distance: 0.0348
+2025-09-23 05:43:02,948 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n13133613/ILSVRC2012_val_00011122.JPEG reached epsilon at step 945, loss sum: 98.1141, final loss: 0.00099564, weight distance: 0.0469
+2025-09-23 05:43:18,129 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02971356/ILSVRC2012_val_00035114.JPEG reached epsilon at step 282, loss sum: 25.5109, final loss: 0.00099373, weight distance: 0.0160
+2025-09-23 05:43:33,476 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03141823/ILSVRC2012_val_00038458.JPEG reached epsilon at step 285, loss sum: 208.2870, final loss: 0.00099659, weight distance: 0.0208
+2025-09-23 05:44:18,172 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04350905/ILSVRC2012_val_00033166.JPEG reached epsilon at step 858, loss sum: 149.6986, final loss: 0.00099564, weight distance: 0.0323
+2025-09-23 05:44:36,385 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03763968/ILSVRC2012_val_00031265.JPEG reached epsilon at step 340, loss sum: 87.5091, final loss: 0.00099659, weight distance: 0.0194
+2025-09-23 05:44:55,403 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03598930/ILSVRC2012_val_00010088.JPEG reached epsilon at step 354, loss sum: 4.1557, final loss: 0.00099945, weight distance: 0.0160
+2025-09-23 05:45:21,379 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03047690/ILSVRC2012_val_00018631.JPEG reached epsilon at step 492, loss sum: 28.2683, final loss: 0.00099564, weight distance: 0.0193
+2025-09-23 05:45:38,874 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02096294/ILSVRC2012_val_00034554.JPEG reached epsilon at step 329, loss sum: 74.2872, final loss: 0.00099945, weight distance: 0.0207
+2025-09-23 05:46:12,119 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02791270/ILSVRC2012_val_00035205.JPEG reached epsilon at step 636, loss sum: 130.7358, final loss: 0.00099850, weight distance: 0.0324
+2025-09-23 05:46:55,015 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03710637/ILSVRC2012_val_00007816.JPEG reached epsilon at step 813, loss sum: 64.1608, final loss: 0.00099850, weight distance: 0.0290
+2025-09-23 05:47:16,616 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n15075141/ILSVRC2012_val_00046353.JPEG reached epsilon at step 402, loss sum: 252.0432, final loss: 0.00099754, weight distance: 0.0180
+2025-09-23 05:47:31,824 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03627232/ILSVRC2012_val_00013065.JPEG reached epsilon at step 279, loss sum: 169.8091, final loss: 0.00099564, weight distance: 0.0206
+2025-09-23 05:48:12,971 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04147183/ILSVRC2012_val_00010749.JPEG reached epsilon at step 787, loss sum: 274.6285, final loss: 0.00099468, weight distance: 0.0417
+2025-09-23 05:48:33,040 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02105056/ILSVRC2012_val_00049815.JPEG reached epsilon at step 377, loss sum: 135.4640, final loss: 0.00099373, weight distance: 0.0179
+2025-09-23 05:48:54,751 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03476684/ILSVRC2012_val_00008183.JPEG reached epsilon at step 402, loss sum: 135.0190, final loss: 0.00099945, weight distance: 0.0266
+2025-09-23 05:49:18,975 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02089867/ILSVRC2012_val_00009220.JPEG reached epsilon at step 461, loss sum: 149.9681, final loss: 0.00099659, weight distance: 0.0262
+2025-09-23 05:49:41,308 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n07836838/ILSVRC2012_val_00020034.JPEG reached epsilon at step 417, loss sum: 73.5668, final loss: 0.00099754, weight distance: 0.0241
+2025-09-23 05:50:12,207 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n01644900/ILSVRC2012_val_00028673.JPEG reached epsilon at step 590, loss sum: 84.3108, final loss: 0.00099564, weight distance: 0.0330
+2025-09-23 05:50:35,498 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03854065/ILSVRC2012_val_00031331.JPEG reached epsilon at step 436, loss sum: 165.0463, final loss: 0.00099850, weight distance: 0.0217
+2025-09-23 05:51:03,995 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02483362/ILSVRC2012_val_00038037.JPEG reached epsilon at step 532, loss sum: 300.0659, final loss: 0.00099564, weight distance: 0.0259
+2025-09-23 05:51:32,335 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n01798484/ILSVRC2012_val_00006790.JPEG reached epsilon at step 540, loss sum: 64.2320, final loss: 0.00099468, weight distance: 0.0262
+2025-09-23 05:51:55,141 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n07745940/ILSVRC2012_val_00012645.JPEG reached epsilon at step 432, loss sum: 140.9062, final loss: 0.00099754, weight distance: 0.0281
+2025-09-23 05:52:25,330 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04356056/ILSVRC2012_val_00028254.JPEG reached epsilon at step 574, loss sum: 219.7222, final loss: 0.00099468, weight distance: 0.0312
+2025-09-23 05:52:52,358 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03355925/ILSVRC2012_val_00027876.JPEG reached epsilon at step 513, loss sum: 44.9395, final loss: 0.00099468, weight distance: 0.0164
+2025-09-23 05:53:20,552 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n07730033/ILSVRC2012_val_00041676.JPEG reached epsilon at step 534, loss sum: 273.4949, final loss: 0.00099850, weight distance: 0.0338
+2025-09-23 05:53:45,233 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02105251/ILSVRC2012_val_00006419.JPEG reached epsilon at step 466, loss sum: 224.1266, final loss: 0.00099564, weight distance: 0.0245
+2025-09-23 05:54:00,330 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03920288/ILSVRC2012_val_00049112.JPEG reached epsilon at step 280, loss sum: 10.6527, final loss: 0.00099468, weight distance: 0.0076
+2025-09-23 05:54:21,467 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03787032/ILSVRC2012_val_00035779.JPEG reached epsilon at step 398, loss sum: 94.9718, final loss: 0.00099850, weight distance: 0.0254
+2025-09-23 05:54:49,025 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03126707/ILSVRC2012_val_00047451.JPEG reached epsilon at step 521, loss sum: 110.1390, final loss: 0.00099945, weight distance: 0.0240
+2025-09-23 05:55:45,334 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04286575/ILSVRC2012_val_00032647.JPEG reached epsilon at step 1084, loss sum: 130.0451, final loss: 0.00099373, weight distance: 0.0191
+2025-09-23 05:55:58,092 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02910353/ILSVRC2012_val_00008958.JPEG reached epsilon at step 231, loss sum: 43.7810, final loss: 0.00099754, weight distance: 0.0147
+2025-09-23 05:56:15,171 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04522168/ILSVRC2012_val_00028768.JPEG reached epsilon at step 315, loss sum: 114.3003, final loss: 0.00099754, weight distance: 0.0184
+2025-09-23 05:56:40,300 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02504458/ILSVRC2012_val_00039678.JPEG reached epsilon at step 466, loss sum: 52.0776, final loss: 0.00099945, weight distance: 0.0258
+2025-09-23 05:56:57,889 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03692522/ILSVRC2012_val_00049785.JPEG reached epsilon at step 317, loss sum: 150.6683, final loss: 0.00099945, weight distance: 0.0146
+2025-09-23 05:57:27,818 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04228054/ILSVRC2012_val_00008835.JPEG reached epsilon at step 568, loss sum: 85.0602, final loss: 0.00099850, weight distance: 0.0287
+2025-09-23 05:57:44,065 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04597913/ILSVRC2012_val_00008202.JPEG reached epsilon at step 297, loss sum: 139.8071, final loss: 0.00099850, weight distance: 0.0198
+2025-09-23 05:58:13,972 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04487394/ILSVRC2012_val_00049208.JPEG reached epsilon at step 568, loss sum: 122.5156, final loss: 0.00099659, weight distance: 0.0339
+2025-09-23 05:59:18,008 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04355933/ILSVRC2012_val_00031126.JPEG reached epsilon at step 1232, loss sum: 139.7825, final loss: 0.00099850, weight distance: 0.0297
+2025-09-23 05:59:48,853 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02107312/ILSVRC2012_val_00015511.JPEG reached epsilon at step 573, loss sum: 183.6105, final loss: 0.00099850, weight distance: 0.0261
+2025-09-23 06:00:04,201 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n01632777/ILSVRC2012_val_00011474.JPEG reached epsilon at step 285, loss sum: 53.8003, final loss: 0.00099373, weight distance: 0.0190
+2025-09-23 06:00:19,408 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02939185/ILSVRC2012_val_00008169.JPEG reached epsilon at step 283, loss sum: 86.2554, final loss: 0.00098419, weight distance: 0.0175
+2025-09-23 06:00:43,425 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02981792/ILSVRC2012_val_00049543.JPEG reached epsilon at step 455, loss sum: 116.2851, final loss: 0.00099659, weight distance: 0.0257
+2025-09-23 06:01:09,107 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n01739381/ILSVRC2012_val_00005827.JPEG reached epsilon at step 487, loss sum: 58.4540, final loss: 0.00099850, weight distance: 0.0262
+2025-09-23 06:01:26,567 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04357314/ILSVRC2012_val_00023241.JPEG reached epsilon at step 324, loss sum: 119.7133, final loss: 0.00099945, weight distance: 0.0200
+2025-09-23 06:01:44,695 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04154565/ILSVRC2012_val_00019043.JPEG reached epsilon at step 339, loss sum: 43.0455, final loss: 0.00099945, weight distance: 0.0179
+2025-09-23 06:02:00,904 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02892767/ILSVRC2012_val_00000808.JPEG reached epsilon at step 301, loss sum: 153.0778, final loss: 0.00099659, weight distance: 0.0161
+2025-09-23 06:02:17,616 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03980874/ILSVRC2012_val_00027107.JPEG reached epsilon at step 311, loss sum: 109.8162, final loss: 0.00099945, weight distance: 0.0183
+2025-09-23 06:02:32,467 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02892767/ILSVRC2012_val_00005423.JPEG reached epsilon at step 272, loss sum: 162.7013, final loss: 0.00099945, weight distance: 0.0181
+2025-09-23 06:02:56,131 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02090721/ILSVRC2012_val_00017327.JPEG reached epsilon at step 448, loss sum: 82.7489, final loss: 0.00099659, weight distance: 0.0228
+2025-09-23 06:03:20,171 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02089078/ILSVRC2012_val_00037609.JPEG reached epsilon at step 455, loss sum: 142.7331, final loss: 0.00099564, weight distance: 0.0239
+2025-09-23 06:05:57,742 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02974003/ILSVRC2012_val_00006952.JPEG reached epsilon at step 3059, loss sum: 271.5392, final loss: 0.00099659, weight distance: 0.0260
+2025-09-23 06:06:42,195 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02089973/ILSVRC2012_val_00045799.JPEG reached epsilon at step 837, loss sum: 33.7378, final loss: 0.00099659, weight distance: 0.0369
+2025-09-23 06:07:11,243 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02113186/ILSVRC2012_val_00023268.JPEG reached epsilon at step 547, loss sum: 76.0425, final loss: 0.00099754, weight distance: 0.0309
+2025-09-23 06:07:34,751 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03125729/ILSVRC2012_val_00008716.JPEG reached epsilon at step 445, loss sum: 123.9785, final loss: 0.00099945, weight distance: 0.0250
+2025-09-23 06:07:54,999 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03532672/ILSVRC2012_val_00024123.JPEG reached epsilon at step 382, loss sum: 203.7826, final loss: 0.00099945, weight distance: 0.0238
+2025-09-23 06:08:16,185 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03775071/ILSVRC2012_val_00022216.JPEG reached epsilon at step 401, loss sum: 70.3538, final loss: 0.00099468, weight distance: 0.0226
+2025-09-23 06:08:27,599 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02840245/ILSVRC2012_val_00041698.JPEG reached epsilon at step 210, loss sum: 30.6577, final loss: 0.00099659, weight distance: 0.0132
+2025-09-23 06:09:05,430 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04008634/ILSVRC2012_val_00049362.JPEG reached epsilon at step 724, loss sum: 56.5480, final loss: 0.00099659, weight distance: 0.0335
+2025-09-23 06:09:19,458 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03476991/ILSVRC2012_val_00025365.JPEG reached epsilon at step 258, loss sum: 178.2175, final loss: 0.00099850, weight distance: 0.0183
+2025-09-23 06:09:46,002 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03706229/ILSVRC2012_val_00008728.JPEG reached epsilon at step 502, loss sum: 7.2492, final loss: 0.00099850, weight distance: 0.0188
+2025-09-23 06:10:21,665 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02236044/ILSVRC2012_val_00012127.JPEG reached epsilon at step 682, loss sum: 509.6085, final loss: 0.00099945, weight distance: 0.0327
+2025-09-23 06:10:45,068 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04579145/ILSVRC2012_val_00033173.JPEG reached epsilon at step 440, loss sum: 133.0414, final loss: 0.00099373, weight distance: 0.0240
+2025-09-23 06:11:02,317 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02090721/ILSVRC2012_val_00030412.JPEG reached epsilon at step 322, loss sum: 10.2804, final loss: 0.00099373, weight distance: 0.0199
+2025-09-23 06:11:44,019 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02109961/ILSVRC2012_val_00028523.JPEG reached epsilon at step 798, loss sum: 152.7814, final loss: 0.00099850, weight distance: 0.0334
+2025-09-23 06:11:58,092 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04456115/ILSVRC2012_val_00035674.JPEG reached epsilon at step 259, loss sum: 154.4724, final loss: 0.00099754, weight distance: 0.0167
+2025-09-23 06:12:44,488 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n01871265/ILSVRC2012_val_00011218.JPEG reached epsilon at step 883, loss sum: 150.2891, final loss: 0.00099468, weight distance: 0.0432
+2025-09-23 06:13:08,360 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03838899/ILSVRC2012_val_00044509.JPEG reached epsilon at step 450, loss sum: 57.0496, final loss: 0.00099373, weight distance: 0.0259
+2025-09-23 06:13:36,031 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02988304/ILSVRC2012_val_00035511.JPEG reached epsilon at step 527, loss sum: 181.1023, final loss: 0.00099754, weight distance: 0.0337
+2025-09-23 06:13:51,403 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02667093/ILSVRC2012_val_00044339.JPEG reached epsilon at step 279, loss sum: 136.5394, final loss: 0.00099754, weight distance: 0.0151
+2025-09-23 06:14:07,501 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03461385/ILSVRC2012_val_00003568.JPEG reached epsilon at step 299, loss sum: 15.6894, final loss: 0.00099373, weight distance: 0.0188
+2025-09-23 06:14:37,387 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n01744401/ILSVRC2012_val_00001482.JPEG reached epsilon at step 568, loss sum: 521.7145, final loss: 0.00099659, weight distance: 0.0317
+2025-09-23 06:14:57,210 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02869837/ILSVRC2012_val_00016535.JPEG reached epsilon at step 372, loss sum: 64.4692, final loss: 0.00099468, weight distance: 0.0245
+2025-09-23 06:15:24,725 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04069434/ILSVRC2012_val_00030477.JPEG reached epsilon at step 521, loss sum: 93.8962, final loss: 0.00099850, weight distance: 0.0273
+2025-09-23 06:15:43,749 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04136333/ILSVRC2012_val_00002902.JPEG reached epsilon at step 357, loss sum: 112.0379, final loss: 0.00099754, weight distance: 0.0186
+2025-09-23 06:16:10,636 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n07860988/ILSVRC2012_val_00033051.JPEG reached epsilon at step 510, loss sum: 146.0772, final loss: 0.00099468, weight distance: 0.0284
+2025-09-23 06:16:35,261 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03400231/ILSVRC2012_val_00015404.JPEG reached epsilon at step 441, loss sum: 67.5720, final loss: 0.00099659, weight distance: 0.0274
+2025-09-23 06:17:04,618 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03085013/ILSVRC2012_val_00025409.JPEG reached epsilon at step 558, loss sum: 120.0269, final loss: 0.00099945, weight distance: 0.0316
+2025-09-23 06:17:34,840 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n01843383/ILSVRC2012_val_00029589.JPEG reached epsilon at step 575, loss sum: 15.0790, final loss: 0.00099277, weight distance: 0.0330
+2025-09-23 06:17:53,283 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04111531/ILSVRC2012_val_00029341.JPEG reached epsilon at step 340, loss sum: 12.5074, final loss: 0.00099945, weight distance: 0.0181
+2025-09-23 06:18:07,646 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04235860/ILSVRC2012_val_00007955.JPEG reached epsilon at step 265, loss sum: 20.0846, final loss: 0.00099468, weight distance: 0.0148
+2025-09-23 06:18:40,903 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n01985128/ILSVRC2012_val_00013580.JPEG reached epsilon at step 636, loss sum: 40.3495, final loss: 0.00099754, weight distance: 0.0312
+2025-09-23 06:19:31,571 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03724870/ILSVRC2012_val_00003148.JPEG reached epsilon at step 978, loss sum: 184.2499, final loss: 0.00099945, weight distance: 0.0122
+2025-09-23 06:19:59,758 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03929855/ILSVRC2012_val_00022617.JPEG reached epsilon at step 534, loss sum: 316.6172, final loss: 0.00099659, weight distance: 0.0325
+2025-09-23 06:20:17,540 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04259630/ILSVRC2012_val_00013340.JPEG reached epsilon at step 304, loss sum: 128.4479, final loss: 0.00099945, weight distance: 0.0187
+2025-09-23 06:20:31,668 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04332243/ILSVRC2012_val_00030726.JPEG reached epsilon at step 262, loss sum: 45.0342, final loss: 0.00099468, weight distance: 0.0147
+2025-09-23 06:21:20,574 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02110185/ILSVRC2012_val_00041189.JPEG reached epsilon at step 943, loss sum: 181.4134, final loss: 0.00099373, weight distance: 0.0436
+2025-09-23 06:21:45,276 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02988304/ILSVRC2012_val_00007354.JPEG reached epsilon at step 469, loss sum: 106.2022, final loss: 0.00099945, weight distance: 0.0298
+2025-09-23 06:22:06,218 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02124075/ILSVRC2012_val_00041579.JPEG reached epsilon at step 395, loss sum: 52.8458, final loss: 0.00099850, weight distance: 0.0200
+2025-09-23 06:22:26,308 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04009552/ILSVRC2012_val_00047644.JPEG reached epsilon at step 378, loss sum: 105.9059, final loss: 0.00099564, weight distance: 0.0169
+2025-09-23 06:22:41,508 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04423845/ILSVRC2012_val_00026989.JPEG reached epsilon at step 282, loss sum: 188.5556, final loss: 0.00099277, weight distance: 0.0196
+2025-09-23 06:23:14,769 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n07711569/ILSVRC2012_val_00013084.JPEG reached epsilon at step 629, loss sum: 103.5023, final loss: 0.00099945, weight distance: 0.0192
+2025-09-23 06:23:28,815 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03958227/ILSVRC2012_val_00027015.JPEG reached epsilon at step 260, loss sum: 184.2955, final loss: 0.00099087, weight distance: 0.0156
+2025-09-23 06:23:57,173 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04372370/ILSVRC2012_val_00041016.JPEG reached epsilon at step 533, loss sum: 252.1971, final loss: 0.00099277, weight distance: 0.0149
+2025-09-23 06:24:22,238 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04409515/ILSVRC2012_val_00019125.JPEG reached epsilon at step 475, loss sum: 131.7616, final loss: 0.00099850, weight distance: 0.0309
+2025-09-23 06:24:44,734 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03272010/ILSVRC2012_val_00006680.JPEG reached epsilon at step 423, loss sum: 5.2732, final loss: 0.00099564, weight distance: 0.0143
+2025-09-23 06:25:17,375 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n07930864/ILSVRC2012_val_00048321.JPEG reached epsilon at step 615, loss sum: 119.2548, final loss: 0.00099564, weight distance: 0.0324
+2025-09-23 06:25:36,855 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03793489/ILSVRC2012_val_00017816.JPEG reached epsilon at step 349, loss sum: 64.5134, final loss: 0.00099277, weight distance: 0.0185
+2025-09-23 06:26:26,273 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02981792/ILSVRC2012_val_00020540.JPEG reached epsilon at step 949, loss sum: 25.0511, final loss: 0.00099754, weight distance: 0.0370
+2025-09-23 06:26:53,913 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02113186/ILSVRC2012_val_00049884.JPEG reached epsilon at step 523, loss sum: 111.2458, final loss: 0.00099564, weight distance: 0.0295
+2025-09-23 06:27:12,307 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02074367/ILSVRC2012_val_00002000.JPEG reached epsilon at step 343, loss sum: 154.8936, final loss: 0.00099754, weight distance: 0.0162
+2025-09-23 06:27:53,962 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02992529/ILSVRC2012_val_00031438.JPEG reached epsilon at step 799, loss sum: 408.5562, final loss: 0.00099659, weight distance: 0.0214
+2025-09-23 06:28:17,880 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03733805/ILSVRC2012_val_00033697.JPEG reached epsilon at step 450, loss sum: 79.8679, final loss: 0.00099945, weight distance: 0.0238
+2025-09-23 06:28:47,520 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03249569/ILSVRC2012_val_00002043.JPEG reached epsilon at step 568, loss sum: 61.3108, final loss: 0.00099659, weight distance: 0.0214
+2025-09-23 06:29:17,030 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n07742313/ILSVRC2012_val_00034491.JPEG reached epsilon at step 569, loss sum: 79.3274, final loss: 0.00099373, weight distance: 0.0289
+2025-09-23 06:29:35,468 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03141823/ILSVRC2012_val_00037313.JPEG reached epsilon at step 342, loss sum: 160.3181, final loss: 0.00099564, weight distance: 0.0141
+2025-09-23 06:29:51,553 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04081281/ILSVRC2012_val_00039444.JPEG reached epsilon at step 301, loss sum: 43.3442, final loss: 0.00099659, weight distance: 0.0183
+2025-09-23 06:31:41,035 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n01756291/ILSVRC2012_val_00020569.JPEG reached epsilon at step 2148, loss sum: 126.0468, final loss: 0.00099945, weight distance: 0.0409
+2025-09-23 06:32:01,449 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03014705/ILSVRC2012_val_00044628.JPEG reached epsilon at step 388, loss sum: 57.8048, final loss: 0.00099754, weight distance: 0.0195
+2025-09-23 06:32:50,889 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04392985/ILSVRC2012_val_00029455.JPEG reached epsilon at step 960, loss sum: 145.4269, final loss: 0.00099468, weight distance: 0.0442
+2025-09-23 06:33:15,096 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04522168/ILSVRC2012_val_00046271.JPEG reached epsilon at step 461, loss sum: 60.3871, final loss: 0.00099850, weight distance: 0.0203
+2025-09-23 06:33:42,854 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03637318/ILSVRC2012_val_00047460.JPEG reached epsilon at step 535, loss sum: 82.2574, final loss: 0.00099277, weight distance: 0.0280
+2025-09-23 06:34:05,031 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03534580/ILSVRC2012_val_00042152.JPEG reached epsilon at step 425, loss sum: 316.8906, final loss: 0.00099277, weight distance: 0.0220
+2025-09-23 06:34:38,188 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n07583066/ILSVRC2012_val_00038089.JPEG reached epsilon at step 640, loss sum: 77.7808, final loss: 0.00099754, weight distance: 0.0354
+2025-09-23 06:35:12,458 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03933933/ILSVRC2012_val_00040499.JPEG reached epsilon at step 662, loss sum: 89.8682, final loss: 0.00098991, weight distance: 0.0145
+2025-09-23 06:38:53,650 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n01667114/ILSVRC2012_val_00016550.JPEG reached epsilon at step 4350, loss sum: 388.7453, final loss: 0.00099754, weight distance: 0.0378
+2025-09-23 06:39:20,543 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02108089/ILSVRC2012_val_00023231.JPEG reached epsilon at step 515, loss sum: 312.0582, final loss: 0.00099850, weight distance: 0.0295
+2025-09-23 06:39:39,887 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04033901/ILSVRC2012_val_00003041.JPEG reached epsilon at step 368, loss sum: 42.0416, final loss: 0.00099468, weight distance: 0.0144
+2025-09-23 06:40:04,665 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02640242/ILSVRC2012_val_00032922.JPEG reached epsilon at step 475, loss sum: 124.6247, final loss: 0.00099659, weight distance: 0.0287
+2025-09-23 06:40:26,007 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n07695742/ILSVRC2012_val_00004195.JPEG reached epsilon at step 408, loss sum: 179.4727, final loss: 0.00099659, weight distance: 0.0223
+2025-09-23 06:40:47,346 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02018795/ILSVRC2012_val_00044999.JPEG reached epsilon at step 409, loss sum: 219.1851, final loss: 0.00099945, weight distance: 0.0195
+2025-09-23 06:41:04,212 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04525038/ILSVRC2012_val_00036415.JPEG reached epsilon at step 320, loss sum: 348.9835, final loss: 0.00098991, weight distance: 0.0231
+2025-09-23 06:41:21,452 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03796401/ILSVRC2012_val_00000365.JPEG reached epsilon at step 327, loss sum: 86.4429, final loss: 0.00099754, weight distance: 0.0231
+2025-09-23 06:41:38,888 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n09193705/ILSVRC2012_val_00027422.JPEG reached epsilon at step 331, loss sum: 55.6528, final loss: 0.00099754, weight distance: 0.0197
+2025-09-23 06:42:05,786 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04493381/ILSVRC2012_val_00006781.JPEG reached epsilon at step 520, loss sum: 70.5535, final loss: 0.00099182, weight distance: 0.0309
+2025-09-23 06:43:03,121 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04270147/ILSVRC2012_val_00028618.JPEG reached epsilon at step 1112, loss sum: 132.6466, final loss: 0.00099754, weight distance: 0.0185
+2025-09-23 06:43:14,376 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n07932039/ILSVRC2012_val_00017072.JPEG reached epsilon at step 208, loss sum: 82.0182, final loss: 0.00098228, weight distance: 0.0135
+2025-09-23 06:43:27,574 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02910353/ILSVRC2012_val_00028342.JPEG reached epsilon at step 247, loss sum: 115.8587, final loss: 0.00098991, weight distance: 0.0181
+2025-09-23 06:43:42,514 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02088632/ILSVRC2012_val_00032000.JPEG reached epsilon at step 280, loss sum: 111.2982, final loss: 0.00098991, weight distance: 0.0184
+2025-09-23 06:45:39,757 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03690938/ILSVRC2012_val_00003466.JPEG reached epsilon at step 2299, loss sum: 126.8741, final loss: 0.00099659, weight distance: 0.0204
+2025-09-23 06:45:54,815 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03476991/ILSVRC2012_val_00039891.JPEG reached epsilon at step 283, loss sum: 469.0649, final loss: 0.00099754, weight distance: 0.0167
+2025-09-23 06:46:27,070 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02443114/ILSVRC2012_val_00030469.JPEG reached epsilon at step 624, loss sum: 75.1393, final loss: 0.00099659, weight distance: 0.0316
+2025-09-23 06:46:48,562 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02363005/ILSVRC2012_val_00028074.JPEG reached epsilon at step 411, loss sum: 68.4447, final loss: 0.00099754, weight distance: 0.0234
+2025-09-23 06:47:13,652 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n01985128/ILSVRC2012_val_00025521.JPEG reached epsilon at step 482, loss sum: 126.6202, final loss: 0.00099468, weight distance: 0.0267
+2025-09-23 06:47:44,982 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02483708/ILSVRC2012_val_00022740.JPEG reached epsilon at step 606, loss sum: 89.6522, final loss: 0.00099754, weight distance: 0.0227
+2025-09-23 06:48:06,399 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n01980166/ILSVRC2012_val_00000818.JPEG reached epsilon at step 410, loss sum: 120.4903, final loss: 0.00099659, weight distance: 0.0201
+2025-09-23 06:48:23,815 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02966687/ILSVRC2012_val_00025709.JPEG reached epsilon at step 329, loss sum: 95.7119, final loss: 0.00099850, weight distance: 0.0168
+2025-09-23 06:49:03,828 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03782006/ILSVRC2012_val_00018187.JPEG reached epsilon at step 772, loss sum: 143.3684, final loss: 0.00099373, weight distance: 0.0409
+2025-09-23 06:49:35,735 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03063599/ILSVRC2012_val_00010857.JPEG reached epsilon at step 615, loss sum: 179.8237, final loss: 0.00099850, weight distance: 0.0266
+2025-09-23 06:49:56,996 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02526121/ILSVRC2012_val_00042915.JPEG reached epsilon at step 403, loss sum: 138.6677, final loss: 0.00099754, weight distance: 0.0258
+2025-09-23 06:51:47,461 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n01682714/ILSVRC2012_val_00042070.JPEG reached epsilon at step 2167, loss sum: 223.2211, final loss: 0.00099850, weight distance: 0.0315
+2025-09-23 06:52:25,236 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02422699/ILSVRC2012_val_00025116.JPEG reached epsilon at step 725, loss sum: 70.4223, final loss: 0.00099945, weight distance: 0.0343
+2025-09-23 06:53:59,247 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n01698640/ILSVRC2012_val_00007238.JPEG reached epsilon at step 1841, loss sum: 109.0506, final loss: 0.00099659, weight distance: 0.0148
+2025-09-23 06:54:39,632 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03773504/ILSVRC2012_val_00010189.JPEG reached epsilon at step 781, loss sum: 66.9598, final loss: 0.00099850, weight distance: 0.0335
+2025-09-23 06:54:58,700 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02493793/ILSVRC2012_val_00045444.JPEG reached epsilon at step 362, loss sum: 30.7490, final loss: 0.00099945, weight distance: 0.0223
+2025-09-23 06:55:16,783 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03179701/ILSVRC2012_val_00032302.JPEG reached epsilon at step 343, loss sum: 83.5558, final loss: 0.00099373, weight distance: 0.0193
+2025-09-23 06:55:54,169 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04008634/ILSVRC2012_val_00014988.JPEG reached epsilon at step 722, loss sum: 61.8884, final loss: 0.00099945, weight distance: 0.0297
+2025-09-23 06:56:08,093 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04479046/ILSVRC2012_val_00043734.JPEG reached epsilon at step 259, loss sum: 142.6034, final loss: 0.00098705, weight distance: 0.0184
+2025-09-23 06:56:22,534 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03355925/ILSVRC2012_val_00001962.JPEG reached epsilon at step 272, loss sum: 57.1104, final loss: 0.00099468, weight distance: 0.0157
+2025-09-23 06:57:27,390 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03017168/ILSVRC2012_val_00035306.JPEG reached epsilon at step 1269, loss sum: 692.1051, final loss: 0.00099277, weight distance: 0.0219
+2025-09-23 06:57:43,114 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03443371/ILSVRC2012_val_00017478.JPEG reached epsilon at step 296, loss sum: 5.2361, final loss: 0.00099564, weight distance: 0.0125
+2025-09-23 06:58:19,790 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n06785654/ILSVRC2012_val_00046723.JPEG reached epsilon at step 712, loss sum: 183.9918, final loss: 0.00099754, weight distance: 0.0211
+2025-09-23 06:58:39,922 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02098105/ILSVRC2012_val_00031531.JPEG reached epsilon at step 384, loss sum: 63.1933, final loss: 0.00099564, weight distance: 0.0241
+2025-09-23 06:58:55,336 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03958227/ILSVRC2012_val_00008350.JPEG reached epsilon at step 291, loss sum: 189.0230, final loss: 0.00099277, weight distance: 0.0167
+2025-09-23 06:59:15,759 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04599235/ILSVRC2012_val_00028150.JPEG reached epsilon at step 389, loss sum: 242.6365, final loss: 0.00099659, weight distance: 0.0242
+2025-09-23 06:59:40,973 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03124170/ILSVRC2012_val_00037403.JPEG reached epsilon at step 484, loss sum: 20.1506, final loss: 0.00099659, weight distance: 0.0255
+2025-09-23 06:59:54,189 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03976657/ILSVRC2012_val_00044719.JPEG reached epsilon at step 247, loss sum: 149.9794, final loss: 0.00099564, weight distance: 0.0169
+2025-09-23 07:00:20,214 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02268443/ILSVRC2012_val_00046231.JPEG reached epsilon at step 500, loss sum: 48.6896, final loss: 0.00099754, weight distance: 0.0275
+2025-09-23 07:00:41,745 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03125729/ILSVRC2012_val_00016343.JPEG reached epsilon at step 411, loss sum: 62.0649, final loss: 0.00099468, weight distance: 0.0228
+2025-09-23 07:01:00,759 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03884397/ILSVRC2012_val_00039417.JPEG reached epsilon at step 356, loss sum: 36.3707, final loss: 0.00099277, weight distance: 0.0218
+2025-09-23 07:01:21,035 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03803284/ILSVRC2012_val_00049210.JPEG reached epsilon at step 346, loss sum: 58.1458, final loss: 0.00099564, weight distance: 0.0175
+2025-09-23 07:01:50,133 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04285008/ILSVRC2012_val_00033293.JPEG reached epsilon at step 561, loss sum: 37.3134, final loss: 0.00099468, weight distance: 0.0269
+2025-09-23 07:02:11,933 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03843555/ILSVRC2012_val_00047442.JPEG reached epsilon at step 412, loss sum: 45.4128, final loss: 0.00099850, weight distance: 0.0258
+2025-09-23 07:02:38,231 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04428191/ILSVRC2012_val_00031546.JPEG reached epsilon at step 498, loss sum: 97.2231, final loss: 0.00099373, weight distance: 0.0323
+2025-09-23 07:02:58,460 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03124170/ILSVRC2012_val_00017204.JPEG reached epsilon at step 385, loss sum: 109.4264, final loss: 0.00099754, weight distance: 0.0213
+2025-09-23 07:03:15,580 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n04141975/ILSVRC2012_val_00006418.JPEG reached epsilon at step 324, loss sum: 49.1752, final loss: 0.00099277, weight distance: 0.0183
+2025-09-23 07:03:29,635 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03599486/ILSVRC2012_val_00029813.JPEG reached epsilon at step 264, loss sum: 30.6191, final loss: 0.00099945, weight distance: 0.0168
+2025-09-23 07:03:47,031 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03929660/ILSVRC2012_val_00022149.JPEG reached epsilon at step 326, loss sum: 100.4684, final loss: 0.00099564, weight distance: 0.0189
+2025-09-23 07:04:11,499 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n02169497/ILSVRC2012_val_00001539.JPEG reached epsilon at step 468, loss sum: 169.9046, final loss: 0.00099850, weight distance: 0.0249
+2025-09-23 07:06:55,946 - INFO - Example /home/projects/bagon/shared/imagenet512/val/n03196217/ILSVRC2012_val_00019501.JPEG reached epsilon at step 3224, loss sum: 159.0502, final loss: 0.00099373, weight distance: 0.0275
+2025-09-23 07:06:56,596 - INFO - Time limit reached. Exiting before starting next example.
+2025-09-23 07:06:56,597 - INFO - Worker 4 exiting due to time limit; processed 225/798 assigned examples. Not marking DONE.
