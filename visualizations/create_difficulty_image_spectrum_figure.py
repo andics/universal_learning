@@ -442,10 +442,23 @@ def build_and_save_collage(paths_all: List[str], labels: Dict[str, str], args: a
                 continue
             wnid_to_all_indices.setdefault(w, []).append(idx)
 
-        for w in chosen_wnids:
+        # Determine which WNIDs to export: the chosen ones, plus elephant for collage 2 if available
+        export_wnids: List[str] = list(chosen_wnids)
+        elephant_wnid = "n02504458"
+        if int(collage_index) == 2 and elephant_wnid not in export_wnids:
+            if elephant_wnid in wnid_to_all_indices:
+                export_wnids.append(elephant_wnid)
+
+        # Top-level ranking CSV (wnid,label,rank,path)
+        global_ranking_rows: List[str] = ["wnid,label,rank,image_path"]
+
+        for w in export_wnids:
             label_text = labels.get(w, w)
             class_dir = os.path.join(collage_dir, sanitize(label_text))
             os.makedirs(class_dir, exist_ok=True)
+            # Per-class ranking CSV
+            class_csv_path = os.path.join(class_dir, "ranking.csv")
+            class_rows: List[str] = ["rank,image_path"]
             for idx in wnid_to_all_indices.get(w, []):
                 src = paths_all[idx]
                 if not src or src == "None":
@@ -464,6 +477,20 @@ def build_and_save_collage(paths_all: List[str], labels: Dict[str, str], args: a
                 except Exception:
                     # Skip files we cannot copy
                     continue
+                class_rows.append(f"{rank},{os.path.basename(dst)}")
+                global_ranking_rows.append(f"{w},\"{label_text}\",{rank},\"{src}\"")
+            try:
+                with open(class_csv_path, 'w', encoding='utf-8') as cf:
+                    cf.write("\n".join(class_rows))
+            except Exception:
+                pass
+
+        # Write global ranking file for the collage
+        try:
+            with open(os.path.join(collage_dir, "ranking.csv"), 'w', encoding='utf-8') as gf:
+                gf.write("\n".join(global_ranking_rows))
+        except Exception:
+            pass
 
 
 def main() -> None:
