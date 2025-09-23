@@ -51,7 +51,7 @@ def default_paths() -> Tuple[str, str, str, str]:
     csv_path = os.path.join(bars_dir, "imagenet_examples_ammended.csv")
     hier_path = os.path.join(bars_dir, "imagenet_synset_hierarchy.json")
     out_path = os.path.join(os.path.dirname(__file__), "difficulty_spectrum.png")
-
+    
     return csv_path, hier_path, out_path
 
 
@@ -71,7 +71,7 @@ def parse_args() -> argparse.Namespace:
         default="n03452741,n02391049,n04557648,n04597913,n03187595",
         help="Comma-separated list of WNIDs to visualize (default: piano,zebra,water bottle,wooden spoon,dial phone)",
     )
-    p.add_argument("--seed", type=int, default=1337, help="RNG seed for tie-breaking")
+    p.add_argument("--seed", type=int, default=None, help="RNG seed for tie-breaking (None=random)")
     p.add_argument("--thumb", type=int, default=160, help="Thumbnail square size in pixels")
     p.add_argument("--dpi", type=int, default=350, help="Output figure DPI")
     return p.parse_args()
@@ -119,17 +119,27 @@ def load_image_or_tile(path: str, size: Tuple[int, int]) -> Image.Image:
     try:
         with Image.open(path) as img:
             img = img.convert("RGB")
-            img.thumbnail(size, Image.Resampling.LANCZOS)
-            bg = Image.new("RGB", size, (255, 255, 255))
-            bg.paste(img, ((size[0] - img.width) // 2, (size[1] - img.height) // 2))
+            # Letterbox to exact size with black margins
+            w, h = img.size
+            target_w, target_h = size
+            scale = min(target_w / w, target_h / h) if (w > 0 and h > 0) else 1.0
+            new_w = max(1, int(round(w * scale)))
+            new_h = max(1, int(round(h * scale)))
+            img = img.resize((new_w, new_h), Image.Resampling.LANCZOS)
+            bg = Image.new("RGB", size, (0, 0, 0))
+            bg.paste(img, ((target_w - new_w) // 2, (target_h - new_h) // 2))
             return bg
     except Exception:
-        return Image.new("RGB", size, (220, 220, 220))
+        return Image.new("RGB", size, (0, 0, 0))
 
 
 def main() -> None:
     args = parse_args()
-    random.seed(args.seed)
+    # New seed per run if None, to change picks while staying near bin centers
+    if args.seed is None:
+        random.seed()
+    else:
+        random.seed(args.seed)
 
     paths_all = parse_imagenet_examples_csv(args.csv)
     num_images = len(paths_all)
@@ -263,12 +273,27 @@ def main() -> None:
             bin_candidates[b].append(idx)
         for b in range(num_bins):
             bin_candidates[b].sort(key=lambda j: abs(j - bin_centers[b]))
-        # Greedy assignment: fill bins with the fewest candidates first
-        order = sorted(range(num_bins), key=lambda b: len(bin_candidates[b]))
+        # Greedy assignment with stochastic tie-breaking to vary picks across runs
+        rng = random.Random()
+        order = list(range(num_bins))
+        order.sort(key=lambda b: (len(bin_candidates[b]), b))
         used: set[int] = set()
         picks_by_bin: List[Optional[int]] = [None] * num_bins
         for b in order:
-            for j in bin_candidates[b]:
+            cands = bin_candidates[b]
+            if not cands:
+                continue
+            # among top-k closest (k up to 3), pick randomly for variety
+            k = min(3, len(cands))
+            top_k = cands[:k]
+            top_k = [j for j in top_k if j not in used]
+            if top_k:
+                j = rng.choice(top_k)
+                picks_by_bin[b] = j
+                used.add(j)
+                continue
+            # otherwise pick the nearest unused
+            for j in cands:
                 if j not in used:
                     picks_by_bin[b] = j
                     used.add(j)
@@ -289,9 +314,13 @@ def main() -> None:
     # Plot: top difficulty spectrum + K class rows, 13 columns (label + 12 images)
     rows = len(chosen_wnids)
     cols = num_bins + 1
-    fig_h = 2.0 + 2.2 * max(1, rows)
-    fig_w = 1.2 * cols
-    fig, axes = plt.subplots(rows + 1, cols, figsize=(fig_w, fig_h), gridspec_kw={"height_ratios": [0.6] + [1] * rows})
+    # Compute figure size so tiles are exact and gaps are minimal; remove spacing
+    tile = int(args.thumb)
+    top_bar_height = int(tile * 0.6)
+    fig_w = (cols * tile) / 100.0
+    fig_h = ((rows * tile) + top_bar_height) / 100.0
+    fig, axes = plt.subplots(rows + 1, cols, figsize=(fig_w, fig_h), gridspec_kw={"height_ratios": [top_bar_height] + [tile] * rows})
+    plt.subplots_adjust(wspace=0.0, hspace=0.0)
 
     # Top difficulty colored scale spanning over image columns (1..num_bins)
     for c in range(cols):
