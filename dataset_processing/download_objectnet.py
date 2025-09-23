@@ -1,7 +1,7 @@
-import os
 from pathlib import Path
 import sys
 import urllib.request
+import zipfile
 
 
 OBJECTNET_URL = "https://objectnet.dev/downloads/objectnet-1.0.zip"
@@ -66,12 +66,35 @@ def download_to_script_directory(url: str) -> Path:
 
 def main() -> None:
     try:
-        download_to_script_directory(OBJECTNET_URL)
+        zip_path = download_to_script_directory(OBJECTNET_URL)
+        extract_zip_to_named_folder(zip_path)
     except Exception:
         sys.exit(1)
 
 
 if __name__ == "__main__":
     main()
+
+def extract_zip_to_named_folder(zip_file_path: Path) -> Path:
+    target_dir = zip_file_path.with_suffix("")
+    if target_dir.exists():
+        print(f"Extraction target already exists: {target_dir}")
+        return target_dir
+
+    target_dir_resolved = target_dir.resolve()
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    with zipfile.ZipFile(zip_file_path, "r") as zip_ref:
+        # Safety check against Zip Slip
+        for member in zip_ref.infolist():
+            resolved_member_path = (target_dir_resolved / member.filename).resolve()
+            if not str(resolved_member_path).startswith(str(target_dir_resolved)):
+                raise Exception(f"Unsafe path in zip entry: {member.filename}")
+
+        print(f"Extracting to: {target_dir}")
+        zip_ref.extractall(target_dir)
+        print(f"Extraction complete: {target_dir}")
+
+    return target_dir
 
 
