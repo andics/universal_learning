@@ -6,6 +6,7 @@ import os
 import re
 import shutil
 from typing import Dict, List, Optional
+import random
 
 
 def parse_args() -> argparse.Namespace:
@@ -92,7 +93,9 @@ def main() -> None:
     global_rows: List[str] = ["wnid,label,rank,image_path"]
 
     # Iterate all WNIDs found in the hierarchy
-    for wnid in labels.keys():
+    wnids: List[str] = list(labels.keys())
+    random.shuffle(wnids)
+    for wnid in wnids:
         label_text = labels.get(wnid, wnid)
         class_dir = os.path.join(collage_dir, sanitize(label_text))
         os.makedirs(class_dir, exist_ok=True)
