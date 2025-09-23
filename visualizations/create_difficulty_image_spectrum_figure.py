@@ -134,19 +134,19 @@ def load_hierarchy_labels(hier_path: str) -> Dict[str, str]:
 def load_image_or_tile(path: str, size: Tuple[int, int]) -> Image.Image:
     try:
         with Image.open(path) as img:
-            img = img.convert("RGB")
-            # Letterbox to exact size with black margins
+            img = img.convert("RGBA")
+            # Letterbox to exact size with TRANSPARENT margins
             w, h = img.size
             target_w, target_h = size
             scale = min(target_w / w, target_h / h) if (w > 0 and h > 0) else 1.0
             new_w = max(1, int(round(w * scale)))
             new_h = max(1, int(round(h * scale)))
             img = img.resize((new_w, new_h), Image.Resampling.LANCZOS)
-            bg = Image.new("RGB", size, (0, 0, 0))
+            bg = Image.new("RGBA", size, (0, 0, 0, 0))
             bg.paste(img, ((target_w - new_w) // 2, (target_h - new_h) // 2))
             return bg
     except Exception:
-        return Image.new("RGB", size, (0, 0, 0))
+        return Image.new("RGBA", size, (0, 0, 0, 0))
 
 
 def build_and_save_collage(
@@ -387,7 +387,8 @@ def build_and_save_collage(
     )
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0, wspace=0.0, hspace=0.0)
     try:
-        fig.patch.set_facecolor("black")
+        fig.patch.set_alpha(0)
+        fig.patch.set_facecolor("none")
     except Exception:
         pass
 
@@ -406,16 +407,17 @@ def build_and_save_collage(
     overlay_ax.imshow(gradient, aspect="auto", extent=[0, 1, 0, 1])
     overlay_ax.set_xlim(0, 1)
     overlay_ax.set_ylim(0, 1)
+    overlay_ax.set_facecolor('none')
     overlay_ax.axis("off")
     for i in range(num_bins + 1):
         x = i / num_bins
         overlay_ax.plot([x, x], [0.0, 1.0], color=(1, 1, 1, 0.5), linewidth=0.8)
     # Title and fixed numeric labels at borders every two bars: 10k,20k,30k,40k,50k
-    axes[0, first_img_col].text(0.0, 1.25, f"Difficulty ({start_rank:,} → {end_rank:,})", transform=axes[0, first_img_col].transAxes, fontsize=12, fontweight="bold")
+    axes[0, first_img_col].text(0.0, 1.25, f"Difficulty ({start_rank:,} → {end_rank:,})", transform=axes[0, first_img_col].transAxes, fontsize=16, fontweight="bold")
     fixed_vals = [10000, 20000, 30000, 40000, 50000]
     fixed_x = [0.2, 0.4, 0.6, 0.8, 1.0]
     for x, val in zip(fixed_x, fixed_vals):
-        overlay_ax.text(x, -0.15, f"{val:,}", ha="center", va="top", fontsize=8, color="white", transform=overlay_ax.transAxes, clip_on=False)
+        overlay_ax.text(x, -0.18, f"{val:,}", ha="center", va="top", fontsize=16, color="white", transform=overlay_ax.transAxes, clip_on=False)
 
     # Rows of thumbnails: each class per row, label column then 12 images
     thumb_size = (args.thumb, args.thumb)
@@ -429,13 +431,13 @@ def build_and_save_collage(
         for b in range(num_bins):
             col_idx = bin_to_col_index(b)
             ax = axes[r, col_idx]
-            ax.axis("off")
+            ax.set_axis_off()
             if b >= len(picks) or picks[b] is None:
                 continue
             idx = int(picks[b])
             img = load_image_or_tile(paths_all[idx], size=thumb_size)
-            ax.set_facecolor("black")
-            ax.imshow(img, aspect="auto")
+            ax.set_facecolor("none")
+            ax.imshow(img, aspect="equal")
             ax.set_xticks([]); ax.set_yticks([])
             try:
                 for spine in ax.spines.values():
@@ -446,7 +448,7 @@ def build_and_save_collage(
     out_dir = os.path.dirname(args.out)
     if out_dir:
         os.makedirs(out_dir, exist_ok=True)
-    fig.savefig(out_path, dpi=int(args.dpi))
+    fig.savefig(out_path, dpi=int(args.dpi), transparent=True)
     print(f"Saved figure to: {out_path}")
 
     # Optionally copy all images of the chosen classes into folders
