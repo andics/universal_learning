@@ -124,9 +124,9 @@ def continuous_colormap(width: int, cmap_name: str = "plasma") -> np.ndarray:
 
 def load_hierarchy_labels(hier_path: str) -> Dict[str, str]:
     try:
-        with open(hier_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        return {wnid: meta.get("words", wnid) for wnid, meta in data.items()}
+    with open(hier_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    return {wnid: meta.get("words", wnid) for wnid, meta in data.items()}
     except Exception:
         return {}
 
@@ -162,7 +162,7 @@ def build_and_save_collage(
     if args.seed is None:
         random.seed()
     else:
-        random.seed(args.seed)
+    random.seed(args.seed)
 
     paths_all = parse_imagenet_examples_csv(args.csv)
     num_images = len(paths_all)
@@ -250,7 +250,7 @@ def build_and_save_collage(
     chosen_wnids: List[str] = list(present_wnids)
     if len(chosen_wnids) < int(args.classes):
         class_scores: List[Tuple[str, float]] = []
-        for wnid, idxs in wnid_to_indices.items():
+    for wnid, idxs in wnid_to_indices.items():
             if wnid in chosen_wnids:
                 continue
             in_window = [i for i in idxs if start_idx <= i < end_idx_exclusive]
@@ -370,7 +370,7 @@ def build_and_save_collage(
 
     width_ratios: List[float] = []
     width_ratios.append(tile)  # label column
-    for b in range(num_bins):
+        for b in range(num_bins):
         width_ratios.append(tile)
         # after each pair except the last pair, add a narrow gap column
         if b % 2 == 1 and b < num_bins - 1:
@@ -410,13 +410,12 @@ def build_and_save_collage(
     for i in range(num_bins + 1):
         x = i / num_bins
         overlay_ax.plot([x, x], [0.0, 1.0], color=(1, 1, 1, 0.5), linewidth=0.8)
-    # Title and numeric labels every two bars (i=0,2,4,6,8,10)
+    # Title and fixed numeric labels at borders every two bars: 10k,20k,30k,40k,50k
     axes[0, first_img_col].text(0.0, 1.25, f"Difficulty ({start_rank:,} → {end_rank:,})", transform=axes[0, first_img_col].transAxes, fontsize=12, fontweight="bold")
-    bar_size = (end_rank - start_rank) / float(num_bins)
-    for j in range(0, num_bins + 1, 2):
-        x = j / num_bins
-        label_val = int(round(start_rank + j * bar_size))
-        overlay_ax.text(x, -0.15, f"{label_val:,}", ha="center", va="top", fontsize=8, color="white", transform=overlay_ax.transAxes, clip_on=False)
+    fixed_vals = [10000, 20000, 30000, 40000, 50000]
+    fixed_x = [0.2, 0.4, 0.6, 0.8, 1.0]
+    for x, val in zip(fixed_x, fixed_vals):
+        overlay_ax.text(x, -0.15, f"{val:,}", ha="center", va="top", fontsize=8, color="white", transform=overlay_ax.transAxes, clip_on=False)
 
     # Rows of thumbnails: each class per row, label column then 12 images
     thumb_size = (args.thumb, args.thumb)
@@ -437,6 +436,12 @@ def build_and_save_collage(
             img = load_image_or_tile(paths_all[idx], size=thumb_size)
             ax.set_facecolor("black")
             ax.imshow(img, aspect="auto")
+            ax.set_xticks([]); ax.set_yticks([])
+            try:
+                for spine in ax.spines.values():
+                    spine.set_visible(False)
+            except Exception:
+                pass
 
     out_dir = os.path.dirname(args.out)
     if out_dir:
@@ -473,12 +478,17 @@ def build_and_save_collage(
                 continue
             wnid_to_all_indices.setdefault(w, []).append(idx)
 
-        # Determine which WNIDs to export: the chosen ones, plus elephant for collage 2 if available
+        # Determine which WNIDs to export: the chosen ones, plus elephant for collage 2 if available,
+        # and shopping cart for collage 2 as requested
         export_wnids: List[str] = list(chosen_wnids)
         elephant_wnid = "n02504458"
         if int(collage_index) == 2 and elephant_wnid not in export_wnids:
             if elephant_wnid in wnid_to_all_indices:
                 export_wnids.append(elephant_wnid)
+        cart_wnid = "n04204347"
+        if int(collage_index) == 2 and cart_wnid not in export_wnids:
+            if cart_wnid in wnid_to_all_indices:
+                export_wnids.append(cart_wnid)
 
         # Top-level ranking CSV (wnid,label,rank,path)
         global_ranking_rows: List[str] = ["wnid,label,rank,image_path"]
