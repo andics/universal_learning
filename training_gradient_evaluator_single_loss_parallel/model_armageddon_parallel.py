@@ -32,7 +32,7 @@ DEFAULTS = {
     'deterministic': True,
     'cka_layer_fraction': 0.05,
     'num_workers': 8,
-    'output_dir': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/training_gradient_evaluator_single_loss_parallel/output_parallel_8_workers_trial_2',
+    'output_dir': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/training_gradient_evaluator_single_loss_parallel/output_parallel_8_workers_trial_3',
     'hierarchy_json': '/home/projects/bagon/andreyg/Projects/BMM_school/Universal_learning/Programming/bars/imagenet_synset_hierarchy.json',
 }
 
