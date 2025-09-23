@@ -76,19 +76,54 @@ def extract_zip_to_named_folder(zip_file_path: Path, password: Optional[str] = "
     target_dir.mkdir(parents=True, exist_ok=True)
 
     with zipfile.ZipFile(zip_file_path, "r") as zip_ref:
-        # Safety check against Zip Slip
-        for member in zip_ref.infolist():
+        members = zip_ref.infolist()
+
+        # Safety check against Zip Slip and compute total size
+        total_bytes = 0
+        for member in members:
             resolved_member_path = (target_dir_resolved / member.filename).resolve()
             if not str(resolved_member_path).startswith(str(target_dir_resolved)):
                 raise Exception(f"Unsafe path in zip entry: {member.filename}")
+            if not member.is_dir():
+                total_bytes += getattr(member, "file_size", 0)
 
         print(f"Extracting to: {target_dir}")
         pwd_bytes = password.encode("utf-8") if password else None
-        # If password is provided, use it during extraction (ZipCrypto only)
-        if pwd_bytes:
-            zip_ref.setpassword(pwd_bytes)
-        zip_ref.extractall(target_dir, pwd=pwd_bytes)
-        print(f"Extraction complete: {target_dir}")
+
+        bytes_written_total = 0
+        chunk_size = 1024 * 1024  # 1 MiB
+
+        for member in members:
+            if member.is_dir():
+                # Ensure directory exists
+                (target_dir_resolved / member.filename).mkdir(parents=True, exist_ok=True)
+                continue
+
+            dest_path = (target_dir_resolved / member.filename)
+            dest_path.parent.mkdir(parents=True, exist_ok=True)
+
+            with zip_ref.open(member, pwd=pwd_bytes) as src, open(dest_path, "wb") as dst:
+                while True:
+                    data = src.read(chunk_size)
+                    if not data:
+                        break
+                    dst.write(data)
+                    bytes_written_total += len(data)
+
+                    if total_bytes:
+                        percent = bytes_written_total * 100.0 / total_bytes
+                        progress = (
+                            f"\rExtracting {target_dir.name}: "
+                            f"{percent:.1f}% ({bytes_written_total/1_048_576:.1f} / {total_bytes/1_048_576:.1f} MiB)"
+                        )
+                    else:
+                        progress = (
+                            f"\rExtracting {target_dir.name}: "
+                            f"{bytes_written_total/1_048_576:.1f} MiB"
+                        )
+                    print(progress, end="", flush=True)
+
+        print(f"\nExtraction complete: {target_dir}")
 
     return target_dir
 

@@ -24,9 +24,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--root_dir", type=str, default=None, help="Optional root dir to prefix to CSV paths to load images")
     p.add_argument("--thumb", type=int, default=160, help="Thumbnail size (square side in px)")
     p.add_argument("--dpi", type=int, default=300, help="Output DPI")
-    p.add_argument("--cols", type=int, default=10, help="Number of columns in collage")
-    p.add_argument("--rows", type=int, default=5, help="Number of rows in collage")
-    p.add_argument("--font_size", type=int, default=8, help="Font size for accuracy text")
+    p.add_argument("--pair_gap", type=int, default=12, help="Gap between image pairs (px)")
+    p.add_argument("--font_size", type=int, default=6, help="Tiny font size for accuracy text (used when possible)")
     p.add_argument("--threshold", type=float, default=None, help="Optional threshold to convert float scores to correctness; if None, infer from dtype")
     p.add_argument("--wnids", type=str, default="n03187595,n03452741,n03481172,n03637318,n02504458", help="Comma-separated wnids; images will be drawn in listed order of each wnid's mapping list")
     return p.parse_args()
@@ -96,63 +95,190 @@ def compute_accuracy_for_indices(correct_matrix: np.ndarray, indices: List[int])
     return result
 
 
-def open_image(path: str, thumb: int) -> Image.Image:
-    with Image.open(path) as im:
-        im = im.convert("RGB")
-        im.thumbnail((thumb, thumb), Image.LANCZOS)
-        out = Image.new("RGB", (thumb, thumb), (0, 0, 0))
-        # center paste
-        w, h = im.size
-        x = (thumb - w) // 2
-        y = (thumb - h) // 2
-        out.paste(im, (x, y))
-        return out
+def open_image_rgba_centered(path: str, size: Tuple[int, int]) -> Image.Image:
+    target_w, target_h = size
+    try:
+        with Image.open(path) as im:
+            im = im.convert("RGB")
+            # Resize preserving aspect ratio to fit within size
+            im.thumbnail((target_w, target_h), Image.LANCZOS)
+            new_w, new_h = im.size
+            bg = Image.new("RGBA", (target_w, target_h), (0, 0, 0, 255))
+            bg.paste(im, ((target_w - new_w) // 2, (target_h - new_h) // 2))
+            return bg
+    except Exception:
+        return Image.new("RGBA", (target_w, target_h), (0, 0, 0, 255))
 
 
-def build_simple_collage(
-    image_paths: List[str],
-    accuracies: List[Tuple[int, int, float]],
+def build_pairs_collage_with_bg(
+    per_class_indices: Dict[str, List[int]],
+    per_index_accuracy: Dict[int, Tuple[int, int, float]],
+    all_paths: List[str],
     out_path: str,
     thumb: int,
-    cols: int,
-    rows: int,
+    pair_gap: int,
     dpi: int,
-    font_size: int,
+    tiny_font_size: int,
+    root_dir: Optional[str],
 ) -> None:
-    assert len(image_paths) == len(accuracies)
-    total = len(image_paths)
-    cols = max(1, cols)
-    rows = max(1, rows)
-    fig_w = cols * (thumb / dpi) * 1.05
-    fig_h = rows * (thumb / dpi) * 1.25
-    fig, axes = plt.subplots(rows, cols, figsize=(fig_w, fig_h), dpi=dpi)
-    if rows == 1 and cols == 1:
-        axes = np.array([[axes]])
-    elif rows == 1:
-        axes = np.array([axes])
-    elif cols == 1:
-        axes = np.array([[ax] for ax in axes])
+    # Match the layout and style of collage 3: rows of 5 pairs (10 images) per class,
+    # gradient background (custom_yellow_blue_fixed), transparent figure, black border around pairs.
+    from PIL import ImageDraw, ImageFont
 
-    for idx in range(rows * cols):
-        r = idx // cols
-        c = idx % cols
-        ax = axes[r, c]
-        ax.axis('off')
-        if idx >= total:
-            continue
-        path = image_paths[idx]
-        try:
-            im = open_image(path, thumb)
-            ax.imshow(im)
-        except Exception:
-            # draw empty tile
-            blank = Image.new("RGB", (thumb, thumb), (30, 30, 30))
-            ax.imshow(blank)
-        num_true, num_models, acc = accuracies[idx]
-        ax.set_title(f"{num_true}/{num_models} ({acc*100:.1f}%)", fontsize=font_size)
+    chosen_wnids = list(per_class_indices.keys())
+    rows = len(chosen_wnids)
+    tile = int(thumb)
+    gap_px = max(0, int(pair_gap))
+    top_bar_height = int(tile * 0.6)
 
-    plt.tight_layout()
-    fig.savefig(out_path, dpi=dpi, bbox_inches='tight')
+    num_bins = 10
+    num_pairs = max(1, num_bins // 2)
+    gap_w = int(round(gap_px * 1.5))
+    gap_h = int(round(gap_px * 1.5))
+    pair_width = tile * 2
+
+    def pair_to_col_index(pair_id: int) -> int:
+        return pair_id * 2
+
+    width_ratios: List[float] = []
+    for p in range(num_pairs):
+        width_ratios.append(pair_width)
+        if p < num_pairs - 1:
+            width_ratios.append(gap_w)
+    cols_total = len(width_ratios)
+
+    height_ratios: List[float] = [top_bar_height]
+    for r in range(rows):
+        height_ratios.append(tile)
+        if r < rows - 1:
+            height_ratios.append(gap_h)
+
+    fig_w = (sum(width_ratios)) / 100.0
+    fig_h = (sum(height_ratios)) / 100.0
+    fig, axes = plt.subplots(
+        len(height_ratios),
+        cols_total,
+        figsize=(fig_w, fig_h),
+        gridspec_kw={"height_ratios": height_ratios, "width_ratios": width_ratios},
+    )
+    plt.subplots_adjust(left=0, right=1, top=1, bottom=0, wspace=0.0, hspace=0.0)
+    try:
+        fig.patch.set_alpha(0)
+        fig.patch.set_facecolor("none")
+    except Exception:
+        pass
+
+    # turn off axes
+    for r in range(len(height_ratios)):
+        for c in range(cols_total):
+            try:
+                axes[r, c].set_axis_off()
+            except Exception:
+                pass
+
+    # Background gradient matching custom_yellow_blue_fixed
+    bg_ax = fig.add_axes([0, 0, 1, 1], zorder=-100)
+    def linear_gradient_rgb(width: int, left_rgb: Tuple[int, int, int], right_rgb: Tuple[int, int, int]) -> np.ndarray:
+        x = np.linspace(0.0, 1.0, width, dtype=np.float32)
+        lr = np.array(left_rgb, dtype=np.float32)
+        rr = np.array(right_rgb, dtype=np.float32)
+        grad = lr[None, :] * (1.0 - x[:, None]) + rr[None, :] * x[:, None]
+        grad = np.clip(grad / 255.0, 0.0, 1.0)
+        return np.tile(grad[None, :, :], (2, 1, 1))
+
+    gradient = linear_gradient_rgb(2000, (255, 221, 89), (128, 169, 255))
+    bg_ax.imshow(gradient, aspect="auto", extent=[0, 1, 0, 1], alpha=0.75)
+    bg_ax.set_axis_off()
+
+    # Ensure content axes above background
+    try:
+        for r in range(len(height_ratios)):
+            for c in range(cols_total):
+                axes[r, c].set_zorder(10)
+    except Exception:
+        pass
+
+    # Font for tiny text (will be very small). If PIL default supports size, use load_default.
+    try:
+        font = ImageFont.load_default()
+    except Exception:
+        font = None
+
+    single_size = (tile, tile)
+    pair_size = (pair_width, tile)
+
+    def to_full_path(p: str) -> str:
+        return os.path.join(root_dir, p.lstrip("/\\")) if root_dir else p
+
+    def compose_pair(left_idx: Optional[int], right_idx: Optional[int]) -> Image.Image:
+        left_img = Image.new("RGBA", single_size, (0, 0, 0, 255)) if left_idx is None else open_image_rgba_centered(to_full_path(all_paths[left_idx]), single_size)
+        right_img = Image.new("RGBA", single_size, (0, 0, 0, 255)) if right_idx is None else open_image_rgba_centered(to_full_path(all_paths[right_idx]), single_size)
+        pair_img = Image.new("RGBA", pair_size, (0, 0, 0, 0))
+        pair_img.paste(left_img, (0, 0))
+        pair_img.paste(right_img, (tile, 0))
+
+        # draw tiny accuracy text at bottom of each half
+        draw = ImageDraw.Draw(pair_img)
+        def text_for(index: Optional[int]) -> str:
+            if index is None:
+                return ""
+            nt, nm, acc = per_index_accuracy[int(index)]
+            return f"{nt}/{nm} ({acc*100:.1f}%)"
+
+        left_text = text_for(left_idx)
+        right_text = text_for(right_idx)
+        # positions a few pixels above bottom
+        margin = max(1, int(round(tile * 0.04)))
+        y_text = tile - margin - 1
+        def draw_outlined_text(x_center: int, text: str) -> None:
+            if not text:
+                return
+            try:
+                w, h = draw.textsize(text, font=font) if font else draw.textsize(text)
+            except Exception:
+                w, h = (len(text) * 3, 6)
+            x = int(x_center - w / 2)
+            y = int(y_text - h)
+            # outline
+            for dx, dy in [(-1,0),(1,0),(0,-1),(0,1)]:
+                draw.text((x+dx, y+dy), text, fill=(0,0,0,255), font=font)
+            draw.text((x, y), text, fill=(255,255,255,255), font=font)
+
+        draw_outlined_text(tile // 2, left_text)
+        draw_outlined_text(tile + (tile // 2), right_text)
+
+        # black border around pair (inside bounds)
+        border_px = max(1, int(round(tile * 0.02)))
+        for k in range(border_px):
+            draw.rectangle([k, k, pair_size[0]-1-k, pair_size[1]-1-k], outline=(0,0,0,255))
+        return pair_img
+
+    # place pairs
+    for r_idx, w in enumerate(chosen_wnids):
+        axis_row = 1 + r_idx * 2 if rows > 1 else 1
+        picks = per_class_indices.get(w, [])
+        for p in range(num_pairs):
+            left_bin = p * 2
+            right_bin = left_bin + 1
+            left_idx = int(picks[left_bin]) if left_bin < len(picks) and picks[left_bin] is not None else None
+            right_idx = int(picks[right_bin]) if right_bin < len(picks) and picks[right_bin] is not None else None
+            col_idx = pair_to_col_index(p)
+            ax = axes[axis_row, col_idx]
+            ax.set_axis_off()
+            pair_img = compose_pair(left_idx, right_idx)
+            ax.set_facecolor("none")
+            ax.imshow(pair_img, aspect="equal")
+            ax.set_xticks([]); ax.set_yticks([])
+            try:
+                for spine in ax.spines.values():
+                    spine.set_visible(False)
+            except Exception:
+                pass
+
+    out_dir = os.path.dirname(out_path)
+    if out_dir:
+        os.makedirs(out_dir, exist_ok=True)
+    fig.savefig(out_path, dpi=int(dpi), transparent=True)
     plt.close(fig)
 
 
@@ -266,33 +392,49 @@ def main() -> None:
     if not resolved_indices:
         raise RuntimeError("No explicit images resolved from CSV; check paths and stubs")
 
-    # Compute accuracies
+    # Compute per-index accuracies
     idx_to_tuple = compute_accuracy_for_indices(C, resolved_indices)
-    acc_list: List[Tuple[int, int, float]] = [idx_to_tuple[j] for j in resolved_indices]
 
-    # Build file paths for opening
-    def to_full_path(p: str) -> str:
-        return os.path.join(args.root_dir, p.lstrip("/\\")) if args.root_dir else p
+    # Reconstruct per-class mapping preserving order (10 images each)
+    # Using same WNID list as original third collage order
+    per_class: Dict[str, List[int]] = {
+        "n03187595": [],
+        "n03452741": [],
+        "n03481172": [],
+        "n03637318": [],
+        "n02504458": [],
+    }
+    # Map resolved paths back to wnid via path
+    def path_to_wnid_from_path(p: str) -> Optional[str]:
+        base = os.path.normpath(p).replace("\\", "/")
+        parts = base.split("/")
+        for k in range(len(parts) - 1):
+            if parts[k].startswith("n") and len(parts[k]) == 9:
+                return parts[k]
+        return None
 
-    full_image_paths = [to_full_path(p) for p in resolved_paths]
+    for j, p in zip(resolved_indices, resolved_paths):
+        w = path_to_wnid_from_path(p)
+        if w in per_class and len(per_class[w]) < 10:
+            per_class[w].append(j)
 
-    # Compute grid size based on requested rows/cols and number of images
-    cols = max(1, int(args.cols))
-    rows = max(1, int(args.rows))
-    capacity = rows * cols
-    if len(full_image_paths) < capacity:
-        # trim rows to fit exactly if there are fewer images
-        rows = max(1, (len(full_image_paths) + cols - 1) // cols)
+    # Ensure each class has exactly 10 slots (pad with None if needed)
+    for w in list(per_class.keys()):
+        lst = per_class[w]
+        if len(lst) < 10:
+            lst = lst + [None] * (10 - len(lst))
+        per_class[w] = lst[:10]
 
-    build_simple_collage(
-        image_paths=full_image_paths,
-        accuracies=acc_list,
+    build_pairs_collage_with_bg(
+        per_class_indices=per_class,
+        per_index_accuracy=idx_to_tuple,
+        all_paths=paths_all,
         out_path=args.out,
         thumb=int(args.thumb),
-        cols=cols,
-        rows=rows,
+        pair_gap=int(args.pair_gap),
         dpi=int(args.dpi),
-        font_size=int(args.font_size),
+        tiny_font_size=int(args.font_size),
+        root_dir=args.root_dir,
     )
 
 
