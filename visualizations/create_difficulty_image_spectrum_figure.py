@@ -375,13 +375,15 @@ def build_and_save_collage(
             width_ratios.append(gap_px)
 
     cols_total = len(width_ratios)
+    # Add top bar row + exact rows (no vertical gaps) to avoid extra whitespace
+    height_ratios: List[float] = [top_bar_height] + [tile] * rows
     fig_w = (sum(width_ratios)) / 100.0
-    fig_h = ((rows * tile) + top_bar_height) / 100.0
+    fig_h = (sum(height_ratios)) / 100.0
     fig, axes = plt.subplots(
         rows + 1,
         cols_total,
         figsize=(fig_w, fig_h),
-        gridspec_kw={"height_ratios": [top_bar_height] + [tile] * rows, "width_ratios": width_ratios},
+        gridspec_kw={"height_ratios": height_ratios, "width_ratios": width_ratios},
     )
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0, wspace=0.0, hspace=0.0)
     try:
@@ -398,48 +400,36 @@ def build_and_save_collage(
             except Exception:
                 pass
 
-    # Top difficulty colored scale spanning over image columns (0..num_bins-1)
-    # compute combined bbox for axes[0, first_img]..axes[0, last_img]
-    first_img_col = bin_to_col_index(0)
-    last_img_col = bin_to_col_index(num_bins - 1)
-    left = axes[0, first_img_col].get_position().x0
-    right = axes[0, last_img_col].get_position().x1
-    bottom = axes[0, first_img_col].get_position().y0
-    top = axes[0, first_img_col].get_position().y1
-    overlay_ax = fig.add_axes([left, bottom, right - left, top - bottom])
-    gradient = continuous_colormap(1200, cmap_name="plasma")
-    overlay_ax.imshow(gradient, aspect="auto", extent=[0, 1, 0, 1])
-    overlay_ax.set_xlim(0, 1)
-    overlay_ax.set_ylim(0, 1)
-    overlay_ax.set_facecolor('none')
-    overlay_ax.axis("off")
-    # No ticks, no labels, no lines; pure colored bar with transparency
+    # Full-figure gradient background
+    bg_ax = fig.add_axes([0, 0, 1, 1], zorder=0)
+    gradient = continuous_colormap(2000, cmap_name="plasma")
+    bg_ax.imshow(gradient, aspect="auto", extent=[0, 1, 0, 1])
+    bg_ax.set_axis_off()
+    # Lines at pair boundaries (every two bars)
+    total_w = float(sum(width_ratios))
+    x_positions: List[float] = []
+    for p in range(5):
+        start_col = bin_to_col_index(p * 2)
+        x_before = sum(width_ratios[:start_col])
+        x_positions.append(x_before / total_w)
+    x_positions.append(1.0)
+    for x in x_positions:
+        bg_ax.plot([x, x], [0.0, 1.0], color=(1, 1, 1, 0.35), linewidth=1.2)
 
     # Rows of thumbnails: each class per row, 10 images (5 pairs) with gaps between pairs
-    single_size = (tile, tile)
-    pair_size = (tile * 2, tile)
-    def make_pair_tile(idx_left: Optional[int], idx_right: Optional[int]) -> Image.Image:
-        left_img = load_image_or_tile(paths_all[idx_left], single_size) if idx_left is not None else Image.new("RGBA", single_size, (0,0,0,255))
-        right_img = load_image_or_tile(paths_all[idx_right], single_size) if idx_right is not None else Image.new("RGBA", single_size, (0,0,0,255))
-        pair = Image.new("RGBA", pair_size, (0,0,0,0))
-        pair.paste(left_img, (0, 0))
-        pair.paste(right_img, (tile, 0))
-        return pair
-
-    for r, w in enumerate(chosen_wnids):
+    thumb_size = (tile, tile)
+    for r, w in enumerate(chosen_wnids, start=1):
         picks = class_to_samples.get(w, [])
-        row_idx = r  # since we removed the top bar row and used explicit height ratios
-        for pair_id in range(5):
-            b_left = pair_id * 2
-            b_right = b_left + 1
-            col_idx = bin_to_col_index(b_left)
-            ax = axes[row_idx, col_idx]
+        for b in range(num_bins):
+            col_idx = bin_to_col_index(b)
+            ax = axes[r, col_idx]
             ax.set_axis_off()
-            idx_left = int(picks[b_left]) if b_left < len(picks) and picks[b_left] is not None else None
-            idx_right = int(picks[b_right]) if b_right < len(picks) and picks[b_right] is not None else None
-            pair_img = make_pair_tile(idx_left, idx_right)
+            if b >= len(picks) or picks[b] is None:
+                continue
+            idx = int(picks[b])
+            img = load_image_or_tile(paths_all[idx], size=thumb_size)
             ax.set_facecolor("none")
-            ax.imshow(pair_img, aspect="equal")
+            ax.imshow(img, aspect="equal")
             ax.set_xticks([]); ax.set_yticks([])
             try:
                 for spine in ax.spines.values():
