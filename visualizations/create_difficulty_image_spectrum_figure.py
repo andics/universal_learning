@@ -61,7 +61,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--csv", default=d_csv, help="Path to imagenet_examples_ammended.csv")
     p.add_argument("--hier", default=d_hier, help="Path to imagenet_synset_hierarchy.json")
     p.add_argument("--out", default=d_out, help="Output image path (PNG)")
-    p.add_argument("--bins", type=int, default=12, help="Number of rank bins (images)")
+    p.add_argument("--bins", type=int, default=10, help="Number of rank bins (images/pairs*2)")
     p.add_argument("--start_rank", type=int, default=1, help="Inclusive 1-based start rank (default 1)")
     p.add_argument("--end_rank", type=int, default=0, help="Exclusive 1-based end rank (0=end of file)")
     p.add_argument("--classes", type=int, default=5, help="Number of classes (rows) to show")
@@ -74,6 +74,19 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--seed", type=int, default=None, help="RNG seed for tie-breaking (None=random)")
     p.add_argument("--thumb", type=int, default=160, help="Thumbnail square size in pixels")
     p.add_argument("--dpi", type=int, default=350, help="Output figure DPI")
+    p.add_argument("--pair_gap", type=int, default=12, help="Horizontal gap (pixels) between image pairs")
+    p.add_argument(
+        "--second_wnids",
+        type=str,
+        default="n03691459,n03452741,n03187595,n03481172,n03637318",
+        help="WNIDs for an additional collage (speaker,piano,dial phone,hammer,lampshade)",
+    )
+    p.add_argument(
+        "--second_out",
+        type=str,
+        default=None,
+        help="Output path for the second collage (default: derive from --out by appending _second)",
+    )
     return p.parse_args()
 
 
@@ -133,8 +146,7 @@ def load_image_or_tile(path: str, size: Tuple[int, int]) -> Image.Image:
         return Image.new("RGB", size, (0, 0, 0))
 
 
-def main() -> None:
-    args = parse_args()
+def build_and_save_collage(paths_all: List[str], labels: Dict[str, str], args: argparse.Namespace, requested_wnids_csv: str, out_path: str) -> None:
     # New seed per run if None, to change picks while staying near bin centers
     if args.seed is None:
         random.seed()
@@ -146,7 +158,7 @@ def main() -> None:
     if num_images <= 0:
         raise ValueError("CSV appears empty")
 
-    labels = load_hierarchy_labels(args.hier)
+    # labels mapping already provided
 
     # Build wnid -> indices (0-based ranks)
     wnid_to_indices: Dict[str, List[int]] = {}
@@ -202,7 +214,7 @@ def main() -> None:
         return chisq + zeros * expected
 
     # Use explicit WNIDs provided via args (defaults to the requested five)
-    requested_wnids = [w.strip() for w in str(args.wnids).split(",") if w.strip()]
+    requested_wnids = [w.strip() for w in str(requested_wnids_csv).split(",") if w.strip()]
     # Filter to those present in CSV and with at least 1 sample in window
     present_wnids: List[str] = []
     for w in requested_wnids:
@@ -311,15 +323,34 @@ def main() -> None:
             remain.remove(j)
         class_to_samples[w] = picks_by_bin
 
-    # Plot: top difficulty spectrum + K class rows, 13 columns (label + 12 images)
+    # Plot: top difficulty spectrum + K class rows, label + images + small gaps between pairs
     rows = len(chosen_wnids)
-    cols = num_bins + 1
-    # Compute figure size so tiles are exact and gaps are minimal; remove spacing
     tile = int(args.thumb)
+    gap_px = max(0, int(args.pair_gap))
     top_bar_height = int(tile * 0.6)
-    fig_w = (cols * tile) / 100.0
+
+    # Build width ratios: [label] + for b in bins: [img] and insert [gap] after each pair except last
+    def bin_to_col_index(b: int) -> int:
+        # label is column 0; number of gaps before bin b is floor(b/2)
+        return 1 + b + (b // 2)
+
+    width_ratios: List[float] = []
+    width_ratios.append(tile)  # label column
+    for b in range(num_bins):
+        width_ratios.append(tile)
+        # after each pair except the last pair, add a narrow gap column
+        if b % 2 == 1 and b < num_bins - 1:
+            width_ratios.append(gap_px)
+
+    cols_total = len(width_ratios)
+    fig_w = (sum(width_ratios)) / 100.0
     fig_h = ((rows * tile) + top_bar_height) / 100.0
-    fig, axes = plt.subplots(rows + 1, cols, figsize=(fig_w, fig_h), gridspec_kw={"height_ratios": [top_bar_height] + [tile] * rows})
+    fig, axes = plt.subplots(
+        rows + 1,
+        cols_total,
+        figsize=(fig_w, fig_h),
+        gridspec_kw={"height_ratios": [top_bar_height] + [tile] * rows, "width_ratios": width_ratios},
+    )
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0, wspace=0.0, hspace=0.0)
     try:
         fig.patch.set_facecolor("black")
@@ -327,11 +358,13 @@ def main() -> None:
         pass
 
     # Top difficulty colored scale spanning over image columns (1..num_bins)
-    for c in range(cols):
+    for c in range(cols_total):
         axes[0, c].axis("off")
-    # compute combined bbox for axes[0, 1]..axes[0, num_bins]
-    left = axes[0, 1].get_position().x0
-    right = axes[0, num_bins].get_position().x1
+    # compute combined bbox for axes[0, first_img]..axes[0, last_img]
+    first_img_col = bin_to_col_index(0)
+    last_img_col = bin_to_col_index(num_bins - 1)
+    left = axes[0, first_img_col].get_position().x0
+    right = axes[0, last_img_col].get_position().x1
     bottom = axes[0, 1].get_position().y0
     top = axes[0, 1].get_position().y1
     overlay_ax = fig.add_axes([left, bottom, right - left, top - bottom])
@@ -343,11 +376,13 @@ def main() -> None:
     for i in range(num_bins + 1):
         x = i / num_bins
         overlay_ax.plot([x, x], [0.0, 1.0], color=(1, 1, 1, 0.5), linewidth=0.8)
-    axes[0, 1].text(0.0, 1.25, f"Difficulty ({start_rank:,} → {end_rank:,})", transform=axes[0, 1].transAxes, fontsize=12, fontweight="bold")
-    # Bin edge labels centered in each image column
-    for i in range(num_bins):
-        rank_right = int(bin_edges[i + 1])  # 0-based right edge exclusive
-        axes[0, i + 1].text(0.5, -0.2, f"≤{rank_right + 1}", ha="center", va="top", transform=axes[0, i + 1].transAxes, fontsize=8)
+    # Title and numeric labels every two bars (i=0,2,4,6,8,10)
+    axes[0, first_img_col].text(0.0, 1.25, f"Difficulty ({start_rank:,} → {end_rank:,})", transform=axes[0, first_img_col].transAxes, fontsize=12, fontweight="bold")
+    bar_size = (end_rank - start_rank) / float(num_bins)
+    for j in range(0, num_bins + 1, 2):
+        x = j / num_bins
+        label_val = int(round(start_rank + j * bar_size))
+        overlay_ax.text(x, -0.15, f"{label_val:,}", ha="center", va="top", fontsize=8, color="white", transform=overlay_ax.transAxes, clip_on=False)
 
     # Rows of thumbnails: each class per row, label column then 12 images
     thumb_size = (args.thumb, args.thumb)
@@ -359,7 +394,8 @@ def main() -> None:
         # images
         picks = class_to_samples.get(w, [])
         for b in range(num_bins):
-            ax = axes[r, b + 1]
+            col_idx = bin_to_col_index(b)
+            ax = axes[r, col_idx]
             ax.axis("off")
             if b >= len(picks) or picks[b] is None:
                 continue
@@ -367,15 +403,40 @@ def main() -> None:
             img = load_image_or_tile(paths_all[idx], size=thumb_size)
             ax.set_facecolor("black")
             ax.imshow(img, aspect="auto")
-            # Draw rank as an on-image overlay instead of a subplot title (prevents extra padding)
-            ax.text(0.02, 0.02, f"{idx + 1}", ha="left", va="bottom", fontsize=7, color="white",
-                    transform=ax.transAxes, bbox=dict(boxstyle="round,pad=0.2", facecolor="black", alpha=0.5, linewidth=0))
 
     out_dir = os.path.dirname(args.out)
     if out_dir:
         os.makedirs(out_dir, exist_ok=True)
-    fig.savefig(args.out, dpi=int(args.dpi))
-    print(f"Saved figure to: {args.out}")
+    fig.savefig(out_path, dpi=int(args.dpi))
+    print(f"Saved figure to: {out_path}")
+
+
+def main() -> None:
+    args = parse_args()
+    # New seed per run if None, to change picks while staying near bin centers
+    if args.seed is None:
+        random.seed()
+    else:
+        random.seed(args.seed)
+
+    paths_all = parse_imagenet_examples_csv(args.csv)
+    num_images = len(paths_all)
+    if num_images <= 0:
+        raise ValueError("CSV appears empty")
+
+    labels = load_hierarchy_labels(args.hier)
+
+    # First collage
+    build_and_save_collage(paths_all, labels, args, args.wnids, args.out)
+
+    # Second collage if requested
+    if args.second_out is None:
+        root, ext = os.path.splitext(args.out)
+        second_out = f"{root}_second{ext or '.png'}"
+    else:
+        second_out = args.second_out
+    if args.second_wnids:
+        build_and_save_collage(paths_all, labels, args, args.second_wnids, second_out)
 
 
 if __name__ == "__main__":
