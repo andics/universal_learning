@@ -10,7 +10,7 @@ from datetime import datetime
 # Cluster/container execution settings (mirrored from single-worker script)
 CONTAINER = 'ops:5000/universal_learning_2.4:1'
 QUEUE = 'waic-short'
-GPU_SPEC = 'num=1:j_exclusive=yes'
+GPU_SPEC = 'num=1:j_exclusive=no'
 RESOURCES = '-R rusage[mem=256000] -R affinity[thread*24] -R select[hname!=hgn50] -R select[hname!=ibdgx010]'
 
 # Paths
