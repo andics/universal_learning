@@ -77,7 +77,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--dpi", type=int, default=350, help="Output figure DPI")
     p.add_argument("--pair_gap", type=int, default=12, help="Horizontal gap (pixels) between image pairs")
     p.add_argument("--root_dir", type=str, default=None, help="Optional root to prefix non-absolute CSV paths when copying")
-    p.add_argument("--copy_images", action="store_true", help="If set, copy source images into collage folders")
+    p.add_argument("--copy_images", action="store_true", default=True, help="Copy source images into collage folders (default: on)")
     p.add_argument(
         "--second_wnids",
         type=str,
