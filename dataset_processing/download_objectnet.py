@@ -66,26 +66,6 @@ def download_to_script_directory(url: str) -> Path:
         raise
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Download and extract ObjectNet dataset zip")
-    parser.add_argument(
-        "--password",
-        "-p",
-        default="objectnetisatestset",
-        help="Optional zip password. Default: objectnetisatestset",
-    )
-    args = parser.parse_args()
-
-    try:
-        zip_path = download_to_script_directory(OBJECTNET_URL)
-        extract_zip_to_named_folder(zip_path, password=args.password)
-    except Exception:
-        sys.exit(1)
-
-
-if __name__ == "__main__":
-    main()
-
 def extract_zip_to_named_folder(zip_file_path: Path, password: Optional[str] = "objectnetisatestset") -> Path:
     target_dir = zip_file_path.with_suffix("")
     if target_dir.exists():
@@ -111,5 +91,26 @@ def extract_zip_to_named_folder(zip_file_path: Path, password: Optional[str] = "
         print(f"Extraction complete: {target_dir}")
 
     return target_dir
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Download and extract ObjectNet dataset zip")
+    parser.add_argument(
+        "--password",
+        "-p",
+        default="objectnetisatestset",
+        help="Optional zip password. Default: objectnetisatestset",
+    )
+    args = parser.parse_args()
+
+    try:
+        zip_path = download_to_script_directory(OBJECTNET_URL)
+        extract_zip_to_named_folder(zip_path, password=args.password)
+    except Exception:
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
 
 
