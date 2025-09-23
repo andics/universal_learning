@@ -401,7 +401,7 @@ def build_and_save_collage(
                 pass
 
     # Full-figure gradient background
-    bg_ax = fig.add_axes([0, 0, 1, 1], zorder=0)
+    bg_ax = fig.add_axes([0, 0, 1, 1], zorder=-100)
     gradient = continuous_colormap(2000, cmap_name="plasma")
     bg_ax.imshow(gradient, aspect="auto", extent=[0, 1, 0, 1])
     bg_ax.set_axis_off()
@@ -415,6 +415,14 @@ def build_and_save_collage(
     x_positions.append(1.0)
     for x in x_positions:
         bg_ax.plot([x, x], [0.0, 1.0], color=(1, 1, 1, 0.35), linewidth=1.2)
+
+    # Ensure all content axes render above the background
+    try:
+        for r in range(rows + 1):
+            for c in range(cols_total):
+                axes[r, c].set_zorder(10)
+    except Exception:
+        pass
 
     # Rows of thumbnails: each class per row, 10 images (5 pairs) with gaps between pairs
     thumb_size = (tile, tile)
