@@ -390,7 +390,7 @@ def build_and_save_collage(
     fig_w = (sum(width_ratios)) / 100.0
     fig_h = (sum(height_ratios)) / 100.0
     fig, axes = plt.subplots(
-        rows + 1,
+        len(height_ratios),
         cols_total,
         figsize=(fig_w, fig_h),
         gridspec_kw={"height_ratios": height_ratios, "width_ratios": width_ratios},
@@ -428,7 +428,7 @@ def build_and_save_collage(
 
     # Ensure all content axes render above the background
     try:
-        for r in range(rows + 1):
+        for r in range(len(height_ratios)):
             for c in range(cols_total):
                 axes[r, c].set_zorder(10)
     except Exception:
