@@ -320,7 +320,11 @@ def main() -> None:
     fig_w = (cols * tile) / 100.0
     fig_h = ((rows * tile) + top_bar_height) / 100.0
     fig, axes = plt.subplots(rows + 1, cols, figsize=(fig_w, fig_h), gridspec_kw={"height_ratios": [top_bar_height] + [tile] * rows})
-    plt.subplots_adjust(wspace=0.0, hspace=0.0)
+    plt.subplots_adjust(left=0, right=1, top=1, bottom=0, wspace=0.0, hspace=0.0)
+    try:
+        fig.patch.set_facecolor("black")
+    except Exception:
+        pass
 
     # Top difficulty colored scale spanning over image columns (1..num_bins)
     for c in range(cols):
@@ -361,10 +365,12 @@ def main() -> None:
                 continue
             idx = int(picks[b])
             img = load_image_or_tile(paths_all[idx], size=thumb_size)
-            ax.imshow(img)
-            ax.set_title(f"{idx + 1}", fontsize=8)
+            ax.set_facecolor("black")
+            ax.imshow(img, aspect="auto")
+            # Draw rank as an on-image overlay instead of a subplot title (prevents extra padding)
+            ax.text(0.02, 0.02, f"{idx + 1}", ha="left", va="bottom", fontsize=7, color="white",
+                    transform=ax.transAxes, bbox=dict(boxstyle="round,pad=0.2", facecolor="black", alpha=0.5, linewidth=0))
 
-    plt.tight_layout()
     out_dir = os.path.dirname(args.out)
     if out_dir:
         os.makedirs(out_dir, exist_ok=True)
