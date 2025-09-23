@@ -113,11 +113,15 @@ def path_to_wnid(path: str) -> Optional[str]:
     return m.group(1) if m else None
 
 
-def continuous_colormap(width: int, cmap_name: str = "plasma") -> np.ndarray:
-    """Return a 1xW RGB image representing a continuous colormap."""
+def continuous_colormap(width: int, cmap_name: str = "plasma", vmin: float = 0.0, vmax: float = 1.0) -> np.ndarray:
+    """Return a 1xW RGB image representing a continuous colormap, sampled over [vmin, vmax]."""
     import matplotlib.cm as cm
     cmap = cm.get_cmap(cmap_name)
-    xs = np.linspace(0.0, 1.0, width)
+    vmin = float(max(0.0, min(1.0, vmin)))
+    vmax = float(max(0.0, min(1.0, vmax)))
+    if vmax <= vmin:
+        vmax = min(1.0, vmin + 1e-6)
+    xs = np.linspace(vmin, vmax, width)
     rgb = cmap(xs)[..., :3]
     return np.expand_dims(rgb, axis=0)
 
@@ -414,8 +418,13 @@ def build_and_save_collage(
 
     # Full-figure gradient background
     bg_ax = fig.add_axes([0, 0, 1, 1], zorder=-100)
-    gradient = continuous_colormap(2000, cmap_name="plasma")
-    bg_ax.imshow(gradient, aspect="auto", extent=[0, 1, 0, 1])
+    # Allow external overrides for third-collage variations
+    cmap_name = getattr(args, "_bg_cmap", "magma")
+    vmin = float(getattr(args, "_bg_vmin", 0.15))
+    vmax = float(getattr(args, "_bg_vmax", 0.55))
+    alpha = float(getattr(args, "_bg_alpha", 0.75))
+    gradient = continuous_colormap(2000, cmap_name=cmap_name, vmin=vmin, vmax=vmax)
+    bg_ax.imshow(gradient, aspect="auto", extent=[0, 1, 0, 1], alpha=alpha)
     bg_ax.set_axis_off()
     # No overlay lines on the gradient background
 
@@ -674,8 +683,21 @@ def main() -> None:
     # Build the third collage
     third_wnids = "n03187595,n03452741,n03481172,n03637318,n02504458"
     root, ext = os.path.splitext(args.out)
-    third_out = f"{root}_third{ext or '.png'}"
-    build_and_save_collage(paths_all, labels, args, third_wnids, third_out, collage_index=3, explicit_picks_by_wnid=explicit_map)
+    # Generate multiple lighter/softer gradient variations for the third collage
+    base_third = f"{root}_third"
+    variations = [
+        ("magma", 0.10, 0.60, 0.70),
+        ("cividis", 0.20, 0.80, 0.70),
+        ("viridis", 0.30, 0.80, 0.65),
+    ]
+    for vidx, (cmap_name, vmin, vmax, alpha) in enumerate(variations):
+        # Temporarily monkey-patch the background rendering parameters by setting env vars on args
+        setattr(args, "_bg_cmap", cmap_name)
+        setattr(args, "_bg_vmin", vmin)
+        setattr(args, "_bg_vmax", vmax)
+        setattr(args, "_bg_alpha", alpha)
+        third_out = f"{base_third}_{vidx}{ext or '.png'}"
+        build_and_save_collage(paths_all, labels, args, third_wnids, third_out, collage_index=3, explicit_picks_by_wnid=explicit_map)
 
 
 if __name__ == "__main__":
