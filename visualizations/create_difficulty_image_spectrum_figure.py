@@ -417,16 +417,7 @@ def build_and_save_collage(
     gradient = continuous_colormap(2000, cmap_name="plasma")
     bg_ax.imshow(gradient, aspect="auto", extent=[0, 1, 0, 1])
     bg_ax.set_axis_off()
-    # Lines at pair boundaries (every two bars)
-    total_w = float(sum(width_ratios))
-    x_positions: List[float] = []
-    for p in range(num_pairs):
-        start_col = pair_to_col_index(p)
-        x_before = sum(width_ratios[:start_col])
-        x_positions.append(x_before / total_w)
-    x_positions.append(1.0)
-    for x in x_positions:
-        bg_ax.plot([x, x], [0.0, 1.0], color=(1, 1, 1, 0.35), linewidth=1.2)
+    # No overlay lines on the gradient background
 
     # Ensure all content axes render above the background
     try:
