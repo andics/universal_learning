@@ -416,20 +416,30 @@ def build_and_save_collage(
     # No ticks, no labels, no lines; pure colored bar with transparency
 
     # Rows of thumbnails: each class per row, 10 images (5 pairs) with gaps between pairs
-    thumb_size = (args.thumb, args.thumb)
-    for r, w in enumerate(chosen_wnids, start=1):
-        # images only; no labels
+    single_size = (tile, tile)
+    pair_size = (tile * 2, tile)
+    def make_pair_tile(idx_left: Optional[int], idx_right: Optional[int]) -> Image.Image:
+        left_img = load_image_or_tile(paths_all[idx_left], single_size) if idx_left is not None else Image.new("RGBA", single_size, (0,0,0,255))
+        right_img = load_image_or_tile(paths_all[idx_right], single_size) if idx_right is not None else Image.new("RGBA", single_size, (0,0,0,255))
+        pair = Image.new("RGBA", pair_size, (0,0,0,0))
+        pair.paste(left_img, (0, 0))
+        pair.paste(right_img, (tile, 0))
+        return pair
+
+    for r, w in enumerate(chosen_wnids):
         picks = class_to_samples.get(w, [])
-        for b in range(num_bins):
-            col_idx = bin_to_col_index(b)
-            ax = axes[r, col_idx]
+        row_idx = r  # since we removed the top bar row and used explicit height ratios
+        for pair_id in range(5):
+            b_left = pair_id * 2
+            b_right = b_left + 1
+            col_idx = bin_to_col_index(b_left)
+            ax = axes[row_idx, col_idx]
             ax.set_axis_off()
-            if b >= len(picks) or picks[b] is None:
-                continue
-            idx = int(picks[b])
-            img = load_image_or_tile(paths_all[idx], size=thumb_size)
+            idx_left = int(picks[b_left]) if b_left < len(picks) and picks[b_left] is not None else None
+            idx_right = int(picks[b_right]) if b_right < len(picks) and picks[b_right] is not None else None
+            pair_img = make_pair_tile(idx_left, idx_right)
             ax.set_facecolor("none")
-            ax.imshow(img, aspect="equal")
+            ax.imshow(pair_img, aspect="equal")
             ax.set_xticks([]); ax.set_yticks([])
             try:
                 for spine in ax.spines.values():
