@@ -32,6 +32,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--hier", default=d_hier)
     p.add_argument("--out", default=d_out)
     p.add_argument("--bins", type=int, default=10)
+    p.add_argument("--classes", type=int, default=5)
     p.add_argument("--seed", type=int, default=None)
     p.add_argument("--thumb", type=int, default=160)
     p.add_argument("--dpi", type=int, default=350)
