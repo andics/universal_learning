@@ -2,6 +2,8 @@ from pathlib import Path
 import sys
 import urllib.request
 import zipfile
+import argparse
+from typing import Optional
 
 
 OBJECTNET_URL = "https://objectnet.dev/downloads/objectnet-1.0.zip"
@@ -65,9 +67,18 @@ def download_to_script_directory(url: str) -> Path:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Download and extract ObjectNet dataset zip")
+    parser.add_argument(
+        "--password",
+        "-p",
+        default="objectnetisatestset",
+        help="Optional zip password. Default: objectnetisatestset",
+    )
+    args = parser.parse_args()
+
     try:
         zip_path = download_to_script_directory(OBJECTNET_URL)
-        extract_zip_to_named_folder(zip_path)
+        extract_zip_to_named_folder(zip_path, password=args.password)
     except Exception:
         sys.exit(1)
 
@@ -75,7 +86,7 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 
-def extract_zip_to_named_folder(zip_file_path: Path) -> Path:
+def extract_zip_to_named_folder(zip_file_path: Path, password: Optional[str] = "objectnetisatestset") -> Path:
     target_dir = zip_file_path.with_suffix("")
     if target_dir.exists():
         print(f"Extraction target already exists: {target_dir}")
@@ -92,7 +103,11 @@ def extract_zip_to_named_folder(zip_file_path: Path) -> Path:
                 raise Exception(f"Unsafe path in zip entry: {member.filename}")
 
         print(f"Extracting to: {target_dir}")
-        zip_ref.extractall(target_dir)
+        pwd_bytes = password.encode("utf-8") if password else None
+        # If password is provided, use it during extraction (ZipCrypto only)
+        if pwd_bytes:
+            zip_ref.setpassword(pwd_bytes)
+        zip_ref.extractall(target_dir, pwd=pwd_bytes)
         print(f"Extraction complete: {target_dir}")
 
     return target_dir
