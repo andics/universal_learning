@@ -250,14 +250,14 @@ def build_and_save_collage(
     chosen_wnids: List[str] = list(present_wnids)
     if len(chosen_wnids) < int(args.classes):
         class_scores: List[Tuple[str, float]] = []
-    for wnid, idxs in wnid_to_indices.items():
-        if wnid in chosen_wnids:
-            continue
-        in_window = [i for i in idxs if start_idx <= i < end_idx_exclusive]
-        if len(in_window) < num_bins:
-            continue
-        score = compute_class_score(in_window)
-        class_scores.append((wnid, score))
+        for wnid, idxs in wnid_to_indices.items():
+            if wnid in chosen_wnids:
+                continue
+            in_window = [i for i in idxs if start_idx <= i < end_idx_exclusive]
+            if len(in_window) < num_bins:
+                continue
+            score = compute_class_score(in_window)
+            class_scores.append((wnid, score))
         class_scores.sort(key=lambda t: t[1])
         for wnid, _ in class_scores:
             if len(chosen_wnids) >= int(args.classes):
@@ -370,7 +370,7 @@ def build_and_save_collage(
 
     width_ratios: List[float] = []
     width_ratios.append(tile)  # label column
-        for b in range(num_bins):
+    for b in range(num_bins):
         width_ratios.append(tile)
         # after each pair except the last pair, add a narrow gap column
         if b % 2 == 1 and b < num_bins - 1:
