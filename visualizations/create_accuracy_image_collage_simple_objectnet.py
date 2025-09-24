@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 def parse_args() -> argparse.Namespace:
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     d_npy = os.path.join(project_root, "bars", "objectnet.npy")
-    d_out = os.path.join(os.path.dirname(__file__), "objectnet_collage.png")
+    d_out = os.path.join(os.path.dirname(__file__), "difficulty_objectnet_collage.png")
     d_chosen = os.path.join(os.path.dirname(__file__), "collage_objectnet_chosen")
 
     p = argparse.ArgumentParser(
@@ -263,7 +263,7 @@ def build_pairs_collage_with_bg_files(
             except Exception:
                 w, h = (len(text) * 3, 6)
             # shift 30% further left relative to centered position, then clamp
-            x = int(round(x_center - (w / 2.0) - 0.64 * w))
+            x = int(round(x_center - (w / 2.0) - 0.61 * w))
             x = max(border_px + 1, x)
             y = int(tile - border_px - padding_px - h)
             y = max(border_px + 1, y)
