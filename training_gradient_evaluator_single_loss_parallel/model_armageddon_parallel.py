@@ -10,7 +10,7 @@ from datetime import datetime
 # Cluster/container execution settings (mirrored from single-worker script)
 CONTAINER = 'ops:5000/universal_learning_2.4:1'
 QUEUE = 'waic-short'
-GPU_SPEC = 'num=1:j_exclusive=yes'
+GPU_SPEC = 'num=1:j_exclusive=no'
 RESOURCES = '-R rusage[mem=256000] -R affinity[thread*24] -R select[hname!=hgn50] -R select[hname!=ibdgx010]'
 
 # Paths
@@ -79,9 +79,9 @@ def load_model_rows(csv_path: str):
 def main():
     parser = argparse.ArgumentParser(description="Submit parallel single-example training jobs across workers.")
     parser.add_argument('--mapping_csv', type=str, default=DEFAULT_MAPPING_CSV, help='CSV with columns model_in_csv,model_in_timm')
-    parser.add_argument('--max_models', type=int, default=10, help='Number of models (rows) from mapping CSV to submit')
+    parser.add_argument('--max_models', type=int, default=4, help='Number of models (rows) from mapping CSV to submit')
     parser.add_argument('--num_workers', type=int, default=DEFAULTS['num_workers'], help='Number of workers to launch per model')
-    parser.add_argument('--repeats_per_worker', type=int, default=14, help='Number of sequential repeats per worker via seq_arr -e')
+    parser.add_argument('--repeats_per_worker', type=int, default=4, help='Number of sequential repeats per worker via seq_arr -e')
     # Optional overrides for key defaults
     parser.add_argument('--output_dir', type=str, default=DEFAULTS['output_dir'], help='Base output directory for results')
     parser.add_argument('--bars_npy', type=str, default=DEFAULTS['bars_npy'])
