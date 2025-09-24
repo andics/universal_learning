@@ -28,6 +28,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--font_size", type=int, default=6, help="Tiny font size for accuracy text (used when possible)")
     p.add_argument("--threshold", type=float, default=None, help="Optional threshold to convert float scores to correctness; if None, infer from dtype")
     p.add_argument("--wnids", type=str, default="n03187595,n03452741,n03481172,n03637318,n02504458", help="Comma-separated wnids; images will be drawn in listed order of each wnid's mapping list")
+    p.add_argument("--chosen_dir", type=str, default=None, help="Optional folder 'collage_3_chosen' containing 5 subfolders (rows) with images named with leading rank, used to drive the collage inputs directly")
     return p.parse_args()
 
 
@@ -322,98 +323,75 @@ def main() -> None:
     if C.shape[1] != len(paths_all):
         raise ValueError(f"imagenet.npy columns ({C.shape[1]}) must equal CSV paths ({len(paths_all)})")
 
-    # Define explicit mapping lists: follow the same examples but simplified to just filenames
-    # We will locate each by searching around the provided rank or by exact filename match.
-    # The ranks below are 1-based; convert to 0-based.
-    explicit = [
-        # n03187595 Dial phone
-        (1203, "ILSVRC2012_val_00034672"),
-        (1903, "ILSVRC2012_val_00022385"),
-        (10502, "ILSVRC2012_val_00029045"),
-        (13362, "ILSVRC2012_val_00013729"),
-        (22345, "ILSVRC2012_val_00016388"),
-        (22559, "ILSVRC2012_val_00029370"),
-        (31523, "ILSVRC2012_val_00017123"),
-        (36050, "ILSVRC2012_val_00033592"),
-        (42722, "ILSVRC2012_val_00016249"),
-        (43886, "ILSVRC2012_val_00000137"),
-        # n03452741 Grand piano
-        (2581, "ILSVRC2012_val_00021661"),
-        (6089, "ILSVRC2012_val_00007940"),
-        (13804, "ILSVRC2012_val_00013511"),
-        (13855, "ILSVRC2012_val_00034629"),
-        (20036, "ILSVRC2012_val_00022718"),
-        (21815, "ILSVRC2012_val_00043659"),
-        (31039, "ILSVRC2012_val_00043735"),
-        (34554, "ILSVRC2012_val_00008996"),
-        (44344, "ILSVRC2012_val_00010946"),
-        (48005, "ILSVRC2012_val_00034400"),
-        # n03481172 Hammer
-        (2870, "ILSVRC2012_val_00037086"),
-        (14579, "ILSVRC2012_val_00038221"),
-        (17143, "ILSVRC2012_val_00003387"),
-        (19992, "ILSVRC2012_val_00024678"),
-        (22554, "ILSVRC2012_val_00039315"),
-        (27201, "ILSVRC2012_val_00029860"),
-        (31657, "ILSVRC2012_val_00026993"),
-        (33381, "ILSVRC2012_val_00026527"),
-        (42372, "ILSVRC2012_val_00017991"),
-        (41976, "ILSVRC2012_val_00000887"),
-        # n03637318 Lampshade
-        (5850, "ILSVRC2012_val_00007691"),
-        (14994, "ILSVRC2012_val_00045527"),
-        (13793, "ILSVRC2012_val_00021095"),
-        (24118, "ILSVRC2012_val_00049145"),
-        (22945, "ILSVRC2012_val_00033621"),
-        (24418, "ILSVRC2012_val_00035240"),
-        (39278, "ILSVRC2012_val_00038494"),
-        (33478, "ILSVRC2012_val_00044807"),
-        (47141, "ILSVRC2012_val_00046581"),
-        (47243, "ILSVRC2012_val_00017175"),
-        # n02504458 Elephant
-        (11936, "ILSVRC2012_val_00015578"),
-        (18624, "ILSVRC2012_val_00001958"),
-        (22679, "ILSVRC2012_val_00038578"),
-        (23748, "ILSVRC2012_val_00003747"),
-        (29739, "ILSVRC2012_val_00033861"),
-        (30376, "ILSVRC2012_val_00025941"),
-        (32801, "ILSVRC2012_val_00040375"),
-        (40351, "ILSVRC2012_val_00007292"),
-        (45533, "ILSVRC2012_val_00018263"),
-        (48709, "ILSVRC2012_val_00003538"),
-    ]
-
-    # Utility to find index by nearby rank and filename stub
-    def find_index_by_rank_and_name(rank_1_based: int, name_stub: str) -> Optional[int]:
-        idx = int(rank_1_based) - 1
-        # First, check exact slot
-        if 0 <= idx < len(paths_all):
-            p = paths_all[idx]
-            if p and p != "None" and name_stub in os.path.basename(p):
-                return idx
-        # Fallback: scan neighborhood
-        for delta in range(1, 6):
-            for sign in (-1, 1):
-                j = idx + sign * delta
-                if 0 <= j < len(paths_all):
-                    p = paths_all[j]
-                    if p and p != "None" and name_stub in os.path.basename(p):
-                        return j
-        # Last resort: full scan by basename contains stub
-        name_stub_lower = name_stub.lower()
-        for j, p in enumerate(paths_all):
-            if p and p != "None" and name_stub_lower in os.path.basename(p).lower():
-                return j
-        return None
-
+    # Resolve indices based on chosen_dir if provided, otherwise use explicit fixed list as before
     resolved_indices: List[int] = []
     resolved_paths: List[str] = []
-    for rank1, stub in explicit:
-        j = find_index_by_rank_and_name(rank1, stub)
-        if j is None:
-            continue
-        resolved_indices.append(j)
-        resolved_paths.append(paths_all[j])
+
+    if args.chosen_dir and os.path.isdir(args.chosen_dir):
+        # Expect 5 subfolders, each containing images named with leading rank like "1234_filename.JPEG"
+        subdirs = [os.path.join(args.chosen_dir, d) for d in os.listdir(args.chosen_dir) if os.path.isdir(os.path.join(args.chosen_dir, d))]
+        subdirs.sort()
+        # For each subfolder, read files, parse ranks, keep order by rank ascending
+        per_class_indices: List[List[int]] = []
+        for sd in subdirs:
+            files = [f for f in os.listdir(sd) if not f.startswith('.')]
+            ranks: List[int] = []
+            for fname in files:
+                # Parse leading integer rank until first non-digit
+                num = []
+                for ch in fname:
+                    if ch.isdigit():
+                        num.append(ch)
+                    else:
+                        break
+                if not num:
+                    continue
+                rank1 = int("".join(num))
+                idx0 = rank1 - 1
+                if 0 <= idx0 < len(paths_all):
+                    ranks.append(idx0)
+            ranks = sorted(set(ranks))
+            # keep only first 10 (collage expects 10 per row)
+            per_class_indices.append(ranks[:10])
+
+        # Flatten in class order (preserve subdir order) to resolved_* lists
+        for ranks in per_class_indices:
+            for j in ranks:
+                resolved_indices.append(j)
+                resolved_paths.append(paths_all[j])
+    else:
+        # Fallback: original explicit list
+        explicit = [
+            (1203, "ILSVRC2012_val_00034672"),(1903, "ILSVRC2012_val_00022385"),(10502, "ILSVRC2012_val_00029045"),(13362, "ILSVRC2012_val_00013729"),(22345, "ILSVRC2012_val_00016388"),(22559, "ILSVRC2012_val_00029370"),(31523, "ILSVRC2012_val_00017123"),(36050, "ILSVRC2012_val_00033592"),(42722, "ILSVRC2012_val_00016249"),(43886, "ILSVRC2012_val_00000137"),
+            (2581, "ILSVRC2012_val_00021661"),(6089, "ILSVRC2012_val_00007940"),(13804, "ILSVRC2012_val_00013511"),(13855, "ILSVRC2012_val_00034629"),(20036, "ILSVRC2012_val_00022718"),(21815, "ILSVRC2012_val_00043659"),(31039, "ILSVRC2012_val_00043735"),(34554, "ILSVRC2012_val_00008996"),(44344, "ILSVRC2012_val_00010946"),(48005, "ILSVRC2012_val_00034400"),
+            (2870, "ILSVRC2012_val_00037086"),(14579, "ILSVRC2012_val_00038221"),(17143, "ILSVRC2012_val_00003387"),(19992, "ILSVRC2012_val_00024678"),(22554, "ILSVRC2012_val_00039315"),(27201, "ILSVRC2012_val_00029860"),(31657, "ILSVRC2012_val_00026993"),(33381, "ILSVRC2012_val_00026527"),(42372, "ILSVRC2012_val_00017991"),(41976, "ILSVRC2012_val_00000887"),
+            (5850, "ILSVRC2012_val_00007691"),(14994, "ILSVRC2012_val_00045527"),(13793, "ILSVRC2012_val_00021095"),(24118, "ILSVRC2012_val_00049145"),(22945, "ILSVRC2012_val_00033621"),(24418, "ILSVRC2012_val_00035240"),(39278, "ILSVRC2012_val_00038494"),(33478, "ILSVRC2012_val_00044807"),(47141, "ILSVRC2012_val_00046581"),(47243, "ILSVRC2012_val_00017175"),
+            (11936, "ILSVRC2012_val_00015578"),(18624, "ILSVRC2012_val_00001958"),(22679, "ILSVRC2012_val_00038578"),(23748, "ILSVRC2012_val_00003747"),(29739, "ILSVRC2012_val_00033861"),(30376, "ILSVRC2012_val_00025941"),(32801, "ILSVRC2012_val_00040375"),(40351, "ILSVRC2012_val_00007292"),(45533, "ILSVRC2012_val_00018263"),(48709, "ILSVRC2012_val_00003538"),
+        ]
+        def find_index_by_rank_and_name(rank_1_based: int, name_stub: str) -> Optional[int]:
+            idx = int(rank_1_based) - 1
+            if 0 <= idx < len(paths_all):
+                p = paths_all[idx]
+                if p and p != "None" and name_stub in os.path.basename(p):
+                    return idx
+            for delta in range(1, 6):
+                for sign in (-1, 1):
+                    j = idx + sign * delta
+                    if 0 <= j < len(paths_all):
+                        p = paths_all[j]
+                        if p and p != "None" and name_stub in os.path.basename(p):
+                            return j
+            name_stub_lower = name_stub.lower()
+            for j, p in enumerate(paths_all):
+                if p and p != "None" and name_stub_lower in os.path.basename(p).lower():
+                    return j
+            return None
+        for rank1, stub in explicit:
+            j = find_index_by_rank_and_name(rank1, stub)
+            if j is None:
+                continue
+            resolved_indices.append(j)
+            resolved_paths.append(paths_all[j])
 
     if not resolved_indices:
         raise RuntimeError("No explicit images resolved from CSV; check paths and stubs")
@@ -422,34 +400,44 @@ def main() -> None:
     idx_to_tuple = compute_accuracy_for_indices(C, resolved_indices)
 
     # Reconstruct per-class mapping preserving order (10 images each)
-    # Using same WNID list as original third collage order
-    per_class: Dict[str, List[int]] = {
-        "n03187595": [],
-        "n03452741": [],
-        "n03481172": [],
-        "n03637318": [],
-        "n02504458": [],
-    }
-    # Map resolved paths back to wnid via path
-    def path_to_wnid_from_path(p: str) -> Optional[str]:
-        base = os.path.normpath(p).replace("\\", "/")
-        parts = base.split("/")
-        for k in range(len(parts) - 1):
-            if parts[k].startswith("n") and len(parts[k]) == 9:
-                return parts[k]
-        return None
+    per_class: Dict[str, List[int]] = {}
 
-    for j, p in zip(resolved_indices, resolved_paths):
-        w = path_to_wnid_from_path(p)
-        if w in per_class and len(per_class[w]) < 10:
-            per_class[w].append(j)
-
-    # Ensure each class has exactly 10 slots (pad with None if needed)
-    for w in list(per_class.keys()):
-        lst = per_class[w]
-        if len(lst) < 10:
-            lst = lst + [None] * (10 - len(lst))
-        per_class[w] = lst[:10]
+    if args.chosen_dir and os.path.isdir(args.chosen_dir):
+        # Use subfolder order as class order; no wnid labels necessary for layout
+        subdirs = [os.path.join(args.chosen_dir, d) for d in os.listdir(args.chosen_dir) if os.path.isdir(os.path.join(args.chosen_dir, d))]
+        subdirs.sort()
+        start = 0
+        for i, sd in enumerate(subdirs):
+            key = f"row_{i+1}"
+            per_class[key] = resolved_indices[start:start+10]
+            if len(per_class[key]) < 10:
+                per_class[key] = per_class[key] + [None] * (10 - len(per_class[key]))
+            start += 10
+    else:
+        # Map resolved paths back to wnid to form the five canonical rows
+        def path_to_wnid_from_path(p: str) -> Optional[str]:
+            base = os.path.normpath(p).replace("\\", "/")
+            parts = base.split("/")
+            for k in range(len(parts) - 1):
+                if parts[k].startswith("n") and len(parts[k]) == 9:
+                    return parts[k]
+            return None
+        per_class = {
+            "n03187595": [],
+            "n03452741": [],
+            "n03481172": [],
+            "n03637318": [],
+            "n02504458": [],
+        }
+        for j, p in zip(resolved_indices, resolved_paths):
+            w = path_to_wnid_from_path(p)
+            if w in per_class and len(per_class[w]) < 10:
+                per_class[w].append(j)
+        for w in list(per_class.keys()):
+            lst = per_class[w]
+            if len(lst) < 10:
+                lst = lst + [None] * (10 - len(lst))
+            per_class[w] = lst[:10]
 
     build_pairs_collage_with_bg(
         per_class_indices=per_class,

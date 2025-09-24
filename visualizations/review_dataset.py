@@ -21,6 +21,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--hier", default=d_hier, help="Path to imagenet_synset_hierarchy.json")
     p.add_argument("--out", default=d_out, help="Output image path (used only to locate collage_3 directory)")
     p.add_argument("--root_dir", type=str, default=None, help="Optional root to prefix non-absolute CSV paths when copying")
+    p.add_argument("--seed", type=int, default=1337, help="Random seed used to shuffle class order deterministically")
     return p.parse_args()
 
 
@@ -94,11 +95,15 @@ def main() -> None:
 
     # Iterate all WNIDs found in the hierarchy
     wnids: List[str] = list(labels.keys())
+    random.seed(int(args.seed))
     random.shuffle(wnids)
     for wnid in wnids:
         label_text = labels.get(wnid, wnid)
         class_dir = os.path.join(collage_dir, sanitize(label_text))
-        os.makedirs(class_dir, exist_ok=True)
+        if os.path.isdir(class_dir):
+            # Skip existing class directory entirely as requested
+            continue
+        os.makedirs(class_dir, exist_ok=False)
 
         # Per-class ranking CSV
         class_rows: List[str] = ["rank,image_path"]
