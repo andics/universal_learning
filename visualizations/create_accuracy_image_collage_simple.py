@@ -237,7 +237,7 @@ def build_pairs_collage_with_bg(
         pair_img.paste(left_img, (0, 0))
         pair_img.paste(right_img, (tile, 0))
 
-        # draw tiny accuracy text centered on each half
+        # draw tiny accuracy text bottom-centered on each half
         draw = ImageDraw.Draw(pair_img)
         def text_for(index: Optional[int]) -> str:
             if index is None:
@@ -247,8 +247,9 @@ def build_pairs_collage_with_bg(
 
         left_text = text_for(left_idx)
         right_text = text_for(right_idx)
-        # centered positions
-        def draw_outlined_text_center(x_center: int, y_center: int, text: str) -> None:
+        # bottom-centered positions
+        margin = max(1, int(round(tile * 0.04)))
+        def draw_outlined_text_bottom_center(x_center: int, text: str) -> None:
             if not text:
                 return
             try:
@@ -256,17 +257,15 @@ def build_pairs_collage_with_bg(
             except Exception:
                 w, h = (len(text) * 3, 6)
             x = int(x_center - w / 2)
-            y = int(y_center - h / 2)
+            y = int(tile - margin - h)
             # outline
             for dx, dy in [(-1,0),(1,0),(0,-1),(0,1)]:
                 draw.text((x+dx, y+dy), text, fill=(0,0,0,255), font=font)
             draw.text((x, y), text, fill=(255,255,255,255), font=font)
 
-        # Centers for each half
-        left_center = (tile // 2, tile // 2)
-        right_center = (tile + (tile // 2), tile // 2)
-        draw_outlined_text_center(left_center[0], left_center[1], left_text)
-        draw_outlined_text_center(right_center[0], right_center[1], right_text)
+        # Bottom-center for each half
+        draw_outlined_text_bottom_center(tile // 2, left_text)
+        draw_outlined_text_bottom_center(tile + (tile // 2), right_text)
 
         # black border around pair (inside bounds)
         border_px = max(1, int(round(tile * 0.02)))
