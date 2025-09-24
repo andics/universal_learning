@@ -211,7 +211,7 @@ def build_pairs_collage_with_bg(
 
     # Font for tiny text: try to use a scalable font at ~20% larger than requested
     def load_font_scaled(base_px: int) -> Optional[ImageFont.ImageFont]:
-        size = max(1, int(round(base_px * 1.2)))
+        size = max(1, int(round(base_px * 2.0)))
         try:
             # Try DejaVu Sans from matplotlib
             import matplotlib.font_manager as fm
