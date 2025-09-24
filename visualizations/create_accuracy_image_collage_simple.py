@@ -261,7 +261,10 @@ def build_pairs_collage_with_bg(
                 w, h = draw.textsize(text, font=font) if font else draw.textsize(text)
             except Exception:
                 w, h = (len(text) * 3, 6)
-            x = int(round(x_center - (w / 2.0)))
+            # shift 30% further left relative to centered position
+            x = int(round(x_center - (w / 2.0) - 0.3 * w))
+            # clamp inside left border
+            x = max(border_px + 1, x)
             # keep fully inside and above the inner border
             y = int(tile - border_px - padding_px - h)
             y = max(border_px + 1, y)
