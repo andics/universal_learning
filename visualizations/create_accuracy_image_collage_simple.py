@@ -262,7 +262,7 @@ def build_pairs_collage_with_bg(
             except Exception:
                 w, h = (len(text) * 3, 6)
             # shift 30% further left relative to centered position
-            x = int(round(x_center - (w / 2.0) - 0.3 * w))
+            x = int(round(x_center - (w / 2.0) - 0.64 * w))
             # clamp inside left border
             x = max(border_px + 1, x)
             # keep fully inside and above the inner border

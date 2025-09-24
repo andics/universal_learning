@@ -4,6 +4,7 @@ import argparse
 import os
 import shutil
 from typing import Dict, List
+import numpy as np
 
 
 def parse_args() -> argparse.Namespace:
@@ -25,6 +26,17 @@ def parse_args() -> argparse.Namespace:
         "--images_root",
         default=default_images_root,
         help="Path to ObjectNet images root containing class subfolders",
+    )
+    p.add_argument(
+        "--npy",
+        default=os.path.join(bars_dir, "objectnet.npy"),
+        help="Path to objectnet.npy (models x images correctness or scores)",
+    )
+    p.add_argument(
+        "--threshold",
+        type=float,
+        default=None,
+        help="Optional threshold to convert float scores to correctness; if None, infer",
     )
     p.add_argument(
         "--out_dir",
@@ -99,8 +111,41 @@ def list_classes(images_root: str) -> List[str]:
         p = os.path.join(images_root, name)
         if os.path.isdir(p):
             classes.append(name)
-    classes.sort()
     return classes
+
+
+def load_objectnet_correctness(npy_path: str, threshold: float | None) -> np.ndarray:
+    arr = np.load(npy_path, allow_pickle=True)
+
+    if arr.dtype == object:
+        if arr.ndim == 1:
+            rows = []
+            for row in arr.tolist():
+                bool_row = [False if (x is None) else bool(x) for x in row]
+                rows.append(np.asarray(bool_row, dtype=bool))
+            M = np.vstack(rows)
+        elif arr.ndim == 2:
+            num_models, num_images = arr.shape
+            M = np.zeros((num_models, num_images), dtype=bool)
+            for i in range(num_models):
+                for j in range(num_images):
+                    x = arr[i, j]
+                    M[i, j] = False if (x is None) else bool(x)
+        else:
+            raise ValueError(f"Unexpected object array shape: {arr.shape}")
+        return M.astype(np.uint8)
+
+    if np.issubdtype(arr.dtype, np.floating):
+        arr = np.nan_to_num(arr, nan=0.0)
+        thr = 0.5 if threshold is None else float(threshold)
+        M = (arr > thr).astype(np.uint8)
+        return M
+
+    if arr.dtype == np.bool_:
+        return arr.astype(np.uint8)
+
+    # Other integer/binary encodings: treat nonzero as True
+    return (arr != 0).astype(np.uint8)
 
 
 def main() -> None:
@@ -116,21 +161,24 @@ def main() -> None:
 
     rank_map = build_rank_map(paths_all, images_root)
 
+    # Load correctness matrix for objectnet
+    C = load_objectnet_correctness(args.npy, args.threshold)
+    if C.ndim != 2:
+        raise ValueError(f"Expected 2D correctness matrix, got {C.shape}")
+    num_models = int(C.shape[0])
+
     classes = list_classes(images_root)
     if not classes:
         raise ValueError("No class subfolders found in images_root")
 
-    global_rows: List[str] = ["class,rank,image_path"]
+    global_rows: List[str] = ["class,rank,num_true,num_models,acc_percent,image_path"]
 
     for cls in classes:
         cls_src_dir = os.path.join(images_root, cls)
         cls_out_dir = os.path.join(out_root, sanitize(cls))
-        if os.path.isdir(cls_out_dir):
-            # Skip existing class directory entirely to avoid rework
-            continue
-        os.makedirs(cls_out_dir, exist_ok=False)
+        os.makedirs(cls_out_dir, exist_ok=True)
 
-        class_rows: List[str] = ["rank,image_path"]
+        class_rows: List[str] = ["rank,num_true,num_models,acc_percent,image_path"]
 
         try:
             files = os.listdir(cls_src_dir)
@@ -145,15 +193,22 @@ def main() -> None:
             if key not in rank_map:
                 continue
             rank = rank_map[key]
-            dst_name = f"{rank}_{fname}"
+            # Compute per-image accuracy over models
+            if 0 <= rank < C.shape[1]:
+                col = C[:, rank]
+                num_true = int(col.sum())
+            else:
+                num_true = 0
+            acc = (float(num_true) / float(num_models)) * 100.0 if num_models > 0 else 0.0
+            dst_name = f"{rank}_acc{acc:.1f}_{fname}"
             dst = os.path.join(cls_out_dir, dst_name)
             try:
                 if not os.path.exists(dst):
                     shutil.copy2(src, dst)
             except Exception:
                 continue
-            class_rows.append(f"{rank},{os.path.basename(dst)}")
-            global_rows.append(f"{cls},{rank},\"{src}\"")
+            class_rows.append(f"{rank},{num_true},{num_models},{acc:.3f},{os.path.basename(dst)}")
+            global_rows.append(f"{cls},{rank},{num_true},{num_models},{acc:.3f},\"{src}\"")
 
         # Write per-class ranking
         try:
