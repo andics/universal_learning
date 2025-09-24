@@ -16,6 +16,7 @@ def parse_args() -> argparse.Namespace:
     d_csv = os.path.join(bars_dir, "imagenet_examples_ammended.csv")
     d_npy = os.path.join(bars_dir, "imagenet.npy")
     d_out = os.path.join(os.path.dirname(__file__), "accuracy_image_collage.png")
+    d_chosen = os.path.join(os.path.dirname(__file__), "collage_3_chosen_images")
 
     p = argparse.ArgumentParser(description="Build a simple collage of selected images with per-image accuracy from imagenet.npy.")
     p.add_argument("--csv", default=d_csv, help="Path to imagenet_examples_ammended.csv (single row CSV of 50k paths)")
@@ -28,7 +29,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--font_size", type=int, default=6, help="Tiny font size for accuracy text (used when possible)")
     p.add_argument("--threshold", type=float, default=None, help="Optional threshold to convert float scores to correctness; if None, infer from dtype")
     p.add_argument("--wnids", type=str, default="n03187595,n03452741,n03481172,n03637318,n02504458", help="Comma-separated wnids; images will be drawn in listed order of each wnid's mapping list")
-    p.add_argument("--chosen_dir", type=str, default=None, help="Optional folder 'collage_3_chosen' containing 5 subfolders (rows) with images named with leading rank, used to drive the collage inputs directly")
+    p.add_argument("--chosen_dir", type=str, default=d_chosen, help="Folder containing 5 subfolders (rows) with images named with leading rank (default: collage_3_chosen_images next to this script)")
     return p.parse_args()
 
 
