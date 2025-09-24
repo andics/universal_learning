@@ -196,8 +196,8 @@ def build_pairs_collage_with_bg(
         grad = np.clip(grad / 255.0, 0.0, 1.0)
         return np.tile(grad[None, :, :], (2, 1, 1))
 
-    # left yellow (#FFDD59), middle white, right blue (#80A9FF)
-    gradient = three_color_gradient_rgb(2000, (255, 221, 89), (255, 255, 255), (128, 169, 255))
+    # left (253,231,36) #FDE724, middle white, right (68,1,84) #440154
+    gradient = three_color_gradient_rgb(2000, (253, 231, 36), (255, 255, 255), (68, 1, 84))
     bg_ax.imshow(gradient, aspect="auto", extent=[0, 1, 0, 1], alpha=0.75)
     bg_ax.set_axis_off()
 
