@@ -178,17 +178,26 @@ def build_pairs_collage_with_bg(
             except Exception:
                 pass
 
-    # Background gradient matching custom_yellow_blue_fixed
+    # Background gradient matching custom_yellow_blue_fixed, but with white in the middle
     bg_ax = fig.add_axes([0, 0, 1, 1], zorder=-100)
-    def linear_gradient_rgb(width: int, left_rgb: Tuple[int, int, int], right_rgb: Tuple[int, int, int]) -> np.ndarray:
-        x = np.linspace(0.0, 1.0, width, dtype=np.float32)
+    def three_color_gradient_rgb(width: int, left_rgb: Tuple[int, int, int], mid_rgb: Tuple[int, int, int], right_rgb: Tuple[int, int, int]) -> np.ndarray:
+        width = max(4, int(width))
+        half = width // 2
+        # left -> middle
+        x1 = np.linspace(0.0, 1.0, half, dtype=np.float32)
         lr = np.array(left_rgb, dtype=np.float32)
+        mr = np.array(mid_rgb, dtype=np.float32)
+        grad1 = lr[None, :] * (1.0 - x1[:, None]) + mr[None, :] * x1[:, None]
+        # middle -> right
+        x2 = np.linspace(0.0, 1.0, width - half, dtype=np.float32)
         rr = np.array(right_rgb, dtype=np.float32)
-        grad = lr[None, :] * (1.0 - x[:, None]) + rr[None, :] * x[:, None]
+        grad2 = mr[None, :] * (1.0 - x2[:, None]) + rr[None, :] * x2[:, None]
+        grad = np.concatenate([grad1, grad2], axis=0)
         grad = np.clip(grad / 255.0, 0.0, 1.0)
         return np.tile(grad[None, :, :], (2, 1, 1))
 
-    gradient = linear_gradient_rgb(2000, (255, 221, 89), (128, 169, 255))
+    # left yellow (#FFDD59), middle white, right blue (#80A9FF)
+    gradient = three_color_gradient_rgb(2000, (255, 221, 89), (255, 255, 255), (128, 169, 255))
     bg_ax.imshow(gradient, aspect="auto", extent=[0, 1, 0, 1], alpha=0.75)
     bg_ax.set_axis_off()
 
@@ -200,11 +209,20 @@ def build_pairs_collage_with_bg(
     except Exception:
         pass
 
-    # Font for tiny text (will be very small). If PIL default supports size, use load_default.
-    try:
-        font = ImageFont.load_default()
-    except Exception:
-        font = None
+    # Font for tiny text: try to use a scalable font at ~20% larger than requested
+    def load_font_scaled(base_px: int) -> Optional[ImageFont.ImageFont]:
+        size = max(1, int(round(base_px * 1.2)))
+        try:
+            # Try DejaVu Sans from matplotlib
+            import matplotlib.font_manager as fm
+            font_path = fm.findfont('DejaVu Sans', fallback_to_default=True)
+            return ImageFont.truetype(font_path, size=size)
+        except Exception:
+            try:
+                return ImageFont.load_default()
+            except Exception:
+                return None
+    font = load_font_scaled(tiny_font_size)
 
     single_size = (tile, tile)
     pair_size = (pair_width, tile)
@@ -219,7 +237,7 @@ def build_pairs_collage_with_bg(
         pair_img.paste(left_img, (0, 0))
         pair_img.paste(right_img, (tile, 0))
 
-        # draw tiny accuracy text at bottom of each half
+        # draw tiny accuracy text centered on each half
         draw = ImageDraw.Draw(pair_img)
         def text_for(index: Optional[int]) -> str:
             if index is None:
@@ -229,10 +247,8 @@ def build_pairs_collage_with_bg(
 
         left_text = text_for(left_idx)
         right_text = text_for(right_idx)
-        # positions a few pixels above bottom
-        margin = max(1, int(round(tile * 0.04)))
-        y_text = tile - margin - 1
-        def draw_outlined_text(x_center: int, text: str) -> None:
+        # centered positions
+        def draw_outlined_text_center(x_center: int, y_center: int, text: str) -> None:
             if not text:
                 return
             try:
@@ -240,40 +256,17 @@ def build_pairs_collage_with_bg(
             except Exception:
                 w, h = (len(text) * 3, 6)
             x = int(x_center - w / 2)
-            y = int(y_text - h)
+            y = int(y_center - h / 2)
             # outline
             for dx, dy in [(-1,0),(1,0),(0,-1),(0,1)]:
                 draw.text((x+dx, y+dy), text, fill=(0,0,0,255), font=font)
             draw.text((x, y), text, fill=(255,255,255,255), font=font)
 
-        draw_outlined_text(tile // 2, left_text)
-        draw_outlined_text(tile + (tile // 2), right_text)
-
-        # draw tiny rank text at top of each half (same style)
-        def rank_text_for(index: Optional[int]) -> str:
-            if index is None:
-                return ""
-            return f"{int(index) + 1}"
-
-        left_rank = rank_text_for(left_idx)
-        right_rank = rank_text_for(right_idx)
-
-        y_top = margin  # a few pixels below the top edge
-        def draw_outlined_text_top(x_center: int, text: str) -> None:
-            if not text:
-                return
-            try:
-                w, h = draw.textsize(text, font=font) if font else draw.textsize(text)
-            except Exception:
-                w, h = (len(text) * 3, 6)
-            x = int(x_center - w / 2)
-            y = int(y_top)
-            for dx, dy in [(-1,0),(1,0),(0,-1),(0,1)]:
-                draw.text((x+dx, y+dy), text, fill=(0,0,0,255), font=font)
-            draw.text((x, y), text, fill=(255,255,255,255), font=font)
-
-        draw_outlined_text_top(tile // 2, left_rank)
-        draw_outlined_text_top(tile + (tile // 2), right_rank)
+        # Centers for each half
+        left_center = (tile // 2, tile // 2)
+        right_center = (tile + (tile // 2), tile // 2)
+        draw_outlined_text_center(left_center[0], left_center[1], left_text)
+        draw_outlined_text_center(right_center[0], right_center[1], right_text)
 
         # black border around pair (inside bounds)
         border_px = max(1, int(round(tile * 0.02)))
@@ -307,6 +300,13 @@ def build_pairs_collage_with_bg(
     if out_dir:
         os.makedirs(out_dir, exist_ok=True)
     fig.savefig(out_path, dpi=int(dpi), transparent=True)
+    # Save PDF copy alongside PNG
+    try:
+        root, _ext = os.path.splitext(out_path)
+        pdf_path = f"{root}.pdf"
+        fig.savefig(pdf_path, dpi=int(dpi), transparent=True)
+    except Exception:
+        pass
     plt.close(fig)
 
 
