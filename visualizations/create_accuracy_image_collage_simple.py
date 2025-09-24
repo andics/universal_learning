@@ -237,8 +237,13 @@ def build_pairs_collage_with_bg(
         pair_img.paste(left_img, (0, 0))
         pair_img.paste(right_img, (tile, 0))
 
-        # draw tiny accuracy text bottom-centered on each half
+        # Prepare drawing context and draw border first
         draw = ImageDraw.Draw(pair_img)
+        border_px = max(1, int(round(tile * 0.02)))
+        for k in range(border_px):
+            draw.rectangle([k, k, pair_size[0]-1-k, pair_size[1]-1-k], outline=(0,0,0,255))
+
+        # draw tiny accuracy text bottom-centered on each half, above the border
         def text_for(index: Optional[int]) -> str:
             if index is None:
                 return ""
@@ -248,7 +253,7 @@ def build_pairs_collage_with_bg(
         left_text = text_for(left_idx)
         right_text = text_for(right_idx)
         # bottom-centered positions
-        margin = max(1, int(round(tile * 0.04)))
+        padding_px = max(2, int(round(tile * 0.05)))
         def draw_outlined_text_bottom_center(x_center: int, text: str) -> None:
             if not text:
                 return
@@ -256,8 +261,10 @@ def build_pairs_collage_with_bg(
                 w, h = draw.textsize(text, font=font) if font else draw.textsize(text)
             except Exception:
                 w, h = (len(text) * 3, 6)
-            x = int(x_center - w / 2)
-            y = int(tile - margin - h)
+            x = int(round(x_center - (w / 2.0)))
+            # keep fully inside and above the inner border
+            y = int(tile - border_px - padding_px - h)
+            y = max(border_px + 1, y)
             # outline
             for dx, dy in [(-1,0),(1,0),(0,-1),(0,1)]:
                 draw.text((x+dx, y+dy), text, fill=(0,0,0,255), font=font)
@@ -267,10 +274,6 @@ def build_pairs_collage_with_bg(
         draw_outlined_text_bottom_center(tile // 2, left_text)
         draw_outlined_text_bottom_center(tile + (tile // 2), right_text)
 
-        # black border around pair (inside bounds)
-        border_px = max(1, int(round(tile * 0.02)))
-        for k in range(border_px):
-            draw.rectangle([k, k, pair_size[0]-1-k, pair_size[1]-1-k], outline=(0,0,0,255))
         return pair_img
 
     # place pairs
