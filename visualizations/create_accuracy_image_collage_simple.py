@@ -15,7 +15,7 @@ def parse_args() -> argparse.Namespace:
     bars_dir = os.path.join(project_root, "bars")
     d_csv = os.path.join(bars_dir, "imagenet_examples_ammended.csv")
     d_npy = os.path.join(bars_dir, "imagenet.npy")
-    d_out = os.path.join(os.path.dirname(__file__), "accuracy_image_collage.png")
+    d_out = os.path.join(os.path.dirname(__file__), "difficulty_spectrum_third_5.png")
     d_chosen = os.path.join(os.path.dirname(__file__), "collage_3_chosen_granularity")
 
     p = argparse.ArgumentParser(description="Build a simple collage of selected images with per-image accuracy from imagenet.npy.")
